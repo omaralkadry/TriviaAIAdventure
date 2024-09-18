@@ -22,7 +22,7 @@ AI-powered multiplayer trivia game using the Open AI GPT-4 engine
 - npm
 - MongoDB
 - OpenAI API Key
-- AWS Account (for deployment)
+- AWS Account (for deployment but this will not be implemented as of now)
 
 ### Installation
 1. Clone the repository:
@@ -35,7 +35,7 @@ AI-powered multiplayer trivia game using the Open AI GPT-4 engine
 ### Running the Project
 
 ### Deployment
-The application will be deployed on AWS. **TODO**
+**TODO**
 
 ## License
 This project is not licensed for public use. No part of this project may be used, copied, modified, or distributed without explicit permission from the author.
