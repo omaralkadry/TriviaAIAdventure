@@ -4,14 +4,19 @@
   "description": "AI-powered multiplayer trivia game using the Open AI GPT-4 engine",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "mongodb": "^6.9.0",
     "openai": "^4.62.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
