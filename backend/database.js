@@ -67,27 +67,27 @@ class Database {
 
 // Usage example
 ///*
-const uri = process.env.Database_Url;
-const db = new Database(uri);
+// const uri = process.env.Database_Url;
+// const db = new Database(uri);
 
-(async () => {
-    try {
-        await db.connect();
-        // Perform database operations here
+// (async () => {
+//     try {
+//         await db.connect();
+//         // Perform database operations here
 
-        // Example: Register a user
-        await db.registerUser("player1", "securePassword");
+//         // Example: Register a user
+//         await db.registerUser("player1", "securePassword");
 
-        // Example: Authenticate a user
-        const user = await db.authenticateUser("player1", "securePassword");
-        console.log("Authenticated User:", user);
+//         // Example: Authenticate a user
+//         const user = await db.authenticateUser("player1", "securePassword");
+//         console.log("Authenticated User:", user);
 
-    } catch (error) {
-        console.error("Error during database operations:", error);
-    } finally {
-        await db.close();
-    }
-})();
+//     } catch (error) {
+//         console.error("Error during database operations:", error);
+//     } finally {
+//         await db.close();
+//     }
+// })();
 //*/
 
 module.exports = Database;
