@@ -20,7 +20,7 @@ describe('Database Connection', () => {
 
 // Test creating a new user
 // Referenced code from: https://jestjs.io/docs/mongodb
-// Referenced: https://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteOne
+// Referenced: https://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html
 describe('Create new user', () => {
     let db;
     let username = "testuser";
