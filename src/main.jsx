@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import CustomNavbar from './components/CustomNavbar'
 import HomePage from './features/home/HomePage'
 import LoginForm from './features/login/LoginForm'
+import JoinPage from "./features/room/JoinPage";
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginForm />,
+  },
+  {
+    path: "/join",
+    element: <JoinPage />,
   },
 ]);
 

@@ -13,7 +13,7 @@ function HomePage() {
                   <Button href='#room'>Create Room</Button>
                 </ListGroup.Item>
                 <ListGroup.Item>
-                  <Button href='#join'>Join Room</Button>
+                  <Button href='/join'>Join Room</Button>
                 </ListGroup.Item>
               </ListGroup>
             </Card.Body>
