@@ -3,8 +3,8 @@ import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 function LoginForm() {
   return (
     <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Row> 
-        <Col> 
+      <Row className="justify-content-center">
+        <Col md={10}>
           <Card className='p-3'>
             <Card.Title>Login</Card.Title>
             <Form> 
