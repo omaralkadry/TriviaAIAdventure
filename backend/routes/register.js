@@ -1,24 +1,27 @@
 // Used code from https://www.mongodb.com/resources/languages/mern-stack-tutorial
-import express from "express";
-import db from "../database.js";
-import { ObjectId } from "mongodb";
+const express = require('express');
+const database = require('../database.js');
 
+const uri = process.env.Database_Url; // Ensure this is set in your environment
+let db = new database(uri);
 
 const router = express.Router();
 
+
+// POST /register route
+// Registers a user
 router.post("/", async (req, res) => {
     try {
-        let newAccount = {
-            username: req.body.username,
-            password: req.body.password
-        };
-        
-        let collection = await db.collection("Accounts");
+        const username = req.body.username;
+        const password = req.body.password;
+
         let result = await db.registerUser(username, password);
 
-        res.send(result).status(204);
+        res.status(201).send(result);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error creating account");        
+        res.status(403).send(err.name + ": " + err.message);        
     }
 });
+
+module.exports = router;
