@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Card, Container, Row, Col, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer';
 
-const question = "What is the chemical symbol for gold?";
-const answers = ['Ag', 'Au', 'Hg', 'Pb'];
-const correct = 1;
-const choice = 0;
-const duration = { seconds: 15 };
-
 function Play() {
+  const question = "What is the chemical symbol for gold?";
+  const answers = ['Ag', 'Au', 'Hg', 'Pb'];
+  const correct = 1;
+  const duration = { seconds: 5 };
+
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
+  const [clickedChoice, setClickedChoice] = useState(-1);
 
   const handleCountdownFinish = () => {
     setIsCountdownFinished(true);
@@ -37,9 +37,10 @@ function Play() {
             <Col key={idx}>
               <Card className="shadow-sm border-white">
                 <ToggleButton 
-                  variant={idx === correct && isCountdownFinished ? "success" : "outline-dark"} 
-                  size="lg" block id={`button-${idx + 1}`} 
-                  onClick={() => console.log(`Button ${idx + 1} clicked`)} 
+                  variant={isCountdownFinished ? (idx === correct ? "success" : (idx === clickedChoice ? "outline-danger" : "outline-dark")) : "outline-dark"}
+                  size="lg" 
+                  block id={`button-${idx + 1}`} 
+                  onClick={() => setClickedChoice(idx)}
                   disabled={isCountdownFinished}
                 >
                   {answer}
