@@ -1,0 +1,40 @@
+const { ClassicTrivia } = require('../gamemodes');
+require('dotenv').config();
+
+
+describe('ClassicTrivia Game Mode', () => {
+    let game;
+
+    beforeEach(() => {
+        game = new ClassicTrivia(2); // 2 players
+        game.addPlayer('Player1');
+        game.addPlayer('Player2');
+        game.setSettings(5, 30); // 5 questions, 30 seconds per question
+    });
+
+    test('should initialize with correct settings', () => {
+        expect(game.players.length).toBe(2);
+        expect(game.totalQuestions).toBe(5);
+        expect(game.timePerQuestion).toBe(30);
+    });
+
+    test('should correctly set topic for trivia game', () => {
+        game.setTopic('Science');
+        expect(game.topic).toBe('Science');
+    });
+
+    test('should generate a trivia question using OpenAI', async () => {
+        game.setTopic('Science');
+        const question = await game.generateQuestion();
+
+        //testing 
+        console.log('Test Generated Question:', question);
+
+        expect(question).toHaveProperty('question');
+        expect(question).toHaveProperty('choices');
+        expect(question).toHaveProperty('correctAnswer');
+        //console.log('Question: ', question);
+        //console.log('Choices: ', choices);
+        //console.log('Answer: ', correctAnswer);
+    });
+});
