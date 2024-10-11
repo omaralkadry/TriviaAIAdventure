@@ -10,10 +10,10 @@ const client = new OpenAI({apiKey: process.env['OPENAI_API_KEY']});
 class GameMode {
     constructor(playerCount = 1) {
         this.players = [];
-        this.totalQuestions = 0;
+        this.totalQuestions = 5;
         this.currentRound = 0;
         this.timePerQuestion = 0;
-        this.currentQuestion = null;
+        this.currentQuestion = 0;
         this.scores = {};
     }
 
@@ -91,7 +91,7 @@ class ClassicTrivia extends GameMode {
 
     async generateQuestion() {
         try {
-            const prompt = `Generate a trivia question on the topic of "${this.topic}" with four multiple-choice answers in the following JSON format:
+            const prompt = `Generate ${this.totalQuestions} trivia questions on the topic of "${this.topic}" with four multiple-choice answers in the following JSON format:
         {
             "question": "<trivia question>",
             "choices": {
@@ -109,7 +109,7 @@ class ClassicTrivia extends GameMode {
                     { role: "system", content: "You are a trivia game question generator." },
                     { role: "user", content: prompt }
                 ],
-                max_tokens: 200,  //may not be neccessary or might adjust
+                max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
                 //response_format: "json_schema"
             });
             
@@ -129,21 +129,33 @@ class ClassicTrivia extends GameMode {
             //console.log('Parsed Question:', parsedQuestion);
 
             //this.correctAnswer = parsedQuestion.correctAnswer;
+
+            //needed to remove non json elements at the start and end (not sure why they are occurring)
+            const cleanedResult = result.replace(/```json|```/g, '').trim();
             
-            const parsedQuestion = JSON.parse(result);
-            this.correctAnswer = parsedQuestion.correctAnswer
+            const parsedQuestion = JSON.parse(cleanedResult);
 
             //testing
-            console.log('Parsed Question:', parsedQuestion);
-            console.log('Question: ', parsedQuestion.question);
-            console.log('Choices: ', parsedQuestion.choices);
-            console.log('Answer: ', this.correctAnswer);
-
+            //console.log('Parsed Question:', parsedQuestion);
+            //console.log('Question: ', parsedQuestion[0].question);
+            //console.log('Choices: ', parsedQuestion[0].choices);
+            //console.log('QA: ', parsedQuestion[0].choices.a);
+            //console.log('Answer: ', parsedQuestion[0].correctAnswer);
+            
+            
             return parsedQuestion;
         } catch (error) {
             console.error('Error generating question:', error);
         }
     }
+
+    async getQuestionArray() {
+        return this.question_array;
+    }
+    async getQuestion(question_array, index) {
+
+    }
+
     /* Not being used anymore
     parseTriviaResponse(response) {
         // Using regex rn may find better way

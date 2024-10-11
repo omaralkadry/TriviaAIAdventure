@@ -25,16 +25,23 @@ describe('ClassicTrivia Game Mode', () => {
 
     test('should generate a trivia question using OpenAI', async () => {
         game.setTopic('Science');
-        const question = await game.generateQuestion();
+        const questions = await game.generateQuestion();
 
         //testing 
-        console.log('Test Generated Question:', question);
+        //console.log('Test Generated Question:', questions);
 
-        expect(question).toHaveProperty('question');
-        expect(question).toHaveProperty('choices');
-        expect(question).toHaveProperty('correctAnswer');
-        //console.log('Question: ', question);
-        //console.log('Choices: ', choices);
-        //console.log('Answer: ', correctAnswer);
-    });
+        expect(Array.isArray(questions)).toBe(true);
+        expect(questions.length).toBeGreaterThan(0);
+        
+        questions.forEach((question, index) => {
+            expect(question).toHaveProperty('question');
+            expect(question).toHaveProperty('choices');
+            expect(question).toHaveProperty('correctAnswer');
+
+            //testing
+            console.log(`Question ${index}: `, question.question);
+            console.log('Choices: ', question.choices);
+            console.log('Answer: ', question.correctAnswer);
+        });
+    }, 30000);
 });
