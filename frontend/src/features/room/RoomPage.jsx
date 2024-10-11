@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Container, Col, Row, Table, Form } from 'react-bootstrap'
+import { Button, Card, Container, Col, Row, Table, Form } from 'react-bootstrap';
 
 function RoomPage() {
 
