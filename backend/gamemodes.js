@@ -52,7 +52,7 @@ class ClassicTrivia extends GameMode {
     constructor(playerCount = 1) {
         super(playerCount);
         this.topic = '';
-        this.correctAnswer = null;
+        this.question_array = [];
     }
    
     setTopic(topic) {
@@ -122,28 +122,24 @@ class ClassicTrivia extends GameMode {
             //console.log('FIltered Result:', JSON.stringify(result, null, 2));
             //console.log('Raw API Message:', result);
 
-            //use helper function
-            //const parsedQuestion = this.parseTriviaResponse(result);
-
-            //testing
-            //console.log('Parsed Question:', parsedQuestion);
-
-            //this.correctAnswer = parsedQuestion.correctAnswer;
-
             //needed to remove non json elements at the start and end (not sure why they are occurring)
-            const cleanedResult = result.replace(/```json|```/g, '').trim();
+            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
+            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
             
-            const parsedQuestion = JSON.parse(cleanedResult);
+            const parsedQuestions = JSON.parse(cleanedResult);
 
             //testing
-            //console.log('Parsed Question:', parsedQuestion);
-            //console.log('Question: ', parsedQuestion[0].question);
-            //console.log('Choices: ', parsedQuestion[0].choices);
-            //console.log('QA: ', parsedQuestion[0].choices.a);
-            //console.log('Answer: ', parsedQuestion[0].correctAnswer);
+            //console.log('Parsed Question:', parsedQuestions);
+            //console.log('Question: ', parsedQuestions[0].question);
+            //console.log('Choices: ', parsedQuestions[0].choices);
+            //console.log('QA: ', parsedQuestions[0].choices.a);
+            //console.log('Answer: ', parsedQuestions[0].correctAnswer);
             
+            this.question_array = parsedQuestions;
+
+            //testing
+            //console.log('Question Array:', this.question_array);
             
-            return parsedQuestion;
         } catch (error) {
             console.error('Error generating question:', error);
         }
@@ -152,8 +148,17 @@ class ClassicTrivia extends GameMode {
     async getQuestionArray() {
         return this.question_array;
     }
-    async getQuestion(question_array, index) {
-
+    async getQuestion(question_array) {
+        return this.question_array[this.currentQuestion].question;
+    }
+    async getChoices(question_array) {
+        return this.question_array[this.currentQuestion].choices;
+    }
+    async getAnswer(question_array) {
+        return this.question_array[this.currentQuestion].correctAnswer;
+    }
+    async incrementQuestion(question_array) {
+        this.currentQuestion = this.currentQuestion + 1;
     }
 
     /* Not being used anymore
