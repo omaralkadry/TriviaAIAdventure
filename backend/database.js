@@ -32,7 +32,7 @@ class Database {
 
     async close() {
         await this.client.close();
-        console.log("Connection to MongoDB closed.");
+        //console.log("Connection to MongoDB closed.");
     }
 
     async registerUser(username, password) {

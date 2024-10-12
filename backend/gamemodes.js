@@ -6,6 +6,9 @@ require('dotenv').config();
 const OpenAI = require('openai');
 const client = new OpenAI({apiKey: process.env['OPENAI_API_KEY']});
 
+const Database = require('./database')
+
+
 
 class GameMode {
     constructor(playerCount = 1) {
@@ -16,6 +19,8 @@ class GameMode {
         this.currentQuestion = 0;
         this.scores = {};
         this.ranks = {};
+        this.pointsperquestion = 10;
+        this.gameID = '';
     }
 
     addPlayer(player) {
@@ -23,9 +28,10 @@ class GameMode {
         this.scores[player] = 0; 
     }
 
-    setSettings(totalQuestions, timePerQuestion) {
+    setSettings(totalQuestions, timePerQuestion, pointsperquestion) {
         this.totalQuestions = totalQuestions;
         this.timePerQuestion = timePerQuestion;
+        this.pointsperquestion = pointsperquestion;
     }
 
     startGame() {
@@ -40,19 +46,42 @@ class GameMode {
         throw new Error('TODO: implement in the subclass');
     }
 
+    generateScores(player) {
+        this.scores[player] += this.pointsperquestion;
+    }
+
     //function created with chatgpt
     //not tested
     async endGame() {
-        let winner = Object.keys(this.scores).reduce((a, b) => this.scores[a] > this.scores[b] ? a : b);
-        console.log(`Game Over! Winner is ${winner} with ${this.scores[winner]} points!`);
+        //let winner = Object.keys(this.scores).reduce((a, b) => this.scores[a] > this.scores[b] ? a : b);
+        //console.log(`Game Over! Winner is ${winner} with ${this.scores[winner]} points!`);
+        const ordered_scores = Object.entries(this.scores);
+        ordered_scores.sort((a,b)=> b[1] - a[1])
+        
+        let currentRank = 0;
+        let lastScore = null;
+
+        ordered_scores.forEach(([player, score]) => {
+            if (lastScore === null || score != lastScore) {
+                currentRank++;  
+            } 
+            this.ranks[player] = currentRank;
+            lastScore = score;
+        })
+
+
+
         const uri = process.env.Database_Url;
         const db = new Database(uri);
 
         await Promise.all(this.players.map(async (player) => {
             const score = this.scores[player];
             const rank = this.ranks[player];
+            const gameID = this.gameID;
             await db.saveGame(player, gameID, score, rank);
         }));
+        db.close();
+        
     }
 }
 
@@ -70,34 +99,27 @@ class ClassicTrivia extends GameMode {
     }
 
     // from parent class
-    async startGame() {
-        console.log(`Starting Classic Trivia on topic: ${this.topic}`);
-        for (let round = 1; round <= this.totalQuestions; round++) {
-            this.currentRound = round;
-            this.currentQuestion = await this.generateQuestion();
-
-            console.log(`Round ${round}: ${this.currentQuestion.question}`);
-            this.currentQuestion.choices.forEach(choice => {
-                console.log(`${choice.letter}) ${choice.choice}`);
-            });
-
-            //TODO insert timer functionality
-
-            //TODO player answer needs to be input from the frontend
-            for (let player of this.players) {
-                let answer = await this.getPlayerAnswer(player); 
-        
-                if (this.checkAnswer(answer)) {
-                    this.scores[player] = (this.scores[player] || 0) + this.calculatePoints();
-                    console.log(`${player} answered correctly!`);
-                } else {
-                    console.log(`${player} answered incorrectly.`);
-                }
-            }
-            //this.checkAnswer(player, answer);
+    async startGame(pointsperquestion, totalQuestions, usernames, topic) {
+        this.setSettings(totalQuestions, 30, pointsperquestion)
+        this.gameID = 'Classic';
+        this.setTopic(topic);
+        if (!Array.isArray(usernames) || usernames.length === 0) {
+            throw new Error('Usernames must be a non-empty array.');
         }
-        this.endGame();
+
+        usernames.forEach(name => {
+            this.scores[name] = 0;
+        });
+        
+        //may adjust here if you want to call generatequestion
     }
+
+    checkAnswer(player, answer) {
+        
+        if (answer == this.question_array[this.currentQuestion].correctAnswer)
+           this.generateScores(player);
+    }
+
 
     async generateQuestion() {
         try {
@@ -199,7 +221,8 @@ class ClassicTrivia extends GameMode {
     }
     */
 
-    //TODO needs adjustment
+    //TODO May not be used anymore
+    /*
     async getPlayerAnswer(player) {
 
         //assisted by chatgpt
@@ -213,19 +236,8 @@ class ClassicTrivia extends GameMode {
             }, 1000);
         });
     }
+    */
 
-    checkAnswer(player, answer) {
-
-        return answer === this.correctAnswer;
-        /*
-        if (true) { //add check methodology
-            this.scores[player] += 10;
-            console.log(`${player} answered correctly! Current score: ${this.scores[player]}`);
-        } else {
-            console.log(`${player} answered incorrectly.`);
-        }
-        */
-    }
 }
 
 module.exports = { GameMode, ClassicTrivia };
