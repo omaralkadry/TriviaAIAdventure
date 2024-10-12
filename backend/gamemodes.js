@@ -15,6 +15,7 @@ class GameMode {
         this.timePerQuestion = 0;
         this.currentQuestion = 0;
         this.scores = {};
+        this.ranks = {};
     }
 
     addPlayer(player) {
@@ -40,9 +41,18 @@ class GameMode {
     }
 
     //function created with chatgpt
-    endGame() {
+    //not tested
+    async endGame() {
         let winner = Object.keys(this.scores).reduce((a, b) => this.scores[a] > this.scores[b] ? a : b);
         console.log(`Game Over! Winner is ${winner} with ${this.scores[winner]} points!`);
+        const uri = process.env.Database_Url;
+        const db = new Database(uri);
+
+        await Promise.all(this.players.map(async (player) => {
+            const score = this.scores[player];
+            const rank = this.ranks[player];
+            await db.saveGame(player, gameID, score, rank);
+        }));
     }
 }
 
