@@ -68,7 +68,7 @@ socketIO.on('connection', (socket) => {
     });
 
     // Might not work correctly
-    socket.on('generate questions', (callback) => {
+    socket.on('generate questions', async (callback) => {
         const classicTrivia = new ClassicTrivia();
 
         classicTrivia.setTopic("University of Florida");
@@ -76,47 +76,47 @@ socketIO.on('connection', (socket) => {
         // Getting errors when this runs:
         // SyntaxError: Unexpected token S in JSON at position 0
         // SyntaxError: Unexpected token F in JSON at position 0
-        // classicTrivia.generateQuestion();
+        await classicTrivia.generateQuestion();
 
-        // const questionsOutput = classicTrivia.getQuestionArray();
+        const questionsOutput = await classicTrivia.getQuestionArray();
 
-        const questionsOutput = [
-            {
-              question: "What is the most abundant gas in the Earth's atmosphere?",
-              choices: { a: 'Oxygen', b: 'Carbon Dioxide', c: 'Nitrogen', d: 'Hydrogen' },
-              correctAnswer: 'c'
-            },
-            {
-              question: 'What is the chemical symbol for gold?',
-              choices: { a: 'Ag', b: 'Au', c: 'Pb', d: 'Fe' },
-              correctAnswer: 'b'
-            },
-            {
-              question: 'Which planet is known for its rings?',
-              choices: { a: 'Jupiter', b: 'Saturn', c: 'Neptune', d: 'Mars' },
-              correctAnswer: 'b'
-            },
-            {
-              question: 'What is the powerhouse of the cell?',
-              choices: {
-                a: 'Ribosome',
-                b: 'Nucleus',
-                c: 'Mitochondria',
-                d: 'Endoplasmic Reticulum'
-              },
-              correctAnswer: 'c'
-            },
-            {
-              question: 'What is the speed of light in a vacuum?',
-              choices: {
-                a: '300,000 km/s',
-                b: '150,000 km/s',
-                c: '400,000 km/s',
-                d: '75,000 km/s'
-              },
-              correctAnswer: 'a'
-            }
-          ];
+        // const questionsOutput = [
+        //     {
+        //       question: "What is the most abundant gas in the Earth's atmosphere?",
+        //       choices: { a: 'Oxygen', b: 'Carbon Dioxide', c: 'Nitrogen', d: 'Hydrogen' },
+        //       correctAnswer: 'c'
+        //     },
+        //     {
+        //       question: 'What is the chemical symbol for gold?',
+        //       choices: { a: 'Ag', b: 'Au', c: 'Pb', d: 'Fe' },
+        //       correctAnswer: 'b'
+        //     },
+        //     {
+        //       question: 'Which planet is known for its rings?',
+        //       choices: { a: 'Jupiter', b: 'Saturn', c: 'Neptune', d: 'Mars' },
+        //       correctAnswer: 'b'
+        //     },
+        //     {
+        //       question: 'What is the powerhouse of the cell?',
+        //       choices: {
+        //         a: 'Ribosome',
+        //         b: 'Nucleus',
+        //         c: 'Mitochondria',
+        //         d: 'Endoplasmic Reticulum'
+        //       },
+        //       correctAnswer: 'c'
+        //     },
+        //     {
+        //       question: 'What is the speed of light in a vacuum?',
+        //       choices: {
+        //         a: '300,000 km/s',
+        //         b: '150,000 km/s',
+        //         c: '400,000 km/s',
+        //         d: '75,000 km/s'
+        //       },
+        //       correctAnswer: 'a'
+        //     }
+        //   ];
 
         console.log("Output: " + questionsOutput[0].question);
 

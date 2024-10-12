@@ -61,11 +61,11 @@
         window.scrollTo(0, document.body.scrollHeight);
       })
 
-      // Doesn't work correctly
       socket.emit('generate questions', (res) => {
         const item = document.createElement('li');
-        item.textContent = res.questions;
-        messages.appendChild(item);
+
+        messages.textContent += res.questions[0].question;
+
         window.scrollTo(0, document.body.scrollHeight);
       })
     </script>
