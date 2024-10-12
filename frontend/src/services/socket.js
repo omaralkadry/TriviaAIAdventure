@@ -5,7 +5,7 @@ const SOCKET_URL = 'http://localhost:3000';
 
 const socket = io(SOCKET_URL);
 
-function ConnectionManager() {
+function SocketManager() {
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
 
