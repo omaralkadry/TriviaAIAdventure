@@ -46,6 +46,28 @@
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });
+
+      socket.emit('create room', (res) => {
+        const item = document.createElement('li');
+        item.textContent = res.roomCode;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      socket.on('test', (msg) => {
+        const item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      })
+
+      // Doesn't work correctly
+      socket.emit('generate questions', (res) => {
+        const item = document.createElement('li');
+        item.textContent = res.questions;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      })
     </script>
   </body>
 </html>
