@@ -1,42 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import './Timer.css';
 
-function Timer({ duration, onCountdownFinish }) {
-  const [countdown, setCountdown] = useState(duration);
-  const [start, setStart] = useState(true);
+const Timer = ({ duration, onCountdownFinish }) => {
+  const [timeLeft, setTimeLeft] = useState(duration);
 
   useEffect(() => {
-    if (start) {
-      let interval = setInterval(() => {
-        const newCountdown = { ...countdown };
-        if (newCountdown.seconds > 0) {
-          newCountdown.seconds -= 1;
-        } else {
-          clearInterval(interval);
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime - 1 <= 0) {
+          clearInterval(timer);
           onCountdownFinish();
+          return 0;
+        } else {
+          return prevTime - 1;
         }
-        setCountdown(newCountdown);
-      }, 1000);
+      });
+    }, 1000);
 
-      return () => clearInterval(interval);
-    }
-  }, [start, countdown, onCountdownFinish]);
+    return () => clearInterval(timer);  // Cleanup on unmount
+  }, [onCountdownFinish]);
+
+  useEffect(() => {
+    setTimeLeft(duration);  // Reset the timer when the duration changes
+  }, [duration]);
 
   return (
-    <Container fluid className='mt-5'>
-      <Row className="justify-content-center">
-        <Col md={1}>
-          <Card>
-            <Card.Body>
-              <Card.Text className="text-center">
-                {countdown.seconds}
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      <div className="timer">
+        <span>{timeLeft}s</span>
+      </div>
   );
-}
+};
 
 export default Timer;

@@ -1,141 +1,139 @@
-// Followed tutorial from https://www.mongodb.com/resources/languages/mern-stack-tutorial
-// Some code from https://expressjs.com/en/starter/hello-world.html
-// Referenced https://masteringjs.io/tutorials/express/post
-// Referenced https://github.com/expressjs/cors?tab=readme-ov-file
-// Referenced tutorial and documentation from https://socket.io/
-// Used ChatGPT (asked about CORS, client-client and client-server communication, and more)
+// Load environment variables from the .env file
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const register = require('./routes/register.js');
-const login = require('./routes/login.js');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
-const { ClassicTrivia } = require('./gamemodes.js');
-
-const corsOptions = {
-    origin: '*',
-    // origin: 'http://localhost:5500', // Front-end URL
-    methods: ["GET", "POST"],
-    optionsSuccessStatus: 200 // Used for some legacy browsers
-}
 
 const app = express();
 const port = 3000;
-
 const server = createServer(app);
-const socketIO = new Server(server, { cors: corsOptions
-});
+const socketIO = new Server(server, { cors: { origin: '*' } });
 
-app.use(cors(corsOptions));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use("/register", register);
-app.use("/login", login);
 
-// Some code below is used for testing
-app.get('/', (req, res) => {
-    res.send("Test");
-});
+// Global object to track rooms and players
+let roomsList = {};
 
-app.get('/test', (req, res) => {
-    res.sendFile(join(__dirname, 'test_frontend.html'));
-});
+// Function to generate a static trivia question with more questions added
+const generateTriviaQuestion = () => {
+    const questions = [
+        { question: "What is the capital of France?", answers: ["Paris", "Berlin", "Madrid", "Rome"], answer: 0 },
+        { question: "What is 2 + 2?", answers: ["3", "4", "5", "6"], answer: 1 },
+        { question: "Who wrote 'Hamlet'?", answers: ["Shakespeare", "Dante", "Homer", "Virgil"], answer: 0 },
+        { question: "What is the capital of Japan?", answers: ["Tokyo", "Kyoto", "Osaka", "Nagoya"], answer: 0 },
+        { question: "What is the largest planet in our solar system?", answers: ["Mars", "Earth", "Jupiter", "Saturn"], answer: 2 },
+        { question: "Who painted the Mona Lisa?", answers: ["Leonardo da Vinci", "Vincent van Gogh", "Michelangelo", "Pablo Picasso"], answer: 0 },
+        { question: "What is the fastest land animal?", answers: ["Cheetah", "Lion", "Horse", "Elephant"], answer: 0 },
+        { question: "Which element has the chemical symbol 'O'?", answers: ["Oxygen", "Osmium", "Gold", "Oganesson"], answer: 0 },
+        { question: "In which year did the Titanic sink?", answers: ["1910", "1912", "1915", "1920"], answer: 1 },
+        { question: "Which country won the FIFA World Cup in 2018?", answers: ["Germany", "Brazil", "France", "Argentina"], answer: 2 },
+        { question: "What is the hardest natural substance on Earth?", answers: ["Gold", "Iron", "Diamond", "Steel"], answer: 2 },
+        { question: "Which ocean is the largest?", answers: ["Atlantic", "Indian", "Pacific", "Arctic"], answer: 2 },
+        { question: "Which language has the most native speakers?", answers: ["English", "Spanish", "Chinese", "Hindi"], answer: 2 },
+        { question: "Who discovered penicillin?", answers: ["Alexander Fleming", "Marie Curie", "Isaac Newton", "Louis Pasteur"], answer: 0 },
+        { question: "What is the smallest country in the world?", answers: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"], answer: 1 }
+    ];
 
+    return questions[Math.floor(Math.random() * questions.length)];
+};
+
+// Function to start trivia game in a room
+const startTriviaGame = async (roomCode) => {
+    let currentQuestionIndex = 0;
+
+    const sendQuestion = () => {
+        const question = generateTriviaQuestion();
+        roomsList[roomCode].currentQuestion = question; // Saving current question
+        socketIO.to(roomCode).emit('question', question);
+    };
+
+    sendQuestion();  // Send the first question
+
+    // Send each question after 30 seconds, reset the timer and send new question
+    const questionInterval = setInterval(() => {
+        if (currentQuestionIndex < 5) {  // Set a limit of 5 questions
+            sendQuestion();
+            currentQuestionIndex++;
+        } else {
+            clearInterval(questionInterval);  // End game after all questions are sent
+            socketIO.to(roomCode).emit('game over', { message: "The game has ended!" });
+        }
+    }, 1000);  // 10 seconds between questions
+};
+
+// Handling connection and game events
 socketIO.on('connection', (socket) => {
     console.log('A user connected');
 
-    socket.on('chat message', (msg) => {
-        socketIO.emit('chat message', msg);
-        console.log('Message: ' + msg);
-    });
-
-    // Called when frontend sends event to create a room
+    // Handle room creation
     socket.on('create room', (callback) => {
-        // Used ChatGPT to see how to generate a random number in a range
-        largestRoomNumber = 90000;
-        smallestRoomNumber = 10000; 
+        const largestRoomNumber = 90000;
+        const smallestRoomNumber = 10000;
         const roomCode = Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber;
+        roomsList[roomCode] = { users: [] };
 
-        // Joins the room
+        // Automatically add the creator to the room and emit the updated player list
+        roomsList[roomCode].users.push(socket.id);
         socket.join(roomCode);
-
-        // socketIO.to(roomCode).emit('test', "Message sent in a room");
-
-        callback({
-            // The room code is returned to the frontend
-            roomCode: roomCode
-        });
+        socket.emit('update players', roomsList[roomCode].users);
+        callback({ success: true, roomCode });
     });
 
-    // Might not work correctly
-    socket.on('generate questions', async (callback) => {
-        const classicTrivia = new ClassicTrivia();
-
-        classicTrivia.setTopic("University of Florida");
-
-        // Getting errors when this runs:
-        // SyntaxError: Unexpected token S in JSON at position 0
-        // SyntaxError: Unexpected token F in JSON at position 0
-        await classicTrivia.generateQuestion();
-
-        const questionsOutput = await classicTrivia.getQuestionArray();
-
-        // const questionsOutput = [
-        //     {
-        //       question: "What is the most abundant gas in the Earth's atmosphere?",
-        //       choices: { a: 'Oxygen', b: 'Carbon Dioxide', c: 'Nitrogen', d: 'Hydrogen' },
-        //       correctAnswer: 'c'
-        //     },
-        //     {
-        //       question: 'What is the chemical symbol for gold?',
-        //       choices: { a: 'Ag', b: 'Au', c: 'Pb', d: 'Fe' },
-        //       correctAnswer: 'b'
-        //     },
-        //     {
-        //       question: 'Which planet is known for its rings?',
-        //       choices: { a: 'Jupiter', b: 'Saturn', c: 'Neptune', d: 'Mars' },
-        //       correctAnswer: 'b'
-        //     },
-        //     {
-        //       question: 'What is the powerhouse of the cell?',
-        //       choices: {
-        //         a: 'Ribosome',
-        //         b: 'Nucleus',
-        //         c: 'Mitochondria',
-        //         d: 'Endoplasmic Reticulum'
-        //       },
-        //       correctAnswer: 'c'
-        //     },
-        //     {
-        //       question: 'What is the speed of light in a vacuum?',
-        //       choices: {
-        //         a: '300,000 km/s',
-        //         b: '150,000 km/s',
-        //         c: '400,000 km/s',
-        //         d: '75,000 km/s'
-        //       },
-        //       correctAnswer: 'a'
-        //     }
-        //   ];
-
-        console.log("Output: " + questionsOutput[0].question);
-
-        callback({
-            // This currently returns all the parsed questions
-            // We can alter this event or make a new one so it returns one question at a time
-            questions: questionsOutput
-        });
+    // Handle joining a room
+    socket.on('join room', (roomCode, callback) => {
+        if (roomsList[roomCode]) {
+            socket.join(roomCode);
+            roomsList[roomCode].users.push(socket.id);
+            socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
+            callback({ success: true, message: `Joined room ${roomCode}` });
+        } else {
+            callback({ success: false, message: 'Room not found' });
+        }
     });
 
+    // Handle starting the game
+    socket.on('start game', (roomCode, callback) => {
+        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
+            socketIO.to(roomCode).emit('start game');
+            startTriviaGame(roomCode);
+            callback({ success: true });
+        } else {
+            callback({ success: false, message: 'Not enough players to start the game' });
+        }
+    });
+
+    // Handle answer submission
+    socket.on('submit answer', (roomCode, answerIndex) => {
+        const currentQuestion = roomsList[roomCode].currentQuestion;
+        if (currentQuestion) {
+            const isCorrect = currentQuestion.answer === answerIndex;
+            const resultMessage = isCorrect ? 'correct' : 'wrong';
+            socket.emit('answer result', { result: resultMessage });
+        } else {
+            socket.emit('answer result', { result: 'no question' });
+        }
+    });
+
+    // Handle disconnects
     socket.on('disconnect', () => {
-        console.log('A user disconnected')
+        console.log('User disconnected', socket.id);
+        for (let roomCode in roomsList) {
+            const room = roomsList[roomCode];
+            if (room.users.includes(socket.id)) {
+                room.users = room.users.filter(id => id !== socket.id);
+                socketIO.to(roomCode).emit('update players', room.users);
+                if (room.users.length === 0) {
+                    delete roomsList[roomCode];
+                }
+            }
+        }
     });
-});
-
-socketIO.on('connection', (socket) => {
-
 });
 
 server.listen(port, () => {
-    console.log(`App available at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });

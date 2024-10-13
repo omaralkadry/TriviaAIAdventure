@@ -1,0 +1,64 @@
+/* General container and row styling */
+.container {
+    margin-top: 20px;
+    padding: 20px;
+}
+
+/* Players Table */
+.players-table {
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+/* Control Card */
+.control-card {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+/* Question Card */
+.question-card {
+    background-color: #f1f1f1;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+}
+
+/* Question Body */
+.question-body {
+    height: 200px;
+    padding: 20px;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* Answer Card */
+.answer-card {
+    transition: transform 0.2s;
+}
+
+.answer-card:hover {
+    transform: scale(1.05);
+}
+
+/* Next Button */
+.next-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.next-button:hover {
+    background-color: #218838;
+}
+
+/* Form Control */
+.form-control {
+    margin-bottom: 10px;
+}
