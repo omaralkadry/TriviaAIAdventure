@@ -36,16 +36,17 @@ const classicGame = new ClassicTrivia();
 // Function to start trivia game in a room
 const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
     let currentQuestionIndex = 0;
-
+    
     classicGame.startGame(10, totalQuestions, usernames, topic);
-
-    const sendQuestion = () => {
-        classicGame.generateQuestion();
+    
+    const sendQuestion = async () => {
+        await classicGame.generateQuestion();
         const questions = classicGame.getQuestionArray();
+        console.log(questions); //testing
         roomsList[roomCode].currentQuestion = questions; // Saving the questions
         socketIO.to(roomCode).emit('question', questions);
     };
-
+    
     sendQuestion();  // Send the all questions
 }   
     /*

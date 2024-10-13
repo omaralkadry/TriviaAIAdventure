@@ -76,7 +76,7 @@ function RoomPage() {
   };
 
   const handleStartGame = () => {
-    socket.emit('start game', roomCode, (response) => {
+    socket.emit('start game', roomCode, "science", players, 3, (response) => {
       if (!response.success) {
         alert(response.message);
       }
