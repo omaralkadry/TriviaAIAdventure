@@ -1,11 +1,23 @@
-// Load environment variables from the .env file
+// Followed tutorial from https://www.mongodb.com/resources/languages/mern-stack-tutorial
+// Some code from https://expressjs.com/en/starter/hello-world.html
+// Referenced https://masteringjs.io/tutorials/express/post
+// Referenced https://github.com/expressjs/cors?tab=readme-ov-file
+// Referenced tutorial and documentation from https://socket.io/
+// Used ChatGPT (asked about CORS, client-client and client-server communication, and more)
+
+//not used rn
 require('dotenv').config();
+
 
 const express = require('express');
 const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
+const { ClassicTrivia } = require('./gamemodes');
+const register = require('./routes/register.js');
+const login = require('./routes/login.js');
+
 
 const app = express();
 const port = 3000;
@@ -18,41 +30,23 @@ app.use(express.json());
 // Global object to track rooms and players
 let roomsList = {};
 
-// Function to generate a static trivia question with more questions added
-const generateTriviaQuestion = () => {
-    const questions = [
-        { question: "What is the capital of France?", answers: ["Paris", "Berlin", "Madrid", "Rome"], answer: 0 },
-        { question: "What is 2 + 2?", answers: ["3", "4", "5", "6"], answer: 1 },
-        { question: "Who wrote 'Hamlet'?", answers: ["Shakespeare", "Dante", "Homer", "Virgil"], answer: 0 },
-        { question: "What is the capital of Japan?", answers: ["Tokyo", "Kyoto", "Osaka", "Nagoya"], answer: 0 },
-        { question: "What is the largest planet in our solar system?", answers: ["Mars", "Earth", "Jupiter", "Saturn"], answer: 2 },
-        { question: "Who painted the Mona Lisa?", answers: ["Leonardo da Vinci", "Vincent van Gogh", "Michelangelo", "Pablo Picasso"], answer: 0 },
-        { question: "What is the fastest land animal?", answers: ["Cheetah", "Lion", "Horse", "Elephant"], answer: 0 },
-        { question: "Which element has the chemical symbol 'O'?", answers: ["Oxygen", "Osmium", "Gold", "Oganesson"], answer: 0 },
-        { question: "In which year did the Titanic sink?", answers: ["1910", "1912", "1915", "1920"], answer: 1 },
-        { question: "Which country won the FIFA World Cup in 2018?", answers: ["Germany", "Brazil", "France", "Argentina"], answer: 2 },
-        { question: "What is the hardest natural substance on Earth?", answers: ["Gold", "Iron", "Diamond", "Steel"], answer: 2 },
-        { question: "Which ocean is the largest?", answers: ["Atlantic", "Indian", "Pacific", "Arctic"], answer: 2 },
-        { question: "Which language has the most native speakers?", answers: ["English", "Spanish", "Chinese", "Hindi"], answer: 2 },
-        { question: "Who discovered penicillin?", answers: ["Alexander Fleming", "Marie Curie", "Isaac Newton", "Louis Pasteur"], answer: 0 },
-        { question: "What is the smallest country in the world?", answers: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"], answer: 1 }
-    ];
+const classicGame = new ClassicTrivia();
 
-    return questions[Math.floor(Math.random() * questions.length)];
-};
 
 // Function to start trivia game in a room
 const startTriviaGame = async (roomCode) => {
     let currentQuestionIndex = 0;
 
     const sendQuestion = () => {
-        const question = generateTriviaQuestion();
-        roomsList[roomCode].currentQuestion = question; // Saving current question
-        socketIO.to(roomCode).emit('question', question);
+        classicGame.generateQuestion();
+        const questions = classicGame.getQuestionArray();
+        roomsList[roomCode].currentQuestion = questions; // Saving the questions
+        socketIO.to(roomCode).emit('question', questions);
     };
 
-    sendQuestion();  // Send the first question
-
+    sendQuestion();  // Send the all questions
+}   
+    /*
     // Send each question after 30 seconds, reset the timer and send new question
     const questionInterval = setInterval(() => {
         if (currentQuestionIndex < 5) {  // Set a limit of 5 questions
@@ -64,7 +58,7 @@ const startTriviaGame = async (roomCode) => {
         }
     }, 1000);  // 10 seconds between questions
 };
-
+ */
 // Handling connection and game events
 socketIO.on('connection', (socket) => {
     console.log('A user connected');
