@@ -34,8 +34,10 @@ const classicGame = new ClassicTrivia();
 
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode) => {
+const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
     let currentQuestionIndex = 0;
+
+    classicGame.startGame(10, totalQuestions, usernames, topic);
 
     const sendQuestion = () => {
         classicGame.generateQuestion();
@@ -90,10 +92,11 @@ socketIO.on('connection', (socket) => {
     });
 
     // Handle starting the game
-    socket.on('start game', (roomCode, callback) => {
-        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
+    socket.on('start game', (roomCode, topic, usernames, totalQuestions, callback) => {
+        // Changed amount of users needed to 1
+        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 1) {
             socketIO.to(roomCode).emit('start game');
-            startTriviaGame(roomCode);
+            startTriviaGame(roomCode, topic, usernames, totalQuestions);
             callback({ success: true });
         } else {
             callback({ success: false, message: 'Not enough players to start the game' });
