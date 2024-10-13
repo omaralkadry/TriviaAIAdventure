@@ -93,8 +93,7 @@ socketIO.on('connection', (socket) => {
 
     // Handle starting the game
     socket.on('start game', (roomCode, topic, usernames, totalQuestions, callback) => {
-        // Changed amount of users needed to 1
-        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 1) {
+        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
             startTriviaGame(roomCode, topic, usernames, totalQuestions);
             callback({ success: true });
