@@ -1,0 +1,12 @@
+.timer-container {
+    margin-top: 10px;
+}
+
+.timer-text {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.timer-text.warning {
+    color: #ff5722;
+}

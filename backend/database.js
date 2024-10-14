@@ -32,7 +32,7 @@ class Database {
 
     async close() {
         await this.client.close();
-        console.log("Connection to MongoDB closed.");
+        //console.log("Connection to MongoDB closed.");
     }
 
     async registerUser(username, password) {
@@ -45,6 +45,8 @@ class Database {
         }
 
         const result = await collection.insertOne({ username, password: hashedPassword });
+        await this.client.db("Users").createCollection(username);
+
         return result;
     }
 
@@ -52,15 +54,28 @@ class Database {
         const collection = this.client.db("General").collection("Accounts");
         const user = await collection.findOne({ username });
         if (!user) throw new Error('User not found.');
-
+        
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new Error('Invalid password.');
-
+        
         return user;
     }
 
-    async saveScore(username, score) {
-        //TODO
+    async saveGame(username, gameID, score, rank) {
+        const collection = this.client.db("Users").collection(username);
+        try {
+            await collection.insertOne({
+                gameID: gameID,
+                score: score,
+                rank: rank,
+                date: new Date()
+            });
+            //testing
+            //console.log(`Game ${gameID} saved for user ${username}.`);
+        } catch (error) {
+            console.error(`Failed to save game for user ${username}:`, error);
+            throw error;
+        }
     }
 
 }
