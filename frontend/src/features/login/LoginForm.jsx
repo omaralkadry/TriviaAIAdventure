@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 
@@ -18,10 +19,12 @@ function LoginForm({ onLogin }) {
       className="d-flex justify-content-center align-items-center" 
       style={{ height: '100vh' }}
     >
+
       <Row className="justify-content-center">
         <Col md={10}>
           <Card className='p-3'>
             <Card.Title>Login</Card.Title>
+
             <Form onSubmit={handleSubmit}> 
               <Form.Group 
                 className="mb-3" 
@@ -55,6 +58,7 @@ function LoginForm({ onLogin }) {
                 type="submit" 
               >
                 Enter
+
               </Button>
             </Form>
           </Card>

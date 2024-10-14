@@ -32,3 +32,4 @@ const Timer = ({ duration, onCountdownFinish }) => {
 };
 
 export default Timer;
+

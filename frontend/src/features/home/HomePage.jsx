@@ -10,7 +10,9 @@ function HomePage() {
               <Card.Title>Trivia AI Adventure</Card.Title>
               <ListGroup variant="flush">
                 <ListGroup.Item>
+
                   <Button href='/room'>Create Room</Button>
+
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <Button href='/join'>Join Room</Button>
