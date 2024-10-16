@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Row, Col, Card, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer.jsx';
 
-const Play = ({ currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, key }) => {
+const Play = ({ currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, key}) => {
   return (
       <Container>
         <Container fluid className="justify-content-center mt-5">
@@ -38,15 +38,23 @@ const Play = ({ currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownF
                 ))}
               </Row>
           )}
-          {isCountdownFinished && (
+          {/* {!isCountdownFinished && (
               <Row className="justify-content-center mt-3">
                 <Col xs="auto">
                   <button className="next-button" onClick={handleAnswerSubmit}>Submit Answer</button>
                 </Col>
               </Row>
+          )} */}
+          {isCountdownFinished && (
+              <Row className="justify-content-center mt-3">
+                <Col xs="auto">
+                  <button className="next-button" onClick={handleNextQuestion}>Next Question</button>
+                </Col>
+              </Row>
           )}
         </Container>
-        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={currentQuestion.duration || 30}/>
+        {/* TODO: Adjust timer variable */}
+        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={currentQuestion.duration || 5}/>
       </Container>
   );
 };

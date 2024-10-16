@@ -28,7 +28,7 @@ function RoomPage() {
     // Listen for the players list update
     newSocket.on('update players', (updatedPlayers) => {
       setPlayers(updatedPlayers);
-      setCanStart(updatedPlayers.length >= 2);
+      setCanStart(updatedPlayers.length >= 1);
     });
 
     // Listen for trivia questions
@@ -103,8 +103,17 @@ function RoomPage() {
     });
   };
 
+  // Not used currently
   const handleAnswerSubmit = () => {
-    socket.emit('submit answer', roomCode, selectedAnswer);
+    // socket.emit('submit answer', roomCode, selectedAnswer);
+
+    // When answer is correct
+    if (questions[currentQuestionIndex].answer == selectedAnswer) {
+      setIsCountdownFinished(true);
+    }
+    else { // Answer is not correct
+      setIsCountdownFinished(true);
+    }
   };
 
   const handleCountdownFinish = () => {
@@ -112,7 +121,7 @@ function RoomPage() {
   };
 
   //added by omar
-  const nextQuestion = () => {
+  const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(-1);
@@ -139,6 +148,7 @@ function RoomPage() {
               isCountdownFinished={isCountdownFinished}
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
               key={key}
           />
         </>
