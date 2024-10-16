@@ -26,6 +26,8 @@ const socketIO = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use("/register", register);
+app.use("/login", login);
 
 // Global object to track rooms and players
 let roomsList = {};
