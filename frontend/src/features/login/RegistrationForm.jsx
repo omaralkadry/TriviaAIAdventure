@@ -60,7 +60,7 @@ function RegistrationForm({ onRegister }) {
                   required
                 />
               </Form.Group>
-              {password !== confirmPassword && (
+              {password !== confirmPassword && confirmPassword !== "" && (
                 <Form.Text className="text-danger">
                   Passwords do not match
                 </Form.Text>
