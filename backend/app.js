@@ -129,6 +129,13 @@ socketIO.on('connection', (socket) => {
             }
         }
     });
+
+    // Handle messages
+    // Socket.io server recieves messages then sends it to clients
+    // Right now sends it to all clients, essentially a global chat
+    socket.on('message', (message) => {
+        socketIO.emit('message', message);
+    });
 });
 
 server.listen(port, () => {
