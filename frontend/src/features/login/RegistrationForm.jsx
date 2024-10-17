@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 
 function RegistrationForm({ onRegister }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -12,40 +13,69 @@ function RegistrationForm({ onRegister }) {
       return;
     }
     // Handle registration logic here
-    onRegister({ email, password });
+    onRegister({ username, password });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Email:</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label>Confirm Password:</label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-      </div>
-      <button type="submit">Register</button>
-    </form>
+    <Container 
+      fluid 
+      className="d-flex justify-content-center align-items-center" 
+      style={{ height: '100vh' }}
+    >
+      <Row className="justify-content-center">
+        <Col md={10}>
+          <Card className='p-3'>
+            <Card.Title>Register</Card.Title>
+            <Form onSubmit={handleSubmit}> 
+              <Form.Group 
+                className="mb-3" 
+                controlId="formBasicUsername"
+              >
+                <Form.Label>Username</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  placeholder="Username" 
+                  value={username} 
+                  onChange={(e) => setUsername(e.target.value)} 
+                  required
+                />
+              </Form.Group>
+              <Form.Group 
+                className="mb-3"
+                controlId="formBasicPassword"
+              >
+                <Form.Label>Password</Form.Label>
+                <Form.Control 
+                  type="password" 
+                  placeholder="Password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Form.Control
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              {password !== confirmPassword && (
+                <Form.Text className="text-danger">
+                  Passwords do not match
+                </Form.Text>
+              )}
+              <Button 
+                variant="primary" 
+                type="submit" 
+              >
+                Enter
+              </Button>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
