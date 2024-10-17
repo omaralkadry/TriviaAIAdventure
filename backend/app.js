@@ -26,6 +26,8 @@ const socketIO = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use("/register", register);
+app.use("/login", login);
 
 // Global object to track rooms and players
 let roomsList = {};
@@ -38,13 +40,24 @@ const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
     let currentQuestionIndex = 0;
     
     classicGame.startGame(10, totalQuestions, usernames, topic);
-    
+    await classicGame.generateQuestion();
+    const questions = await classicGame.getQuestionArray();
+
+    const transformedQuestions = questions.map(q => ({
+        question: q.question,
+        answers: Object.values(q.choices),
+        answer: Object.keys(q.choices).indexOf(q.correctAnswer)
+      }));
+      
+      //testing
+      //console.log(transformedQuestions);
+
+
     const sendQuestion = async () => {
-        await classicGame.generateQuestion();
-        const questions = classicGame.getQuestionArray();
-        console.log(questions); //testing
-        roomsList[roomCode].currentQuestion = questions; // Saving the questions
-        socketIO.to(roomCode).emit('question', questions);
+        
+        // console.log(transformedQuestions[0]); //testing
+        roomsList[roomCode].currentQuestion = transformedQuestions; // Saving the questions
+        socketIO.to(roomCode).emit('question', transformedQuestions);
     };
     
     sendQuestion();  // Send the all questions
@@ -104,16 +117,16 @@ socketIO.on('connection', (socket) => {
     });
 
     // Handle answer submission
-    socket.on('submit answer', (roomCode, answerIndex) => {
-        const currentQuestion = roomsList[roomCode].currentQuestion;
-        if (currentQuestion) {
-            const isCorrect = currentQuestion.answer === answerIndex;
-            const resultMessage = isCorrect ? 'correct' : 'wrong';
-            socket.emit('answer result', { result: resultMessage });
-        } else {
-            socket.emit('answer result', { result: 'no question' });
-        }
-    });
+    // socket.on('submit answer', (roomCode, answerIndex) => {
+    //     const currentQuestion = roomsList[roomCode].currentQuestion;
+    //     if (currentQuestion) {
+    //         const isCorrect = currentQuestion.answer === answerIndex;
+    //         const resultMessage = isCorrect ? 'correct' : 'wrong';
+    //         socket.emit('answer result', { result: resultMessage });
+    //     } else {
+    //         socket.emit('answer result', { result: 'no question' });
+    //     }
+    // });
 
     // Handle disconnects
     socket.on('disconnect', () => {

@@ -11,7 +11,9 @@ function RoomPage() {
   const [joinRoomCode, setJoinRoomCode] = useState('');
   const [joinStatus, setJoinStatus] = useState('');
   const [canStart, setCanStart] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questions, setQuestions] = useState([]); // added (stores all questions) -omar
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // added
+  //const [currentQuestion, setCurrentQuestion] = useState(null); //dont need i think -omar
   const [selectedAnswer, setSelectedAnswer] = useState(-1);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -26,12 +28,13 @@ function RoomPage() {
     // Listen for the players list update
     newSocket.on('update players', (updatedPlayers) => {
       setPlayers(updatedPlayers);
-      setCanStart(updatedPlayers.length >= 2);
+      setCanStart(updatedPlayers.length >= 1);
     });
 
     // Listen for trivia questions
-    newSocket.on('question', (question) => {
-      setCurrentQuestion(question);
+    newSocket.on('question', (allQuestions) => {
+      setQuestions(allQuestions);  //changed by Omar
+      setCurrentQuestionIndex(0);  //this added
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
       setKey(Date.now()); // Reset timer
@@ -47,6 +50,10 @@ function RoomPage() {
     // Listen for start game event
     newSocket.on('start game', () => {
       setGameStarted(true);
+      //may not be needed - Omar
+      setQuestions([]); // Clear previous questions if any
+      setCurrentQuestionIndex(0); // Reset question index
+      setSelectedAnswer(-1); // Reset selected answer
     });
 
     // Listen for answer result
@@ -54,6 +61,12 @@ function RoomPage() {
       setAnswerResponse(data.result);
       setTimeout(() => setAnswerResponse(null), 5000);  // Clear after 3 seconds
     });
+
+     // Listen for the updated scores added -omar
+     newSocket.on('update scores', (scores) => {
+      console.log('Updated Scores:', scores);
+      // TODO adjust here to display scores on the frontend later
+  });
 
     return () => newSocket.close();
   }, []);
@@ -75,23 +88,52 @@ function RoomPage() {
     });
   };
 
+  //adjusted, not sure how player usernames are going to be stored -Omar
   const handleStartGame = () => {
-    socket.emit('start game', roomCode, "science", players, 3, (response) => {
+    const hardcodedTopic = "science";
+    const hardcodedTotalQuestions = 3;
+
+    //testing
+    console.log(players.map(player => player.id))
+
+    socket.emit('start game', roomCode, hardcodedTopic, players.map(player => player.id), hardcodedTotalQuestions, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
   };
 
+  // Not used currently
   const handleAnswerSubmit = () => {
-    socket.emit('submit answer', roomCode, selectedAnswer);
+    // socket.emit('submit answer', roomCode, selectedAnswer);
+
+    // When answer is correct
+    if (questions[currentQuestionIndex].answer == selectedAnswer) {
+      setIsCountdownFinished(true);
+    }
+    else { // Answer is not correct
+      setIsCountdownFinished(true);
+    }
   };
 
   const handleCountdownFinish = () => {
     setIsCountdownFinished(true);
   };
 
-  if (gameStarted && currentQuestion && !gameOver) {
+  //added by omar
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(-1);
+      setIsCountdownFinished(false);
+      setKey(Date.now()); // Reset timer for the next question
+    } else {
+      socket.emit('game over', roomCode);
+      setGameOver(true);
+    }
+  };
+
+  if (gameStarted && questions.length > 0 && !gameOver) { //adjusted by omar
     return (
         <>
           {answerResponse && (
@@ -100,12 +142,13 @@ function RoomPage() {
               </Alert>
           )}
           <Play
-              currentQuestion={currentQuestion}
+              currentQuestion={questions[currentQuestionIndex]} //adjusted by omar
               selectedAnswer={selectedAnswer}
               setSelectedAnswer={setSelectedAnswer}
               isCountdownFinished={isCountdownFinished}
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
               key={key}
           />
         </>
