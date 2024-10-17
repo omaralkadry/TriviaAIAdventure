@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 const SOCKET_URL = 'http://localhost:3000';
@@ -18,6 +18,9 @@ function SocketProvider({ children }) {
     if (newSocket.connected) { 
       setSocketReady(true);
     } 
+
+    // Disconnect
+    return () => newSocket.disconnect();
   }, []);
 
   // Verify socket.io client is connected to server
