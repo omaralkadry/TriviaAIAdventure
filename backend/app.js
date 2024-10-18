@@ -88,7 +88,7 @@ socketIO.on('connection', (socket) => {
 
         // Automatically add the creator to the room and emit the updated player list
         roomsList[roomCode].users.push(socket.id);
-        socket.join(roomCode);
+        socket.join(roomCode.toString());
         socket.emit('update players', roomsList[roomCode].users);
         callback({ success: true, roomCode });
     });
