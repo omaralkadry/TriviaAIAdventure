@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
+import { useAuth } from '../../services/AuthContext';
 
-function RegistrationForm({ onRegister }) {
+function RegistrationForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,8 +14,35 @@ function RegistrationForm({ onRegister }) {
       alert("Passwords do not match");
       return;
     }
+
     // Handle registration logic here
-    onRegister({ username, password });
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username: username, password: password })
+    };
+
+    // Fetch API POST request for registration
+    fetch("http://localhost:3000/register", options)
+      .then(response => {
+        if (response.ok) {
+          console.log("Registration Successful");
+
+          // Saves response user data into AuthContext
+          response.json().then(data => {
+            login(data);
+          });
+
+          // Clear username and passwords info typed by user
+          setUsername('');
+          setPassword('');
+          setConfirmPassword('');
+        } else {
+          console.log("Registration Unsuccessful");
+        }
+      })
   };
 
   return (

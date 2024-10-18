@@ -29,7 +29,11 @@ const router = createBrowserRouter([
   {
 
     path: "/register",
-    element: <RegistrationForm />,
+    element: (
+      <AuthProvider>
+        <RegistrationForm />
+      </AuthProvider>
+    ),
   },
   {
 
