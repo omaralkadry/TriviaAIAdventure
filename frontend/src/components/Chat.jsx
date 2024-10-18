@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
-import { SocketContext } from '../services/Socket';
+import { useSocket } from '../services/SocketContext';
 
 function Chat() {
-  const socket = useContext(SocketContext); 
-  const isSocketReady = useContext(SocketContext); 
+  const socket = useSocket();
+  const isSocketReady = useSocket();
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
   

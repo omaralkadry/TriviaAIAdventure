@@ -1,11 +1,11 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 const SOCKET_URL = 'http://localhost:3000';
 
 const SocketContext = createContext(); 
 
-function SocketProvider({ children }) {
+export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isSocketReady, setSocketReady] = useState(false);
   
@@ -41,4 +41,6 @@ function SocketProvider({ children }) {
   );
 }
 
-export { SocketProvider, SocketContext };
+export const useSocket = () => {
+  return useContext(SocketContext);
+};

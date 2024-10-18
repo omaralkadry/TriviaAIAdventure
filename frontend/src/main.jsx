@@ -10,7 +10,7 @@ import JoinPage from "./features/room/JoinPage"
 import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
-import { SocketProvider } from "./services/Socket";
+import { SocketProvider } from "./services/SocketContext";
 
 const router = createBrowserRouter([
   {
