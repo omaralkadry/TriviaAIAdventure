@@ -2,10 +2,12 @@
 // Referenced https://www.w3schools.com/html/html_form_input_types.asp
 import { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
+import { useAuth } from '../../services/AuthContext';
 
 function LoginForm({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
   // const [loginSuccessful, setLoginSuccessful] = useState();
 
   const handleSubmit = (e) => {
@@ -30,6 +32,15 @@ function LoginForm({ onLogin }) {
           // Login was successful
           // setLoginSuccessful(true);
           console.log("Login Successful");
+
+          // Saves response user data into AuthContext
+          response.json().then(data => {
+            login(data);
+          });
+
+          // Clear username and password info typed by user
+          setUsername('');
+          setPassword('');
         }
         else {
           // Login was not successful

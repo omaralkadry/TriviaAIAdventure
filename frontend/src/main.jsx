@@ -11,6 +11,7 @@ import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
 import { SocketProvider } from "./services/SocketContext";
+import { AuthProvider } from "./services/AuthContext";
 
 const router = createBrowserRouter([
   {
@@ -19,7 +20,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <LoginForm />,
+    element: (
+      <AuthProvider>
+        <LoginForm />
+      </AuthProvider>
+    ),
   },
   {
 
