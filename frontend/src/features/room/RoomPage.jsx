@@ -49,6 +49,7 @@ function RoomPage() {
 
     // Listen for start game event
     newSocket.on('start game', () => {
+      setGameOver(false);
       setGameStarted(true);
       //may not be needed - Omar
       setQuestions([]); // Clear previous questions if any
