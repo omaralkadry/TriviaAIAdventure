@@ -47,7 +47,10 @@ class Database {
         const result = await collection.insertOne({ username, password: hashedPassword });
         await this.client.db("Users").createCollection(username);
 
-        return result;
+        // Finds newly inserted document user data to be returned in the response
+        const inserted = await collection.findOne({ username });
+
+        return inserted;
     }
 
     async authenticateUser(username, password) {
