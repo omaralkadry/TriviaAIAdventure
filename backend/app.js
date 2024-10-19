@@ -116,17 +116,35 @@ socketIO.on('connection', (socket) => {
         }
     });
 
-    // Handle answer submission
-    // socket.on('submit answer', (roomCode, answerIndex) => {
-    //     const currentQuestion = roomsList[roomCode].currentQuestion;
-    //     if (currentQuestion) {
-    //         const isCorrect = currentQuestion.answer === answerIndex;
-    //         const resultMessage = isCorrect ? 'correct' : 'wrong';
-    //         socket.emit('answer result', { result: resultMessage });
-    //     } else {
-    //         socket.emit('answer result', { result: 'no question' });
-    //     }
-    // });
+    //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
+    //Handle answer submission
+    socket.on('submit answer', (username, selectedAnswer, currentQuestionIndex) => {
+        
+        console.log(selectedAnswer);
+        let answer;
+            if (selectedAnswer === 0) {
+            answer = "a";
+            } else if (selectedAnswer === 1) {
+            answer = "b";
+            } else if (selectedAnswer === 2) {
+            answer = "c";
+            } else if (selectedAnswer === 3) {
+            answer = "d";
+            }
+
+        classicGame.checkAnswer(username, answer, currentQuestionIndex)
+        
+        
+        
+        // const currentQuestion = roomsList[roomCode].currentQuestion;
+        // if (currentQuestion) {
+        //     const isCorrect = currentQuestion.answer === answerIndex;
+        //     const resultMessage = isCorrect ? 'correct' : 'wrong';
+        //     socket.emit('answer result', { result: resultMessage });
+        // } else {
+        //     socket.emit('answer result', { result: 'no question' });
+        // }
+    });
 
     // Handle disconnects
     socket.on('disconnect', () => {

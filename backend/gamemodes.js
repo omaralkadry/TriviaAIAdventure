@@ -114,10 +114,14 @@ class ClassicTrivia extends GameMode {
         //may adjust here if you want to call generatequestion
     }
 
-    checkAnswer(player, answer) {
+    checkAnswer(player, answer, qindex) {
         
-        if (answer == this.question_array[this.currentQuestion].correctAnswer)
-           this.generateScores(player);
+        // if (answer == this.question_array[this.currentQuestion].correctAnswer)
+        //    this.generateScores(player);
+        if (answer == this.question_array[qindex].correctAnswer)
+            this.generateScores(player);
+
+
     }
 
 

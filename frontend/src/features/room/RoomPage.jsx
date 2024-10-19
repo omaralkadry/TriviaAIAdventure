@@ -113,15 +113,16 @@ function RoomPage() {
 
   // Not used currently
   const handleAnswerSubmit = () => {
-    // socket.emit('submit answer', roomCode, selectedAnswer);
+    console.log("works")
+    socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
 
-    // When answer is correct
-    if (questions[currentQuestionIndex].answer == selectedAnswer) {
-      setIsCountdownFinished(true);
-    }
-    else { // Answer is not correct
-      setIsCountdownFinished(true);
-    }
+    // // When answer is correct
+    // if (questions[currentQuestionIndex].answer == selectedAnswer) {
+    //   setIsCountdownFinished(true);
+    // }
+    // else { // Answer is not correct
+    //   setIsCountdownFinished(true);
+    // }
   };
 
   const handleCountdownFinish = () => {
