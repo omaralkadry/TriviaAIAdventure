@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     // Converts userData javascript object to JSON string
     // Then stores into sessionStorage
     sessionStorage.setItem('user', JSON.stringify(userData.username));
-    setUser(userData);
+    setUser(userData.username);
     console.log(getUsername());
   };
   
@@ -21,13 +21,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Returns original javascript object by parsing
+  /*
   const getUser = () => {
     const storedUser = sessionStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
   };
+  */
 
   const isAuthenticated = () => {
-    return getUser() !== null;
+    return getUsername() !== null;
   };
 /*
   const getID = () => {
@@ -36,8 +38,8 @@ export const AuthProvider = ({ children }) => {
   }
 */
   const getUsername = () => {
-    setUser(getUser());
-    return user;
+    const storedUser = sessionStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
   }
 /*
   const getPassword = () => {
@@ -46,7 +48,7 @@ export const AuthProvider = ({ children }) => {
   }
 */
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, getUsername }}>
+    <AuthContext.Provider value={{ login, logout, isAuthenticated, getUsername }}>
       {children}
     </AuthContext.Provider>
   );

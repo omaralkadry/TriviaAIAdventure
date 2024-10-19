@@ -3,6 +3,7 @@ import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap
 import io from 'socket.io-client';
 import Play from '../play/Play';
 import './RoomPage.css';
+import { useAuth } from '../../services/AuthContext';
 
 function RoomPage() {
   const [socket, setSocket] = useState(null);
