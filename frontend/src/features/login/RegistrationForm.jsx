@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 import { useAuth } from '../../services/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function RegistrationForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -35,10 +37,12 @@ function RegistrationForm() {
             login(data);
           });
 
-          // Clear username and passwords info typed by user
-          setUsername('');
-          setPassword('');
-          setConfirmPassword('');
+          // Redirect to stored path or home
+          const redirectPath = localStorage.getItem('redirectPath');
+          navigate(redirectPath || '/');
+
+          // Clear stored path for next use
+          localStorage.removeItem('redirectPath');
         } else {
           console.log("Registration Unsuccessful");
         }

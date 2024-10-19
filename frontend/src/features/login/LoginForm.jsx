@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 import { useAuth } from '../../services/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function LoginForm({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
+  const navigate = useNavigate();
   // const [loginSuccessful, setLoginSuccessful] = useState();
 
   const handleSubmit = (e) => {
@@ -38,9 +40,12 @@ function LoginForm({ onLogin }) {
             login(data);
           });
 
-          // Clear username and password info typed by user
-          setUsername('');
-          setPassword('');
+          // Redirect to stored path or home
+          const redirectPath = localStorage.getItem('redirectPath');
+          navigate(redirectPath || '/');
+
+          // Clear stored path for next use
+          localStorage.removeItem('redirectPath');
         }
         else {
           // Login was not successful

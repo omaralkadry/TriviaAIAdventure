@@ -12,6 +12,7 @@ import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
 import { SocketProvider } from "./services/SocketContext";
 import { AuthProvider } from "./services/AuthContext";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -20,40 +21,44 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: (
-      <AuthProvider>
-        <LoginForm />
-      </AuthProvider>
-    ),
+    element: <LoginForm />,
   },
   {
-
     path: "/register",
-    element: (
-      <AuthProvider>
-        <RegistrationForm />
-      </AuthProvider>
-    ),
+    element: <RegistrationForm />,
   },
   {
-
     path: "/join",
-    element: <JoinPage />,
+    element: (
+      <ProtectedRoute>
+        <JoinPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/play",
-    element: <Play />,
+    element: (
+      <ProtectedRoute>
+        <Play />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/room",
-    element: <RoomPage />,
+    element: (
+      <ProtectedRoute>
+        <RoomPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/chat",
     element: (
-      <SocketProvider>
-        <Chat />
-      </SocketProvider>
+      <ProtectedRoute>
+        <SocketProvider>
+          <Chat />
+        </SocketProvider>
+      </ProtectedRoute>
     ),
   },
 ]);
@@ -61,6 +66,8 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <CustomNavbar />
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );
