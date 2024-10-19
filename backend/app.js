@@ -83,12 +83,12 @@ socketIO.on('connection', (socket) => {
     socket.on('create room', (callback) => {
         const largestRoomNumber = 90000;
         const smallestRoomNumber = 10000;
-        const roomCode = Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber;
+        const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
         roomsList[roomCode] = { users: [] };
 
         // Automatically add the creator to the room and emit the updated player list
         roomsList[roomCode].users.push(socket.id);
-        socket.join(roomCode.toString());
+        socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
         callback({ success: true, roomCode });
     });
