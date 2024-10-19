@@ -19,6 +19,8 @@ function RoomPage() {
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [answerResponse, setAnswerResponse] = useState(null);
+  const [topic, setTopic] = useState('');
+  const [totalQuestions, setTotalQuestions] = useState('');
   const [key, setKey] = useState(Date.now());  // Use timestamp as a key to reset the timer
 
   useEffect(() => {
@@ -91,13 +93,13 @@ function RoomPage() {
 
   //adjusted, not sure how player usernames are going to be stored -Omar
   const handleStartGame = () => {
-    const hardcodedTopic = "science";
-    const hardcodedTotalQuestions = 3;
+    // const hardcodedTopic = "science";
+    // const hardcodedTotalQuestions = 3;
 
     //testing
     console.log(players.map(player => player.id))
 
-    socket.emit('start game', roomCode, hardcodedTopic, players.map(player => player.id), hardcodedTotalQuestions, (response) => {
+    socket.emit('start game', roomCode, topic, players.map(player => player.id), totalQuestions, (response) => {
       if (!response.success) {
         alert(response.message);
       }
@@ -204,6 +206,27 @@ function RoomPage() {
             </Table>
           </Col>
         </Row>
+
+        {roomCode && (
+          <Row className="justify-content-center mb-3">
+            <Col md={3}>
+              <Form.Control
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="Enter Trivia Topic"
+              />
+            </Col>
+            <Col md={3}>
+              <Form.Control
+                    type="text"
+                    value={totalQuestions}
+                    onChange={(e) => setTotalQuestions(e.target.value)}
+                    placeholder="Enter Number of Questions"
+                />
+            </Col>
+          </Row>
+        )}
 
         {canStart && (
             <Row className="justify-content-center mb-3">
