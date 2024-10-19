@@ -3,7 +3,7 @@ import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap
 import io from 'socket.io-client';
 import Play from '../play/Play';
 import './RoomPage.css';
-import { useAuth } from '../../services/AuthContext';
+import { useAuth } from '../../services/AuthContext.jsx';
 
 function RoomPage() {
   const [socket, setSocket] = useState(null);
@@ -23,6 +23,8 @@ function RoomPage() {
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
   const [key, setKey] = useState(Date.now());  // Use timestamp as a key to reset the timer
+  const { getUsername } = useAuth();
+  const username = getUsername();
 
   useEffect(() => {
     const newSocket = io('http://localhost:3000');
@@ -76,7 +78,8 @@ function RoomPage() {
   }, []);
 
   const handleCreateRoom = () => {
-    socket.emit('create room', (response) => {
+
+    socket.emit('create room',  username , (response) => {
       if (response.success) {
         setRoomCode(response.roomCode);
       }
@@ -84,7 +87,8 @@ function RoomPage() {
   };
 
   const handleJoinRoom = () => {
-    socket.emit('join room', joinRoomCode, (response) => {
+
+    socket.emit('join room', joinRoomCode, username , (response) => {
       setJoinStatus(response.message);
       if (response.success) {
         setRoomCode(joinRoomCode); // Set the room code for the user who joins successfully

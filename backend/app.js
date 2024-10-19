@@ -80,24 +80,24 @@ socketIO.on('connection', (socket) => {
     console.log('A user connected');
 
     // Handle room creation
-    socket.on('create room', (callback) => {
+    socket.on('create room', (username , callback) => {
         const largestRoomNumber = 90000;
         const smallestRoomNumber = 10000;
         const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
         roomsList[roomCode] = { users: [] };
 
         // Automatically add the creator to the room and emit the updated player list
-        roomsList[roomCode].users.push(socket.id);
+        roomsList[roomCode].users.push(username);
         socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
         callback({ success: true, roomCode });
     });
 
     // Handle joining a room
-    socket.on('join room', (roomCode, callback) => {
+    socket.on('join room', ( roomCode, username , callback) => {
         if (roomsList[roomCode]) {
             socket.join(roomCode);
-            roomsList[roomCode].users.push(socket.id);
+            roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
             callback({ success: true, message: `Joined room ${roomCode}` });
         } else {
