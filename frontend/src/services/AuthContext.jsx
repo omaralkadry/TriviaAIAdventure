@@ -9,8 +9,9 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     // Converts userData javascript object to JSON string
     // Then stores into sessionStorage
-    sessionStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('user', JSON.stringify(userData.username));
     setUser(userData);
+    console.log(getUsername());
   };
   
   // Clear user data in session storage on logout
@@ -28,24 +29,24 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = () => {
     return getUser() !== null;
   };
-
+/*
   const getID = () => {
     setUser(getUser());
     return user._id;
   }
-
+*/
   const getUsername = () => {
     setUser(getUser());
-    return user.username;
+    return user;
   }
-
+/*
   const getPassword = () => {
     setUser(getUser());
     return user.getPassword;
   }
-
+*/
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, getID, getUsername, getPassword }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, getUsername }}>
       {children}
     </AuthContext.Provider>
   );
