@@ -120,7 +120,6 @@ socketIO.on('connection', (socket) => {
     //Handle answer submission
     socket.on('submit answer', (username, selectedAnswer, currentQuestionIndex) => {
         
-        console.log(selectedAnswer);
         let answer;
             if (selectedAnswer === 0) {
             answer = "a";
@@ -131,6 +130,9 @@ socketIO.on('connection', (socket) => {
             } else if (selectedAnswer === 3) {
             answer = "d";
             }
+            // testing
+            // console.log(selectedAnswer);
+            // console.log(answer);
 
         classicGame.checkAnswer(username, answer, currentQuestionIndex)
         

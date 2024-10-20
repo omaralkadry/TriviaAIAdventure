@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react'; 
 import { Container, Row, Col, Card, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer.jsx';
 
 const Play = ({ currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, key}) => {
+  
+  useEffect(() => {
+    if (isCountdownFinished) {
+      handleAnswerSubmit();
+    }
+  }, [isCountdownFinished, handleAnswerSubmit]);
+  
+  
   return (
       <Container>
         <Container fluid className="justify-content-center mt-5">
