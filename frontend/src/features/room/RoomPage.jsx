@@ -111,7 +111,7 @@ function RoomPage() {
   // Not used currently
   const handleAnswerSubmit = () => {
     console.log("works")
-    socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
+    socket.emit('submit answer', roomCode, username, selectedAnswer, currentQuestionIndex);
 
     // // When answer is correct
     // if (questions[currentQuestionIndex].answer == selectedAnswer) {
