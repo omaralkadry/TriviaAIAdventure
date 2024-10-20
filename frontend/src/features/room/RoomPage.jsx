@@ -12,9 +12,9 @@ function RoomPage() {
   const [joinRoomCode, setJoinRoomCode] = useState('');
   const [joinStatus, setJoinStatus] = useState('');
   const [canStart, setCanStart] = useState(false);
-  const [questions, setQuestions] = useState([]); // added (stores all questions) -omar
+  const [questions, setQuestions] = useState([]); // added (stores all questions)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // added
-  //const [currentQuestion, setCurrentQuestion] = useState(null); //dont need i think -omar
+  //const [currentQuestion, setCurrentQuestion] = useState(null); //dont need we think
   const [selectedAnswer, setSelectedAnswer] = useState(-1);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -38,8 +38,8 @@ function RoomPage() {
 
     // Listen for trivia questions
     newSocket.on('question', (allQuestions) => {
-      setQuestions(allQuestions);  //changed by Omar
-      setCurrentQuestionIndex(0);  //this added
+      setQuestions(allQuestions);  
+      setCurrentQuestionIndex(0);  
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
       setKey(Date.now()); // Reset timer
@@ -56,7 +56,7 @@ function RoomPage() {
     newSocket.on('start game', () => {
       setGameOver(false);
       setGameStarted(true);
-      //may not be needed - Omar
+      //may not be needed
       setQuestions([]); // Clear previous questions if any
       setCurrentQuestionIndex(0); // Reset question index
       setSelectedAnswer(-1); // Reset selected answer
@@ -68,7 +68,7 @@ function RoomPage() {
       setTimeout(() => setAnswerResponse(null), 5000);  // Clear after 3 seconds
     });
 
-     // Listen for the updated scores added -omar
+     // Listen for the updated scores added 
      newSocket.on('update scores', (scores) => {
       console.log('Updated Scores:', scores);
       // TODO adjust here to display scores on the frontend later
@@ -96,7 +96,7 @@ function RoomPage() {
     });
   };
 
-  //adjusted, not sure how player usernames are going to be stored -Omar
+  
   const handleStartGame = () => {
     // const hardcodedTopic = "science";
     // const hardcodedTotalQuestions = 3;
@@ -110,7 +110,9 @@ function RoomPage() {
 
   // Not used currently
   const handleAnswerSubmit = () => {
-    console.log("works")
+    //testing
+    //console.log("works")
+    
     socket.emit('submit answer', roomCode, username, selectedAnswer, currentQuestionIndex);
 
     // // When answer is correct
@@ -126,7 +128,7 @@ function RoomPage() {
     setIsCountdownFinished(true);
   };
 
-  //added by omar
+  
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -139,7 +141,7 @@ function RoomPage() {
     }
   };
 
-  if (gameStarted && questions.length > 0 && !gameOver) { //adjusted by omar
+  if (gameStarted && questions.length > 0 && !gameOver) {
     return (
         <>
           {answerResponse && (
@@ -148,7 +150,7 @@ function RoomPage() {
               </Alert>
           )}
           <Play
-              currentQuestion={questions[currentQuestionIndex]} //adjusted by omar
+              currentQuestion={questions[currentQuestionIndex]}
               selectedAnswer={selectedAnswer}
               setSelectedAnswer={setSelectedAnswer}
               isCountdownFinished={isCountdownFinished}
