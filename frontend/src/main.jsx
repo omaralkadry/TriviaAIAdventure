@@ -65,8 +65,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <CustomNavbar />
     <AuthProvider>
+      <CustomNavbar />
       <RouterProvider router={router} />
     </AuthProvider>
   </React.StrictMode>
