@@ -47,7 +47,10 @@ class GameMode {
     }
 
     generateScores(player) {
+        //console.log(this.pointsperquestion);
         this.scores[player] += this.pointsperquestion;
+        //console.log(this.scores[player]);
+        //console.log(this.scores);
     }
 
     //function created with chatgpt
@@ -106,11 +109,16 @@ class ClassicTrivia extends GameMode {
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
-
+        //testing
+        //console.log(this.scores);
+        //console.log(usernames);
         usernames.forEach(name => {
-            this.scores[name] = 0;
+            this.addPlayer(name);
+            //console.log(this.scores[name]);
         });
-        
+
+        //testing
+        //console.log(this.scores);
         //may adjust here if you want to call generatequestion
     }
 
@@ -120,7 +128,6 @@ class ClassicTrivia extends GameMode {
         //    this.generateScores(player);
         if (answer == this.question_array[qindex].correctAnswer)
             this.generateScores(player);
-
 
     }
 

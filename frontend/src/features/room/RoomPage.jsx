@@ -101,10 +101,7 @@ function RoomPage() {
     // const hardcodedTopic = "science";
     // const hardcodedTotalQuestions = 3;
 
-    //testing
-    console.log(players.map(player => player.id))
-
-    socket.emit('start game', roomCode, topic, players.map(player => player.id), totalQuestions, (response) => {
+    socket.emit('start game', roomCode, topic, totalQuestions, (response) => {
       if (!response.success) {
         alert(response.message);
       }

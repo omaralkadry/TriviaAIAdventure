@@ -106,10 +106,10 @@ socketIO.on('connection', (socket) => {
     });
 
     // Handle starting the game
-    socket.on('start game', (roomCode, topic, usernames, totalQuestions, callback) => {
+    socket.on('start game', (roomCode, topic, totalQuestions, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
-            startTriviaGame(roomCode, topic, usernames, totalQuestions);
+            startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
             callback({ success: true });
         } else {
             callback({ success: false, message: 'Not enough players to start the game' });
