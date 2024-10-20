@@ -136,7 +136,8 @@ socketIO.on('connection', (socket) => {
 
         classicGame.checkAnswer(username, answer, currentQuestionIndex)
         
-        
+        //can emit to all connected clients using socketIO.emit, check to see if this is correct
+        socketIO.emit('update scores', classicGame.scores);
         
         // const currentQuestion = roomsList[roomCode].currentQuestion;
         // if (currentQuestion) {
