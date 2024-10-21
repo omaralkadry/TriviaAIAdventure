@@ -1,20 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap'; // Import Alert for indicators
-import io from 'socket.io-client';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap';
 import Play from '../play/Play';
 import './RoomPage.css';
 import { useAuth } from '../../services/AuthContext.jsx';
+import Chat from '../../components/Chat';
+import { useSocket } from '../../services/SocketContext';
 
 function RoomPage() {
-  const [socket, setSocket] = useState(null);
+  const socket = useSocket();
+  const { isAuthenticated, getUsername } = useAuth();
   const [players, setPlayers] = useState([]);
   const [roomCode, setRoomCode] = useState(null);
   const [joinRoomCode, setJoinRoomCode] = useState('');
   const [joinStatus, setJoinStatus] = useState('');
   const [canStart, setCanStart] = useState(false);
-  const [questions, setQuestions] = useState([]); // added (stores all questions)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // added
-  //const [currentQuestion, setCurrentQuestion] = useState(null); //dont need we think
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(-1);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -22,149 +23,174 @@ function RoomPage() {
   const [answerResponse, setAnswerResponse] = useState(null);
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [key, setKey] = useState(Date.now());  // Use timestamp as a key to reset the timer
-  const { getUsername } = useAuth();
+  const [key, setKey] = useState(Date.now());
+  const [scores, setScores] = useState({});
   const username = getUsername();
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3000');
-    setSocket(newSocket);
+    if (!socket) return;
 
-    // Listen for the players list update
-    newSocket.on('update players', (updatedPlayers) => {
+    const handleUpdatePlayers = (updatedPlayers) => {
       setPlayers(updatedPlayers);
       setCanStart(updatedPlayers.length >= 1);
-    });
+    };
 
-    // Listen for trivia questions
-    newSocket.on('question', (allQuestions) => {
-      setQuestions(allQuestions);  
-      setCurrentQuestionIndex(0);  
+    const handleQuestion = (allQuestions) => {
+      setQuestions(allQuestions);
+      setCurrentQuestionIndex(0);
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
-      setKey(Date.now()); // Reset timer
-    });
+      setKey(Date.now());
+    };
 
-    // Listen for game over event
-    newSocket.on('game over', (data) => {
+    const handleGameOver = (data) => {
       alert(data.message);
       setGameOver(true);
       setGameStarted(false);
-    });
+    };
 
-    // Listen for start game event
-    newSocket.on('start game', () => {
+    const handleStartGame = () => {
       setGameOver(false);
       setGameStarted(true);
-      //may not be needed
-      setQuestions([]); // Clear previous questions if any
-      setCurrentQuestionIndex(0); // Reset question index
-      setSelectedAnswer(-1); // Reset selected answer
-    });
+      setQuestions([]);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(-1);
+    };
 
-    // Listen for answer result
-    newSocket.on('answer result', (data) => {
+    const handleAnswerResult = (data) => {
       setAnswerResponse(data.result);
-      setTimeout(() => setAnswerResponse(null), 5000);  // Clear after 3 seconds
-    });
+      setTimeout(() => setAnswerResponse(null), 5000);
+    };
 
-     // Listen for the updated scores added 
-     newSocket.on('update scores', (scores) => {
-      console.log('Updated Scores:', scores);
-      // TODO adjust here to display scores on the frontend later
-  });
+    const handleUpdateScores = (updatedScores) => {
+      console.log('Updated Scores:', updatedScores);
+      setScores(updatedScores);
+    };
 
-    return () => newSocket.close();
-  }, []);
+    socket.on('update players', handleUpdatePlayers);
+    socket.on('question', handleQuestion);
+    socket.on('game over', handleGameOver);
+    socket.on('start game', handleStartGame);
+    socket.on('answer result', handleAnswerResult);
+    socket.on('update scores', handleUpdateScores);
 
-  const handleCreateRoom = () => {
+    return () => {
+      socket.off('update players', handleUpdatePlayers);
+      socket.off('question', handleQuestion);
+      socket.off('game over', handleGameOver);
+      socket.off('start game', handleStartGame);
+      socket.off('answer result', handleAnswerResult);
+      socket.off('update scores', handleUpdateScores);
+    };
+  }, [socket]);
 
-    socket.emit('create room',  username , (response) => {
+  const handleCreateRoom = useCallback(() => {
+    if (!socket) return;
+    socket.emit('create room', username, (response) => {
       if (response.success) {
         setRoomCode(response.roomCode);
       }
     });
-  };
+  }, [socket, username]);
 
-  const handleJoinRoom = () => {
-
-    socket.emit('join room', joinRoomCode, username , (response) => {
+  const handleJoinRoom = useCallback(() => {
+    if (!socket) return;
+    socket.emit('join room', joinRoomCode, username, (response) => {
       setJoinStatus(response.message);
       if (response.success) {
-        setRoomCode(joinRoomCode); // Set the room code for the user who joins successfully
+        setRoomCode(joinRoomCode);
       }
     });
-  };
+  }, [socket, joinRoomCode, username]);
 
-  
-  const handleStartGame = () => {
-    // const hardcodedTopic = "science";
-    // const hardcodedTotalQuestions = 3;
-
+  const handleStartGame = useCallback(() => {
+    if (!socket) return;
     socket.emit('start game', roomCode, topic, totalQuestions, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
-  };
+  }, [socket, roomCode, topic, totalQuestions]);
 
-  // Not used currently
-  const handleAnswerSubmit = () => {
-    //testing
-    //console.log("works")
-    
+  const handleAnswerSubmit = useCallback(() => {
+    if (!socket) return;
     socket.emit('submit answer', roomCode, username, selectedAnswer, currentQuestionIndex);
+  }, [socket, roomCode, username, selectedAnswer, currentQuestionIndex]);
 
-    // // When answer is correct
-    // if (questions[currentQuestionIndex].answer == selectedAnswer) {
-    //   setIsCountdownFinished(true);
-    // }
-    // else { // Answer is not correct
-    //   setIsCountdownFinished(true);
-    // }
-  };
-
-  const handleCountdownFinish = () => {
+  const handleCountdownFinish = useCallback(() => {
     setIsCountdownFinished(true);
-  };
+  }, []);
 
-  
-  const handleNextQuestion = () => {
+  const handleNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
-      setKey(Date.now()); // Reset timer for the next question
+      setKey(Date.now());
     } else {
-      socket.emit('game over', roomCode);
+      if (socket) {
+        socket.emit('game over', roomCode);
+      }
       setGameOver(true);
     }
-  };
+  }, [currentQuestionIndex, questions.length, socket, roomCode]);
 
-  if (gameStarted && questions.length > 0 && !gameOver) {
-    return (
+  const handleBackToLobby = useCallback(() => {
+    setGameOver(false);
+    setGameStarted(false);
+    setScores({});
+  }, []);
+
+  const renderGameContent = () => {
+    if (gameStarted && questions.length > 0 && !gameOver) {
+      return (
         <>
           {answerResponse && (
-              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
-                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
-              </Alert>
+            <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
+              {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
+            </Alert>
           )}
           <Play
-              currentQuestion={questions[currentQuestionIndex]}
-              selectedAnswer={selectedAnswer}
-              setSelectedAnswer={setSelectedAnswer}
-              isCountdownFinished={isCountdownFinished}
-              handleAnswerSubmit={handleAnswerSubmit}
-              handleCountdownFinish={handleCountdownFinish}
-              handleNextQuestion={handleNextQuestion}
-              key={key}
+            currentQuestion={questions[currentQuestionIndex]}
+            selectedAnswer={selectedAnswer}
+            setSelectedAnswer={setSelectedAnswer}
+            isCountdownFinished={isCountdownFinished}
+            handleAnswerSubmit={handleAnswerSubmit}
+            handleCountdownFinish={handleCountdownFinish}
+            handleNextQuestion={handleNextQuestion}
+            key={key}
           />
         </>
-    );
-  }
+      );
+    }
 
-  return (
-      <Container className="mt-5 text-center">
+    if (gameOver) {
+      return (
+        <>
+          <h2>Game Over</h2>
+          <Table bordered>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(scores).map(([player, score]) => (
+                <tr key={player}>
+                  <td>{player}</td>
+                  <td>{score}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <Button onClick={handleBackToLobby}>Back to Lobby</Button>
+        </>
+      );
+    }
+
+    return (
+      <>
         <Row className="justify-content-center mb-3">
           <Col md={6}>
             <Button onClick={handleCreateRoom}>Create Room</Button>
@@ -174,10 +200,10 @@ function RoomPage() {
         <Row className="justify-content-center mb-3">
           <Col md={6}>
             <Form.Control
-                type="text"
-                value={joinRoomCode}
-                onChange={(e) => setJoinRoomCode(e.target.value)}
-                placeholder="Enter Room Code"
+              type="text"
+              value={joinRoomCode}
+              onChange={(e) => setJoinRoomCode(e.target.value)}
+              placeholder="Enter Room Code"
             />
           </Col>
           <Col md={2}>
@@ -192,11 +218,11 @@ function RoomPage() {
         </Row>
 
         {roomCode && (
-            <Row className="justify-content-center mb-3">
-              <Col md={12}>
-                <h3>Room Code: {roomCode}</h3>
-              </Col>
-            </Row>
+          <Row className="justify-content-center mb-3">
+            <Col md={12}>
+              <h3>Room Code: {roomCode}</h3>
+            </Col>
+          </Row>
         )}
 
         <Row className="justify-content-center mb-3">
@@ -204,9 +230,9 @@ function RoomPage() {
             <Table bordered>
               <thead><tr><th>Players</th></tr></thead>
               <tbody>
-              {players.map((playerId, idx) => (
+                {players.map((playerId, idx) => (
                   <tr key={idx}><td>{playerId}</td></tr>
-              ))}
+                ))}
               </tbody>
             </Table>
           </Col>
@@ -216,32 +242,47 @@ function RoomPage() {
           <Row className="justify-content-center mb-3">
             <Col md={3}>
               <Form.Control
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Enter Trivia Topic"
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="Enter Trivia Topic"
               />
             </Col>
             <Col md={3}>
               <Form.Control
-                    type="text"
-                    value={totalQuestions}
-                    onChange={(e) => setTotalQuestions(e.target.value)}
-                    placeholder="Enter Number of Questions"
-                />
+                type="text"
+                value={totalQuestions}
+                onChange={(e) => setTotalQuestions(e.target.value)}
+                placeholder="Enter Number of Questions"
+              />
             </Col>
           </Row>
         )}
 
         {canStart && (
-            <Row className="justify-content-center mb-3">
-              <Col md={6}>
-                <Button onClick={handleStartGame}>Start Game</Button>
-              </Col>
-            </Row>
+          <Row className="justify-content-center mb-3">
+            <Col md={6}>
+              <Button onClick={handleStartGame}>Start Game</Button>
+            </Col>
+          </Row>
         )}
-      </Container>
+      </>
+    );
+  };
+
+  return (
+    <Container fluid>
+      <Row>
+        <Col md={gameStarted && isAuthenticated() ? 8 : 12} className="mt-5 text-center">
+          {renderGameContent()}
+        </Col>
+        {gameStarted && isAuthenticated() && roomCode && (
+          <Col md={4} className="mt-5">
+            <Chat roomCode={roomCode} />
+          </Col>
+        )}
+      </Row>
+    </Container>
   );
 }
-
 export default RoomPage;

@@ -4,6 +4,12 @@ import React from 'react';
 
 function CustomNavbar() {
   const { isAuthenticated, getUsername, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    // Optionally, you can add navigation logic here if needed
+  };
+
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
@@ -19,9 +25,9 @@ function CustomNavbar() {
             {
               isAuthenticated() ?
                 <Navbar.Text>
-                  Signed in as: 
+                  Signed in as:
                   <NavDropdown title={getUsername()}>
-                    <Nav.Link onClick={() => logout()} href="/" >Logout</Nav.Link>
+                    <Nav.Link onClick={handleLogout} href="/">Logout</Nav.Link>
                   </NavDropdown>
                 </Navbar.Text>
                 :

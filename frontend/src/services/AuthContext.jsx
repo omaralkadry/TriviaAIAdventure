@@ -13,11 +13,23 @@ export const AuthProvider = ({ children }) => {
     setUser(userData.username);
     console.log(getUsername());
   };
-  
+
   // Clear user data in session storage on logout
-  const logout = () => {
-    sessionStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        sessionStorage.removeItem('user');
+        setUser(null);
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   // Returns original javascript object by parsing

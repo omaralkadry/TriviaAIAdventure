@@ -3,21 +3,21 @@ import io from 'socket.io-client';
 
 const SOCKET_URL = 'http://localhost:3000';
 
-const SocketContext = createContext(); 
+const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isSocketReady, setSocketReady] = useState(false);
-  
+
   // New connection to socket.io server
   useEffect(() => {
-    const newSocket = io(SOCKET_URL); 
-    setSocket(newSocket); 
-  
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
+
     // Update provider state after successful connection
-    if (newSocket.connected) { 
+    if (newSocket.connected) {
       setSocketReady(true);
-    } 
+    }
 
     // Disconnect
     return () => newSocket.disconnect();
@@ -31,12 +31,12 @@ export const SocketProvider = ({ children }) => {
       });
     }
   }, [socket]);
-  
+
   // Provider for context
   // SocketContext will be used by other components
   return (
     <SocketContext.Provider value={socket}>
-      {children} 
+      {children}
     </SocketContext.Provider>
   );
 }
