@@ -26,6 +26,8 @@ const socketIO = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use("/register", register);
+app.use("/login", login);
 
 // Global object to track rooms and players
 let roomsList = {};
@@ -38,13 +40,24 @@ const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
     let currentQuestionIndex = 0;
     
     classicGame.startGame(10, totalQuestions, usernames, topic);
-    
+    await classicGame.generateQuestion();
+    const questions = await classicGame.getQuestionArray();
+
+    const transformedQuestions = questions.map(q => ({
+        question: q.question,
+        answers: Object.values(q.choices),
+        answer: Object.keys(q.choices).indexOf(q.correctAnswer)
+      }));
+      
+      //testing
+      //console.log(transformedQuestions);
+
+
     const sendQuestion = async () => {
-        await classicGame.generateQuestion();
-        const questions = classicGame.getQuestionArray();
-        console.log(questions); //testing
-        roomsList[roomCode].currentQuestion = questions; // Saving the questions
-        socketIO.to(roomCode).emit('question', questions);
+        
+        // console.log(transformedQuestions[0]); //testing
+        roomsList[roomCode].currentQuestion = transformedQuestions; // Saving the questions
+        socketIO.to(roomCode).emit('question', transformedQuestions);
     };
     
     sendQuestion();  // Send the all questions
@@ -67,24 +80,24 @@ socketIO.on('connection', (socket) => {
     console.log('A user connected');
 
     // Handle room creation
-    socket.on('create room', (callback) => {
+    socket.on('create room', (username , callback) => {
         const largestRoomNumber = 90000;
         const smallestRoomNumber = 10000;
-        const roomCode = Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber;
+        const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
         roomsList[roomCode] = { users: [] };
 
         // Automatically add the creator to the room and emit the updated player list
-        roomsList[roomCode].users.push(socket.id);
+        roomsList[roomCode].users.push(username);
         socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
         callback({ success: true, roomCode });
     });
 
     // Handle joining a room
-    socket.on('join room', (roomCode, callback) => {
+    socket.on('join room', ( roomCode, username , callback) => {
         if (roomsList[roomCode]) {
             socket.join(roomCode);
-            roomsList[roomCode].users.push(socket.id);
+            roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
             callback({ success: true, message: `Joined room ${roomCode}` });
         } else {
@@ -93,26 +106,47 @@ socketIO.on('connection', (socket) => {
     });
 
     // Handle starting the game
-    socket.on('start game', (roomCode, topic, usernames, totalQuestions, callback) => {
+    socket.on('start game', (roomCode, topic, totalQuestions, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
-            startTriviaGame(roomCode, topic, usernames, totalQuestions);
+            startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
             callback({ success: true });
         } else {
             callback({ success: false, message: 'Not enough players to start the game' });
         }
     });
 
-    // Handle answer submission
-    socket.on('submit answer', (roomCode, answerIndex) => {
-        const currentQuestion = roomsList[roomCode].currentQuestion;
-        if (currentQuestion) {
-            const isCorrect = currentQuestion.answer === answerIndex;
-            const resultMessage = isCorrect ? 'correct' : 'wrong';
-            socket.emit('answer result', { result: resultMessage });
-        } else {
-            socket.emit('answer result', { result: 'no question' });
-        }
+    //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
+    //Handle answer submission
+    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex) => {
+        
+        let answer;
+            if (selectedAnswer === 0) {
+            answer = "a";
+            } else if (selectedAnswer === 1) {
+            answer = "b";
+            } else if (selectedAnswer === 2) {
+            answer = "c";
+            } else if (selectedAnswer === 3) {
+            answer = "d";
+            }
+            // testing
+            // console.log(selectedAnswer);
+            // console.log(answer);
+
+        classicGame.checkAnswer(username, answer, currentQuestionIndex)
+        
+        //can emit to all connected clients using socketIO.emit, check to see if this is correct
+        socketIO.to(roomCode).emit('update scores', classicGame.scores);
+        
+        // const currentQuestion = roomsList[roomCode].currentQuestion;
+        // if (currentQuestion) {
+        //     const isCorrect = currentQuestion.answer === answerIndex;
+        //     const resultMessage = isCorrect ? 'correct' : 'wrong';
+        //     socket.emit('answer result', { result: resultMessage });
+        // } else {
+        //     socket.emit('answer result', { result: 'no question' });
+        // }
     });
 
     // Handle disconnects
@@ -128,6 +162,13 @@ socketIO.on('connection', (socket) => {
                 }
             }
         }
+    });
+
+    // Handle messages
+    // Socket.io server recieves messages then sends it to clients
+    // Right now sends it to all clients, essentially a global chat
+    socket.on('message', (message) => {
+        socketIO.emit('message', message);
     });
 });
 

@@ -50,4 +50,11 @@ describe('Create new user', () => {
 
         expect(user).toBeTruthy();
     });
+
+
+    test('should authenticate the user with correct credentials', async () => {
+        user = await db.authenticateUser(username, password);
+        expect(user).toBeTruthy(); // Ensure the user is found and authenticated
+        expect(user.username).toBe(username); // Check that the username matches
+    });
 });

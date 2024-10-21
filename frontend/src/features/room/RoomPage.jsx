@@ -3,6 +3,7 @@ import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap
 import io from 'socket.io-client';
 import Play from '../play/Play';
 import './RoomPage.css';
+import { useAuth } from '../../services/AuthContext.jsx';
 
 function RoomPage() {
   const [socket, setSocket] = useState(null);
@@ -11,13 +12,19 @@ function RoomPage() {
   const [joinRoomCode, setJoinRoomCode] = useState('');
   const [joinStatus, setJoinStatus] = useState('');
   const [canStart, setCanStart] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questions, setQuestions] = useState([]); // added (stores all questions)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // added
+  //const [currentQuestion, setCurrentQuestion] = useState(null); //dont need we think
   const [selectedAnswer, setSelectedAnswer] = useState(-1);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [answerResponse, setAnswerResponse] = useState(null);
+  const [topic, setTopic] = useState('');
+  const [totalQuestions, setTotalQuestions] = useState('');
   const [key, setKey] = useState(Date.now());  // Use timestamp as a key to reset the timer
+  const { getUsername } = useAuth();
+  const username = getUsername();
 
   useEffect(() => {
     const newSocket = io('http://localhost:3000');
@@ -26,12 +33,13 @@ function RoomPage() {
     // Listen for the players list update
     newSocket.on('update players', (updatedPlayers) => {
       setPlayers(updatedPlayers);
-      setCanStart(updatedPlayers.length >= 2);
+      setCanStart(updatedPlayers.length >= 1);
     });
 
     // Listen for trivia questions
-    newSocket.on('question', (question) => {
-      setCurrentQuestion(question);
+    newSocket.on('question', (allQuestions) => {
+      setQuestions(allQuestions);  
+      setCurrentQuestionIndex(0);  
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
       setKey(Date.now()); // Reset timer
@@ -46,7 +54,12 @@ function RoomPage() {
 
     // Listen for start game event
     newSocket.on('start game', () => {
+      setGameOver(false);
       setGameStarted(true);
+      //may not be needed
+      setQuestions([]); // Clear previous questions if any
+      setCurrentQuestionIndex(0); // Reset question index
+      setSelectedAnswer(-1); // Reset selected answer
     });
 
     // Listen for answer result
@@ -55,11 +68,18 @@ function RoomPage() {
       setTimeout(() => setAnswerResponse(null), 5000);  // Clear after 3 seconds
     });
 
+     // Listen for the updated scores added 
+     newSocket.on('update scores', (scores) => {
+      console.log('Updated Scores:', scores);
+      // TODO adjust here to display scores on the frontend later
+  });
+
     return () => newSocket.close();
   }, []);
 
   const handleCreateRoom = () => {
-    socket.emit('create room', (response) => {
+
+    socket.emit('create room',  username , (response) => {
       if (response.success) {
         setRoomCode(response.roomCode);
       }
@@ -67,7 +87,8 @@ function RoomPage() {
   };
 
   const handleJoinRoom = () => {
-    socket.emit('join room', joinRoomCode, (response) => {
+
+    socket.emit('join room', joinRoomCode, username , (response) => {
       setJoinStatus(response.message);
       if (response.success) {
         setRoomCode(joinRoomCode); // Set the room code for the user who joins successfully
@@ -75,23 +96,52 @@ function RoomPage() {
     });
   };
 
+  
   const handleStartGame = () => {
-    socket.emit('start game', roomCode, "science", players, 3, (response) => {
+    // const hardcodedTopic = "science";
+    // const hardcodedTotalQuestions = 3;
+
+    socket.emit('start game', roomCode, topic, totalQuestions, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
   };
 
+  // Not used currently
   const handleAnswerSubmit = () => {
-    socket.emit('submit answer', roomCode, selectedAnswer);
+    //testing
+    //console.log("works")
+    
+    socket.emit('submit answer', roomCode, username, selectedAnswer, currentQuestionIndex);
+
+    // // When answer is correct
+    // if (questions[currentQuestionIndex].answer == selectedAnswer) {
+    //   setIsCountdownFinished(true);
+    // }
+    // else { // Answer is not correct
+    //   setIsCountdownFinished(true);
+    // }
   };
 
   const handleCountdownFinish = () => {
     setIsCountdownFinished(true);
   };
 
-  if (gameStarted && currentQuestion && !gameOver) {
+  
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(-1);
+      setIsCountdownFinished(false);
+      setKey(Date.now()); // Reset timer for the next question
+    } else {
+      socket.emit('game over', roomCode);
+      setGameOver(true);
+    }
+  };
+
+  if (gameStarted && questions.length > 0 && !gameOver) {
     return (
         <>
           {answerResponse && (
@@ -100,12 +150,13 @@ function RoomPage() {
               </Alert>
           )}
           <Play
-              currentQuestion={currentQuestion}
+              currentQuestion={questions[currentQuestionIndex]}
               selectedAnswer={selectedAnswer}
               setSelectedAnswer={setSelectedAnswer}
               isCountdownFinished={isCountdownFinished}
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
               key={key}
           />
         </>
@@ -160,6 +211,27 @@ function RoomPage() {
             </Table>
           </Col>
         </Row>
+
+        {roomCode && (
+          <Row className="justify-content-center mb-3">
+            <Col md={3}>
+              <Form.Control
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="Enter Trivia Topic"
+              />
+            </Col>
+            <Col md={3}>
+              <Form.Control
+                    type="text"
+                    value={totalQuestions}
+                    onChange={(e) => setTotalQuestions(e.target.value)}
+                    placeholder="Enter Number of Questions"
+                />
+            </Col>
+          </Row>
+        )}
 
         {canStart && (
             <Row className="justify-content-center mb-3">
