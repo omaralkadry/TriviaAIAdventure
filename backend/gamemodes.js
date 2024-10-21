@@ -147,7 +147,7 @@ class ClassicTrivia extends GameMode {
         }`;
 
             const response = await client.chat.completions.create({
-                model: "gpt-4o-mini", //most cost effective as of rn
+                model: "gpt-3.5-turbo", //most cost effective as of rn
                 messages: [
                     { role: "system", content: "You are a trivia game question generator." },
                     { role: "user", content: prompt }
@@ -155,10 +155,10 @@ class ClassicTrivia extends GameMode {
                 max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
                 //response_format: "json_schema"
             });
-            
+
             //testing
             //console.log('Full OpenAI API Response:', JSON.stringify(response, null, 2));
-    
+
             const result = response.choices[0].message.content;
 
             //testing
@@ -168,7 +168,7 @@ class ClassicTrivia extends GameMode {
             //needed to remove non json elements at the start and end (not sure why they are occurring)
             const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
             const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
-            
+
             const parsedQuestions = JSON.parse(cleanedResult);
 
             //testing
@@ -177,12 +177,12 @@ class ClassicTrivia extends GameMode {
             //console.log('Choices: ', parsedQuestions[0].choices);
             //console.log('QA: ', parsedQuestions[0].choices.a);
             //console.log('Answer: ', parsedQuestions[0].correctAnswer);
-            
+
             this.question_array = parsedQuestions;
 
             //testing
             //console.log('Question Array:', this.question_array);
-            
+
         } catch (error) {
             console.error('Error generating question:', error);
         }

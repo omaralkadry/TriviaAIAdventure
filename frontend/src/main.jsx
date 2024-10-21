@@ -55,9 +55,7 @@ const router = createBrowserRouter([
     path: "/chat",
     element: (
       <ProtectedRoute>
-        <SocketProvider>
-          <Chat />
-        </SocketProvider>
+        <Chat />
       </ProtectedRoute>
     ),
   },
@@ -66,8 +64,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
-      <CustomNavbar />
-      <RouterProvider router={router} />
+      <SocketProvider>
+        <CustomNavbar />
+        <RouterProvider router={router} />
+      </SocketProvider>
     </AuthProvider>
   </React.StrictMode>
 );
