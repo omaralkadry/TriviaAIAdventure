@@ -49,6 +49,8 @@ const Play = ({ currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownF
                             size="lg"
                             block id={`button-${idx + 1}`}
                             onClick={() => setSelectedAnswer(idx)}
+                            disabled={isCountdownFinished}
+                            style={ isCountdownFinished ? { opacity: 1 } : {} } 
                         >
                           {answer}
                         </ToggleButton>
