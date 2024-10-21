@@ -1,32 +1,46 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
 import { useSocket } from '../services/SocketContext';
+import { useAuth } from '../services/AuthContext';
 
 function Chat() {
   const socket = useSocket();
   const isSocketReady = useSocket();
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
+  const { getUsername } = useAuth();
   
   // Receive chat messages from socket.io server
   useEffect(() => {
     function onChat(value) {
       setChat((prevMessages) => [...prevMessages, value]);
     }
-
+    
+    // Store the listener reference
+    let listener; 
+    
     // Check if socket.io client is initialized
     if (isSocketReady) {
-      socket.on('message', onChat);
+      listener = socket.on('message', onChat); 
     } else {
-      //console.warn('Chat on message: Socket is not connected');
+      // console.warn('Chat on message: Socket is not connected');
     }
-  }, [socket]);
+  
+    // Cleanup function
+    return () => {
+      if (listener) {
+        socket.off('message', listener);
+        listener = null;
+      }
+    };
+  }, [socket, isSocketReady]);
+  
 
   // Send message to socket.io server
   const sendMessage = (message) => {
     // Check if socket.io client is initialized
     if (isSocketReady) {
-      socket.emit('message', message);
+      socket.emit('message', getUsername() +  ': ' + message);
     } else {
       console.warn('Chat emit message: Socket is not connected');
     }
