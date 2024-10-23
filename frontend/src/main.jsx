@@ -13,6 +13,7 @@ import Chat from "./components/Chat";
 import { SocketProvider } from "./services/SocketContext";
 import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
+import Leaderboard from "./features/leaderboard/Leaderboard";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,12 @@ const router = createBrowserRouter([
       <ProtectedRoute>
         <Chat />
       </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/leaderboard",
+    element: (
+      <Leaderboard />
     ),
   },
 ]);
