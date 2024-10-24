@@ -21,6 +21,7 @@ function CustomNavbar() {
             <Nav.Link href="/play">Play Test</Nav.Link>
             <Nav.Link href="/chat">Chat</Nav.Link>
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
+            <Nav.Link href="/jeopardy">Jeopardy</Nav.Link>
           </Nav>
           <Navbar.Collapse className="justify-content-end">
             {

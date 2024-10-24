@@ -14,6 +14,7 @@ import { SocketProvider } from "./services/SocketContext";
 import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
+import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,12 @@ const router = createBrowserRouter([
     path: "/leaderboard",
     element: (
       <Leaderboard />
+    ),
+  },
+  {
+    path: "/jeopardy",
+    element: (
+      <JeopardyBoard />
     ),
   },
 ]);
