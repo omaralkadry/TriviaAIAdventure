@@ -103,9 +103,20 @@ socketIO.on('connection', (socket) => {
 
     // Handle room creation
     socket.on('create room', (username, callback) => {
-        const largestRoomNumber = 90000;
-        const smallestRoomNumber = 10000;
-        const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
+        const generateRoomCode = () => {
+            const largestRoomNumber = 90000;
+            const smallestRoomNumber = 10000;
+            const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
+            return roomCode;
+        }
+
+        const roomCode = generateRoomCode();
+
+        // Will keep generating a new room code if a room with that code already exists
+        while (roomsList[roomCode] != null) {
+            roomCode = generateRoomCode();
+        }
+
         roomsList[roomCode] = { users: [] };
 
         // Automatically add the creator to the room and emit the updated player list
