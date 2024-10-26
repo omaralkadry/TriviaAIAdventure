@@ -103,6 +103,9 @@ socketIO.on('connection', (socket) => {
 
     // Handle room creation
     socket.on('create room', (username, callback) => {
+        // Add username to socket
+        socket.username = username;
+
         const generateRoomCode = () => {
             const largestRoomNumber = 90000;
             const smallestRoomNumber = 10000;
@@ -131,6 +134,9 @@ socketIO.on('connection', (socket) => {
     // Handle joining a room
     socket.on('join room', (roomCode, username, callback) => {
         if (roomsList[roomCode]) {
+            // Add username to socket
+            socket.username = username;
+
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
@@ -200,12 +206,12 @@ socketIO.on('connection', (socket) => {
 
     // Handle disconnects
     socket.on('disconnect', () => {
-        console.log(`[${new Date().toISOString()}] User disconnected: ${socket.id}`);
+        console.log(`[${new Date().toISOString()}] User disconnected: ${socket.username}`);
         console.log(`[${new Date().toISOString()}] Remaining connected clients: ${socketIO.engine.clientsCount}`);
         for (let roomCode in roomsList) {
             const room = roomsList[roomCode];
-            if (room.users.includes(socket.id)) {
-                room.users = room.users.filter(id => id !== socket.id);
+            if (room.users.includes(socket.username)) {
+                room.users = room.users.filter(username => username !== socket.username);
                 socketIO.to(roomCode).emit('update players', room.users);
                 console.log(`[${new Date().toISOString()}] Updated players in room ${roomCode} after disconnect: ${room.users}`);
                 if (room.users.length === 0) {
