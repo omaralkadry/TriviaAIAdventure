@@ -163,6 +163,11 @@ class ClassicTrivia extends GameMode {
             //testing
             //console.log('Full OpenAI API Response:', JSON.stringify(response, null, 2));
 
+            // Referenced GPT documentation to see how to handle inappropriate topics
+            if (response.choices[0].message.finish_reason === "content_filter") {
+                return "content_filter";
+            }
+
             const result = response.choices[0].message.content;
 
             //testing
