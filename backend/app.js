@@ -73,7 +73,12 @@ const startTriviaGame = async (roomCode, mode, duration, topic, usernames, total
     const gameInstance = new GameClass();
 
     gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
-    await gameInstance.generateQuestion();
+    const error = await gameInstance.generateQuestion();
+
+    if (error === "content_filter") {
+        return "content_filter";
+    }
+
     const questions = await gameInstance.getQuestionArray();
 
     const transformedQuestions = questions.map(q => ({
@@ -188,8 +193,15 @@ socketIO.on('connection', (socket) => {
             console.log(mode);
             console.log(duration);
 
+            const error = startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
 
-            startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
+            // Check if GPT doesn't want to generate questions because of an innapropriate topic
+            if (error === "content_filter") {
+                console.log(`[${new Date().toISOString()}] Failed to start game in room ${roomCode}: GPT may not like the topic`);
+                callback({ success: false, message: 'Please enter a different topic' });
+                return;
+            }
+
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
