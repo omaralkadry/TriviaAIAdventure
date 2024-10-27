@@ -43,8 +43,8 @@ app.post("/logout", (req, res) => {
 
 // Add a new route for fetching questions
 app.get("/api/questions", (req, res) => {
-    if (classicGame.question_array && classicGame.question_array.length > 0) {
-        res.json(classicGame.question_array);
+    if (roomsList[roomCode].gameInstance.question_array &&roomsList[roomCode].gameInstance.question_array.length > 0) {
+        res.json(roomsList[roomCode].gameInstance.question_array);
     } else {
         res.status(404).json({ error: "No questions available" });
     }
@@ -53,17 +53,28 @@ app.get("/api/questions", (req, res) => {
 // Global object to track rooms and players
 let roomsList = {};
 
-// Would maybe use the gamemode object in the roomsList instead of this
-const classicGame = new ClassicTrivia();
 
+const gameModes = [
+    ClassicTrivia, // Index 0
+    //TriviaBoard,   // Index 1
+    //thirdmode here
+];
 
 // Function to start trivia game in a room
 const startTriviaGame = async (roomCode, mode, duration, topic, usernames, totalQuestions) => {
+    //unused
     let currentQuestionIndex = 0;
 
-    classicGame.startGame(10, totalQuestions, usernames, topic, duration);
-    await classicGame.generateQuestion();
-    const questions = await classicGame.getQuestionArray();
+    const GameClass = gameModes[mode];
+    if (!GameClass) {
+        console.error(`Game mode at index ${mode} not found.`);
+        return;
+    }
+    const gameInstance = new GameClass();
+
+    gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
+    await gameInstance.generateQuestion();
+    const questions = await gameInstance.getQuestionArray();
 
     const transformedQuestions = questions.map(q => ({
         question: q.question,
@@ -74,13 +85,14 @@ const startTriviaGame = async (roomCode, mode, duration, topic, usernames, total
       //testing
       //console.log(transformedQuestions);
     
-    const questionDuration = await classicGame.time();
-    console.log(questionDuration);
+    const questionDuration = await gameInstance.time();
+    //console.log(questionDuration);
     const sendQuestion = async () => {
 
         // console.log(transformedQuestions[0]); //testing
         roomsList[roomCode].currentQuestion = transformedQuestions; // Saving the questions
         roomsList[roomCode].duration = questionDuration;
+        roomsList[roomCode].gameInstance = gameInstance; 
         socketIO.to(roomCode).emit('question', { questions: transformedQuestions, duration: questionDuration });
     };
 
@@ -206,13 +218,13 @@ socketIO.on('connection', (socket) => {
             // testing
             // console.log(selectedAnswer);
             // console.log(answer);
-
-        classicGame.checkAnswer(username, answer, currentQuestionIndex)
+        
+        roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
-        socketIO.to(roomCode).emit('update scores', classicGame.scores);
+        socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
         console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
-        console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(classicGame.scores)}`);
+        console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
         // const currentQuestion = roomsList[roomCode].currentQuestion;
         // if (currentQuestion) {
