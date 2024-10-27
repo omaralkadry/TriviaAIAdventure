@@ -167,12 +167,7 @@ socketIO.on('connection', (socket) => {
             }
         }
     });
-
-    // Handle starting the game
-    socket.on('start game', (roomCode, topic, totalQuestions, duration, mode, callback) => {
-        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
-            socketIO.to(roomCode).emit('start game');
-            // Would do this instead of startTriviaGame directly
+    // Would do this instead of startTriviaGame directly
             // if (gamemode == "classic") {
             //     const triviaGamemode = new ClassicTrivia();
             //     startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
@@ -183,11 +178,19 @@ socketIO.on('connection', (socket) => {
             //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
             //     // roomsList[roomCode] = { gamemode: triviaGamemode };
             // }
+    // Handle starting the game
+    socket.on('start game', (roomCode, topic, totalQuestions = null, duration, mode, callback) => {
+        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
+            socketIO.to(roomCode).emit('start game');
+            
 
             //testing
             console.log(mode);
             console.log(duration);
 
+            if (mode === 1) { // TriviaBoard
+                totalQuestions = 30;
+            }
 
             startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
