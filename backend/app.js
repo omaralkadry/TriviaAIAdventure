@@ -53,11 +53,12 @@ app.get("/api/questions", (req, res) => {
 // Global object to track rooms and players
 let roomsList = {};
 
+// Would maybe use the gamemode object in the roomsList instead of this
 const classicGame = new ClassicTrivia();
 
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
+const startClassicTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
     let currentQuestionIndex = 0;
 
     classicGame.startGame(10, totalQuestions, usernames, topic);
@@ -157,7 +158,19 @@ socketIO.on('connection', (socket) => {
     socket.on('start game', (roomCode, topic, totalQuestions, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
-            startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
+            // Would do this instead of startClassicTriviaGame directly
+            // if (gamemode == "classic") {
+            //     const triviaGamemode = new ClassicTrivia();
+            //     startClassicTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
+            //     roomsList[roomCode] = { gamemode: triviaGamemode };
+            // }
+            // else if (gamemode == "trivia board") {
+            //     // const triviaGamemode = new TriviaBoard();
+            //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
+            //     // roomsList[roomCode] = { gamemode: triviaGamemode };
+            // }
+
+            startClassicTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
