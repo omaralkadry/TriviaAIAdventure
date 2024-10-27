@@ -103,7 +103,7 @@ socketIO.on('connection', (socket) => {
 
     // Handle room creation
     socket.on('create room', (username, callback) => {
-        // Add username to socket
+        // Add username to socket (Referenced ChatGPT about this)
         socket.username = username;
 
         const generateRoomCode = () => {
@@ -134,7 +134,7 @@ socketIO.on('connection', (socket) => {
     // Handle joining a room
     socket.on('join room', (roomCode, username, callback) => {
         if (roomsList[roomCode]) {
-            // Add username to socket
+            // Add username to socket (Referenced ChatGPT about this)
             socket.username = username;
 
             socket.join(roomCode);
@@ -210,6 +210,7 @@ socketIO.on('connection', (socket) => {
         console.log(`[${new Date().toISOString()}] Remaining connected clients: ${socketIO.engine.clientsCount}`);
         for (let roomCode in roomsList) {
             const room = roomsList[roomCode];
+            // Referenced ChatGPT about socket.username
             if (room.users.includes(socket.username)) {
                 room.users = room.users.filter(username => username !== socket.username);
                 socketIO.to(roomCode).emit('update players', room.users);
