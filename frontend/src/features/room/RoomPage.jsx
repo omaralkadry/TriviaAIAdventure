@@ -41,7 +41,8 @@ function RoomPage() {
     };
 
     const handleQuestion = (allQuestions) => {
-      setQuestions(allQuestions);
+      setQuestions(allQuestions.questions);
+      setDuration(allQuestions.duration);  
       setCurrentQuestionIndex(0);
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
@@ -110,7 +111,7 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    socket.emit('start game', roomCode, topic, totalQuestions, (response) => {
+    socket.emit('start game', roomCode, topic, totalQuestions, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
@@ -169,6 +170,7 @@ function RoomPage() {
             </Alert>
           )}
           <Play
+            timePerQuestion= {duration}
             currentQuestion={questions[currentQuestionIndex]}
             selectedAnswer={selectedAnswer}
             setSelectedAnswer={setSelectedAnswer}

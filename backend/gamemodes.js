@@ -34,6 +34,10 @@ class GameMode {
         this.pointsperquestion = pointsperquestion;
     }
 
+    async time() {
+        return this.timePerQuestion;
+    }
+
     startGame() {
         throw new Error('TODO: implement in the subclass');
     }
@@ -102,8 +106,8 @@ class ClassicTrivia extends GameMode {
     }
 
     // from parent class
-    async startGame(pointsperquestion, totalQuestions, usernames, topic) {
-        this.setSettings(totalQuestions, 30, pointsperquestion)
+    async startGame(pointsperquestion, totalQuestions, usernames, topic, duration) {
+        this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Classic';
         this.setTopic(topic);
         if (!Array.isArray(usernames) || usernames.length === 0) {
@@ -147,7 +151,7 @@ class ClassicTrivia extends GameMode {
         }`;
 
             const response = await client.chat.completions.create({
-                model: "gpt-3.5-turbo", //most cost effective as of rn
+                model: "gpt-4o-mini", //most cost effective as of rn
                 messages: [
                     { role: "system", content: "You are a trivia game question generator." },
                     { role: "user", content: prompt }
@@ -169,6 +173,7 @@ class ClassicTrivia extends GameMode {
             const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
             const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
 
+            console.log(cleanedResult);
             const parsedQuestions = JSON.parse(cleanedResult);
 
             //testing
