@@ -21,11 +21,16 @@ function RoomPage() {
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [answerResponse, setAnswerResponse] = useState(null);
-  const [topic, setTopic] = useState('');
-  const [totalQuestions, setTotalQuestions] = useState('');
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
   const username = getUsername();
+
+  // Game and room settings
+  const [topic, setTopic] = useState('');
+  const [totalQuestions, setTotalQuestions] = useState('');
+  const [mode, setMode] = useState('');
+	const [duration, setDuration] = useState('');
+  const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
   useEffect(() => {
     if (!socket) return;
@@ -36,7 +41,8 @@ function RoomPage() {
     };
 
     const handleQuestion = (allQuestions) => {
-      setQuestions(allQuestions);
+      setQuestions(allQuestions.questions);
+      setDuration(allQuestions.duration);  
       setCurrentQuestionIndex(0);
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
@@ -105,7 +111,7 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    socket.emit('start game', roomCode, topic, totalQuestions, (response) => {
+    socket.emit('start game', roomCode, topic, totalQuestions, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
@@ -141,6 +147,19 @@ function RoomPage() {
     setScores({});
   }, []);
 
+  // Jeopardy game settings six topics
+  const handleTopicChange = (index, value) => {
+    setJeopardyTopics((prevTopics) => {
+      // Create a copy of the current topics
+      const newTopics = [...prevTopics];
+
+      // Update the specific index with the new value
+      newTopics[index] = value; 
+      
+      return newTopics;
+    });
+  };
+
   const renderGameContent = () => {
     if (gameStarted && questions.length > 0 && !gameOver) {
       return (
@@ -151,6 +170,7 @@ function RoomPage() {
             </Alert>
           )}
           <Play
+            timePerQuestion= {duration}
             currentQuestion={questions[currentQuestionIndex]}
             selectedAnswer={selectedAnswer}
             setSelectedAnswer={setSelectedAnswer}
@@ -237,26 +257,80 @@ function RoomPage() {
             </Table>
           </Col>
         </Row>
-
+        
+        {/* 
+          This is game settings UI
+          Show only if room code present
+        */}
         {roomCode && (
-          <Row className="justify-content-center mb-3">
-            <Col md={3}>
-              <Form.Control
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="Enter Trivia Topic"
-              />
-            </Col>
-            <Col md={3}>
-              <Form.Control
-                type="text"
-                value={totalQuestions}
-                onChange={(e) => setTotalQuestions(e.target.value)}
-                placeholder="Enter Number of Questions"
-              />
-            </Col>
-          </Row>
+          <>
+            {/* All game modes general settings */}
+            <Row className="justify-content-center mb-3">
+              <Col md={3}>
+                <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
+                  <option value="" disabled>Select Game Mode</option>
+                  <option value={0}>Classic Trivia</option>
+                  <option value={1}>Jeopardy</option>
+                  <option value={2}>Trivia Crack</option>
+                </Form.Select>
+              </Col>
+              <Col md={3}>
+                <Form.Control 
+                  type='number' 
+                  value={duration} 
+                  onChange={(e) => setDuration(parseInt(e.target.value, 10))} 
+                  min={1}
+                  placeholder='Enter Question Time Limit (seconds)'
+                />
+              </Col>
+            </Row>
+
+            {/* Mode specific game settings */}
+            <Row className="justify-content-center mb-3">
+
+              {/* Classic trivia */}
+              { mode === 0 ?
+                <>
+                  <Col md={3}>
+                    <Form.Control
+                      type="text"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Enter Trivia Topic" 
+                    />
+                  </Col>
+                  <Col md={3}>
+                    <Form.Control
+                      type="text"
+                      value={totalQuestions}
+                      onChange={(e) => setTotalQuestions(e.target.value)}
+                      placeholder="Enter Number of Questions" 
+                    />
+                  </Col>
+                </> 
+                : <></>
+              }
+
+              {/* Jeopardy */}
+              { mode === 1 ?
+                <>
+                  {jeopardyTopics.map((input, index) => (
+                    <Col key={index} md={2}>
+                      <Form.Group controlId={`input-${index}`}>
+                        <Form.Control
+                          type="text"
+                          value={input}
+                          onChange={(e) => handleTopicChange(index, e.target.value)}
+                          placeholder={`Enter Topic ${index + 1}`}
+                        />
+                      </Form.Group>
+                    </Col>
+                  ))}
+                </> 
+                : <></>
+              }
+            </Row>
+          </>
         )}
 
         {canStart && (

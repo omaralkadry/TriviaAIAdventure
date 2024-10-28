@@ -43,8 +43,8 @@ app.post("/logout", (req, res) => {
 
 // Add a new route for fetching questions
 app.get("/api/questions", (req, res) => {
-    if (classicGame.question_array && classicGame.question_array.length > 0) {
-        res.json(classicGame.question_array);
+    if (roomsList[roomCode].gameInstance.question_array &&roomsList[roomCode].gameInstance.question_array.length > 0) {
+        res.json(roomsList[roomCode].gameInstance.question_array);
     } else {
         res.status(404).json({ error: "No questions available" });
     }
@@ -53,16 +53,33 @@ app.get("/api/questions", (req, res) => {
 // Global object to track rooms and players
 let roomsList = {};
 
-const classicGame = new ClassicTrivia();
 
+const gameModes = [
+    ClassicTrivia, // Index 0
+    //TriviaBoard,   // Index 1
+    //thirdmode here
+];
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
+const startTriviaGame = async (roomCode, mode, duration, topic, usernames, totalQuestions) => {
+    //unused
     let currentQuestionIndex = 0;
 
-    classicGame.startGame(10, totalQuestions, usernames, topic);
-    await classicGame.generateQuestion();
-    const questions = await classicGame.getQuestionArray();
+    const GameClass = gameModes[mode];
+    if (!GameClass) {
+        console.error(`Game mode at index ${mode} not found.`);
+        return;
+    }
+    const gameInstance = new GameClass();
+
+    gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
+    const error = await gameInstance.generateQuestion();
+
+    if (error === "content_filter") {
+        return "content_filter";
+    }
+
+    const questions = await gameInstance.getQuestionArray();
 
     const transformedQuestions = questions.map(q => ({
         question: q.question,
@@ -72,13 +89,16 @@ const startTriviaGame = async (roomCode, topic, usernames, totalQuestions) => {
 
       //testing
       //console.log(transformedQuestions);
-
-
+    
+    const questionDuration = await gameInstance.time();
+    //console.log(questionDuration);
     const sendQuestion = async () => {
 
         // console.log(transformedQuestions[0]); //testing
         roomsList[roomCode].currentQuestion = transformedQuestions; // Saving the questions
-        socketIO.to(roomCode).emit('question', transformedQuestions);
+        roomsList[roomCode].duration = questionDuration;
+        roomsList[roomCode].gameInstance = gameInstance; 
+        socketIO.to(roomCode).emit('question', { questions: transformedQuestions, duration: questionDuration });
     };
 
     sendQuestion();  // Send the all questions
@@ -103,9 +123,23 @@ socketIO.on('connection', (socket) => {
 
     // Handle room creation
     socket.on('create room', (username, callback) => {
-        const largestRoomNumber = 90000;
-        const smallestRoomNumber = 10000;
-        const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
+        // Add username to socket (Referenced ChatGPT about this)
+        socket.username = username;
+
+        const generateRoomCode = () => {
+            const largestRoomNumber = 90000;
+            const smallestRoomNumber = 10000;
+            const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
+            return roomCode;
+        }
+
+        const roomCode = generateRoomCode();
+
+        // Will keep generating a new room code if a room with that code already exists
+        while (roomsList[roomCode] != null) {
+            roomCode = generateRoomCode();
+        }
+
         roomsList[roomCode] = { users: [] };
 
         // Automatically add the creator to the room and emit the updated player list
@@ -120,6 +154,9 @@ socketIO.on('connection', (socket) => {
     // Handle joining a room
     socket.on('join room', (roomCode, username, callback) => {
         if (roomsList[roomCode]) {
+            // Add username to socket (Referenced ChatGPT about this)
+            socket.username = username;
+
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
@@ -135,12 +172,39 @@ socketIO.on('connection', (socket) => {
             }
         }
     });
-
+    // Would do this instead of startTriviaGame directly
+            // if (gamemode == "classic") {
+            //     const triviaGamemode = new ClassicTrivia();
+            //     startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
+            //     roomsList[roomCode] = { gamemode: triviaGamemode };
+            // }
+            // else if (gamemode == "trivia board") {
+            //     // const triviaGamemode = new TriviaBoard();
+            //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
+            //     // roomsList[roomCode] = { gamemode: triviaGamemode };
+            // }
     // Handle starting the game
-    socket.on('start game', (roomCode, topic, totalQuestions, callback) => {
+    socket.on('start game', (roomCode, topic, totalQuestions = null, duration, mode, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
-            startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
+            
+
+            //testing
+            console.log(mode);
+            console.log(duration);
+
+            if (mode === 1) { // TriviaBoard
+                totalQuestions = 30;
+            }
+            const error = startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
+
+            // Check if GPT doesn't want to generate questions because of an innapropriate topic
+            if (error === "content_filter") {
+                console.log(`[${new Date().toISOString()}] Failed to start game in room ${roomCode}: GPT may not like the topic`);
+                callback({ success: false, message: 'Please enter a different topic' });
+                return;
+            }
+
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
@@ -169,13 +233,13 @@ socketIO.on('connection', (socket) => {
             // testing
             // console.log(selectedAnswer);
             // console.log(answer);
-
-        classicGame.checkAnswer(username, answer, currentQuestionIndex)
+        
+        roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
-        socketIO.to(roomCode).emit('update scores', classicGame.scores);
+        socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
         console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
-        console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(classicGame.scores)}`);
+        console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
         // const currentQuestion = roomsList[roomCode].currentQuestion;
         // if (currentQuestion) {
@@ -189,12 +253,13 @@ socketIO.on('connection', (socket) => {
 
     // Handle disconnects
     socket.on('disconnect', () => {
-        console.log(`[${new Date().toISOString()}] User disconnected: ${socket.id}`);
+        console.log(`[${new Date().toISOString()}] User disconnected: ${socket.username}`);
         console.log(`[${new Date().toISOString()}] Remaining connected clients: ${socketIO.engine.clientsCount}`);
         for (let roomCode in roomsList) {
             const room = roomsList[roomCode];
-            if (room.users.includes(socket.id)) {
-                room.users = room.users.filter(id => id !== socket.id);
+            // Referenced ChatGPT about socket.username
+            if (room.users.includes(socket.username)) {
+                room.users = room.users.filter(username => username !== socket.username);
                 socketIO.to(roomCode).emit('update players', room.users);
                 console.log(`[${new Date().toISOString()}] Updated players in room ${roomCode} after disconnect: ${room.users}`);
                 if (room.users.length === 0) {

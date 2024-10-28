@@ -34,6 +34,10 @@ class GameMode {
         this.pointsperquestion = pointsperquestion;
     }
 
+    async time() {
+        return this.timePerQuestion;
+    }
+
     startGame() {
         throw new Error('TODO: implement in the subclass');
     }
@@ -102,8 +106,8 @@ class ClassicTrivia extends GameMode {
     }
 
     // from parent class
-    async startGame(pointsperquestion, totalQuestions, usernames, topic) {
-        this.setSettings(totalQuestions, 30, pointsperquestion)
+    async startGame(pointsperquestion, totalQuestions, usernames, topic, duration) {
+        this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Classic';
         this.setTopic(topic);
         if (!Array.isArray(usernames) || usernames.length === 0) {
@@ -147,7 +151,7 @@ class ClassicTrivia extends GameMode {
         }`;
 
             const response = await client.chat.completions.create({
-                model: "gpt-3.5-turbo", //most cost effective as of rn
+                model: "gpt-4o-mini", //most cost effective as of rn
                 messages: [
                     { role: "system", content: "You are a trivia game question generator." },
                     { role: "user", content: prompt }
@@ -159,6 +163,11 @@ class ClassicTrivia extends GameMode {
             //testing
             //console.log('Full OpenAI API Response:', JSON.stringify(response, null, 2));
 
+            // Referenced GPT documentation to see how to handle inappropriate topics
+            if (response.choices[0].message.finish_reason === "content_filter") {
+                return "content_filter";
+            }
+
             const result = response.choices[0].message.content;
 
             //testing
@@ -169,6 +178,7 @@ class ClassicTrivia extends GameMode {
             const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
             const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
 
+            //console.log(cleanedResult);
             const parsedQuestions = JSON.parse(cleanedResult);
 
             //testing
@@ -204,51 +214,103 @@ class ClassicTrivia extends GameMode {
         this.currentQuestion = this.currentQuestion + 1;
     }
 
-    /* Not being used anymore
-    parseTriviaResponse(response) {
-        // Using regex rn may find better way
-        const questionRegex = /Question: (.*)/;
-        const choiceRegex = /([a-d])\) (.*)/g;
-        const correctAnswerRegex = /Correct Answer: ([a-d])/;
-    
-        const questionMatch = questionRegex.exec(response);
-        const choicesMatch = [...response.matchAll(choiceRegex)];
-        const correctAnswerMatch = correctAnswerRegex.exec(response);
-    
-        if (!questionMatch || choicesMatch.length === 0 || !correctAnswerMatch) {
-            throw new Error('Failed to parse the trivia response.');
+}
+
+class TriviaBoard extends GameMode {
+    constructor(playerCount = 1) {
+        super(playerCount);
+        this.topics = [];
+        this.question_array= [];
+        this.answered_array= [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+    }
+
+    async startGame(pointsperquestion, totalQuestions, usernames, topics, duration) {
+        this.setSettings(totalQuestions, duration, pointsperquestion);
+        this.gameID = 'TriviaBoard';
+        this.setTopics(topics);
+
+        if (!Array.isArray(usernames) || usernames.length === 0) {
+            throw new Error('Usernames must be a non-empty array.');
         }
-    
-        const question = questionMatch[1];
-        const choices = choicesMatch.map(match => ({ letter: match[1], choice: match[2] }));
-        const correctAnswer = correctAnswerMatch[1];
-    
 
-        return {
-            question,
-            choices,
-            correctAnswer
-        };
-    }
-    */
-
-    //TODO May not be used anymore
-    /*
-    async getPlayerAnswer(player) {
-
-        //assisted by chatgpt
-        return new Promise((resolve) => {
-            const checkAnswer = setInterval(() => {
-                if (playerAnswers[player]) {
-                    const answer = playerAnswers[player];
-                    clearInterval(checkAnswer);
-                    resolve(answer);
-                }
-            }, 1000);
+        usernames.forEach(name => {
+            this.addPlayer(name);
         });
+
+        await this.generateQuestion();
     }
-    */
+
+    setTopics(topics) {
+        this.topics = topics.slice(0, 6);
+        const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
+        while (this.topics.length < 6) {
+            this.topics.push(defaultTopics[this.topics.length % defaultTopics.length]); 
+        }
+    }
+
+    async generateQuestion() {
+
+        try {
+            for (let i = 0; i < this.topics.length; i++) {
+                const topic = this.topics[i];
+    
+                const prompt = `Generate 5 trivia questions where the first question is easy and each following question is increasingly difficult. Make them on the topic of "${topic}" with four multiple-choice answers in the following JSON format:
+                {
+                    "question": "<trivia question>",
+                    "choices": {
+                        "a": "<option 1>",
+                        "b": "<option 2>",
+                        "c": "<option 3>",
+                        "d": "<option 4>"
+                    },
+                    "correctAnswer": "<correct answer letter>"
+                }`;
+    
+                const response = await client.chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are a trivia game question generator." },
+                        { role: "user", content: prompt }
+                    ],
+                    max_tokens: 200 * 5, // 5 questions per topic
+                });
+    
+                const result = response.choices[0].message.content;
+
+                const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
+                const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
+                const parsedQuestions = JSON.parse(cleanedResult);
+    
+                // Append parsed questions with point value to question array
+                this.question_array.push(...parsedQuestions.map(question => ({
+                    ...question
+                })));
+            }
+    
+            //console.log('Generated Questions:', this.question_array);
+    
+        } catch (error) {
+            console.error('Error generating questions:', error);
+        }
+        }
+
+    checkAnswer(player, answer, qindex) {
+        
+        if (answer == this.question_array[qindex].correctAnswer)
+            this.generateScores(player, qindex);
+        this.answered_array[qindex].answered = true;
+    }
+    generateScores(player, qindex) {
+        let adjustedIndex = qindex % 5;
+        points = (adjustedIndex + 1) * 200;
+        this.scores[player] += points;
+    }
+
+    async getQuestionArray() {
+        return this.question_array;
+    }
 
 }
 
-module.exports = { GameMode, ClassicTrivia };
+
+module.exports = { GameMode, ClassicTrivia, TriviaBoard };
