@@ -237,7 +237,7 @@ class TriviaBoard extends GameMode {
             this.addPlayer(name);
         });
 
-        await this.generateQuestion();
+        //await this.generateQuestion();
     }
 
     setTopics(topics) {
@@ -298,11 +298,11 @@ class TriviaBoard extends GameMode {
         
         if (answer == this.question_array[qindex].correctAnswer)
             this.generateScores(player, qindex);
-        this.answered_array[qindex].answered = true;
+        this.answered_array[qindex] = true;
     }
     generateScores(player, qindex) {
         let adjustedIndex = qindex % 5;
-        points = (adjustedIndex + 1) * 200;
+        const points = (adjustedIndex + 1) * 200;
         this.scores[player] += points;
     }
 
