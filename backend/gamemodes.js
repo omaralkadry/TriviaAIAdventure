@@ -106,10 +106,11 @@ class ClassicTrivia extends GameMode {
     }
 
     // from parent class
-    async startGame(pointsperquestion, totalQuestions, usernames, topic, duration) {
+    async startGame(pointsperquestion, totalQuestions, usernames, topic_array, duration) {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Classic';
-        this.setTopic(topic);
+        this.setTopic(topic_array[0]);
+        console.log(topic_array[0]);
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
@@ -243,8 +244,10 @@ class TriviaBoard extends GameMode {
     setTopics(topics) {
         this.topics = topics.slice(0, 6);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
+        const topic_index = 0;
         while (this.topics.length < 6) {
-            this.topics.push(defaultTopics[this.topics.length % defaultTopics.length]); 
+            this.topics.push(defaultTopics[topic_index]); 
+            topic_index++;
         }
     }
 

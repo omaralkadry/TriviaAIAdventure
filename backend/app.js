@@ -61,7 +61,7 @@ const gameModes = [
 ];
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode, mode, duration, topic, usernames, totalQuestions) => {
+const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames, totalQuestions) => {
     //unused
     let currentQuestionIndex = 0;
 
@@ -72,7 +72,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic, usernames, total
     }
     const gameInstance = new GameClass();
 
-    gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
+    gameInstance.startGame(10, totalQuestions, usernames, topic_array, duration);
     const error = await gameInstance.generateQuestion();
 
     if (error === "content_filter") {
@@ -184,7 +184,7 @@ socketIO.on('connection', (socket) => {
             //     // roomsList[roomCode] = { gamemode: triviaGamemode };
             // }
     // Handle starting the game
-    socket.on('start game', (roomCode, topic, totalQuestions = null, duration, mode, callback) => {
+    socket.on('start game', (roomCode, topic_array, totalQuestions = null, duration, mode, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
             
@@ -196,7 +196,7 @@ socketIO.on('connection', (socket) => {
             if (mode === 1) { // TriviaBoard
                 totalQuestions = 30;
             }
-            const error = startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
+            const error = startTriviaGame(roomCode, mode, duration, topic_array, roomsList[roomCode].users, totalQuestions);
 
             // Check if GPT doesn't want to generate questions because of an innapropriate topic
             if (error === "content_filter") {
@@ -204,8 +204,8 @@ socketIO.on('connection', (socket) => {
                 callback({ success: false, message: 'Please enter a different topic' });
                 return;
             }
-
-            console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
+            //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
+            console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
         } else {

@@ -111,11 +111,28 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    socket.emit('start game', roomCode, topic, totalQuestions, duration, mode, (response) => {
+    const topic_array =[];
+    if (mode === 0) {
+      //Classic Trivia
+      topic_array.push(topic);
+    } else if (mode === 1) {
+      //Trivia Board
+      //TODO
+    } else if (mode === 2) {
+      // Trivia Crack
+      //TODO
+    } else {
+      //TODO error handle for wrong mode
+      console.error("Invalid game mode", mode);
+    }
+
+    socket.emit('start game', roomCode, topic_array, totalQuestions, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
+
+    //left topic down here. cant replace since with topic_array since its not a global variable-omar
   }, [socket, roomCode, topic, totalQuestions]);
 
   const handleAnswerSubmit = useCallback(() => {
