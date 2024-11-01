@@ -102,7 +102,7 @@ class ClassicTrivia extends GameMode {
     }
    
     setTopic(topic) {
-        this.topic = topic;
+        this.topic = topic || "General Knowledge";
     }
 
     // from parent class
@@ -244,7 +244,7 @@ class TriviaBoard extends GameMode {
     setTopics(topics) {
         this.topics = topics.slice(0, 6);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
-        const topic_index = 0;
+        let topic_index = 0;
         while (this.topics.length < 6) {
             this.topics.push(defaultTopics[topic_index]); 
             topic_index++;

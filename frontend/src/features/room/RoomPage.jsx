@@ -126,7 +126,7 @@ function RoomPage() {
       console.error("Invalid game mode", mode);
     }
 
-    socket.emit('start game', roomCode, topic_array, totalQuestions, duration, mode, (response) => {
+    socket.emit('start game', roomCode, topic_array, totalQuestions || 5, duration || 20, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
