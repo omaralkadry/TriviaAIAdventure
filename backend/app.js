@@ -16,7 +16,7 @@ const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
-const { ClassicTrivia } = require('./gamemodes');
+const { ClassicTrivia, TriviaBoard } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
 
@@ -56,7 +56,7 @@ let roomsList = {};
 
 const gameModes = [
     ClassicTrivia, // Index 0
-    //TriviaBoard,   // Index 1
+    TriviaBoard,   // Index 1
     //thirdmode here
 ];
 
@@ -102,6 +102,16 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
     };
 
     sendQuestion();  // Send the all questions
+
+    // If gamemode is Trivia Board, then randomly pick who will go first
+    if (mode === 1) {
+        // Referenced https://www.geeksforgeeks.org/how-to-generate-random-number-in-given-range-using-javascript/
+        const largestIndex = roomsList[roomCode].users.length + 1;
+        const smallestIndex = 0;
+        const person = Math.floor(Math.random() * (largestIndex - smallestIndex) + smallestIndex);
+
+        socketIO.to(roomCode).emit('next question selector', person);
+    }
 }
     /*
     // Send each question after 30 seconds, reset the timer and send new question
@@ -127,6 +137,7 @@ socketIO.on('connection', (socket) => {
         socket.username = username;
 
         const generateRoomCode = () => {
+            // Referenced https://www.geeksforgeeks.org/how-to-generate-random-number-in-given-range-using-javascript/
             const largestRoomNumber = 90000;
             const smallestRoomNumber = 10000;
             const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
@@ -249,6 +260,12 @@ socketIO.on('connection', (socket) => {
         // } else {
         //     socket.emit('answer result', { result: 'no question' });
         // }
+    });
+
+    // Handle when buzzer is pressed 
+    socket.on('buzzer pressed', () => {
+        // Emits to the room the username of the person who pressed the buzzer first
+        socketIO.to(roomCode).emit('first pressed', socket.username);
     });
 
     // Handle disconnects
