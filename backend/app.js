@@ -106,11 +106,11 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
     // If gamemode is Trivia Board, then randomly pick who will go first
     if (mode === 1) {
         // Referenced https://www.geeksforgeeks.org/how-to-generate-random-number-in-given-range-using-javascript/
-        const largestIndex = roomsList[roomCode].users.length + 1;
-        const smallestIndex = 0;
-        const person = Math.floor(Math.random() * (largestIndex - smallestIndex) + smallestIndex);
+        const largestIndex = roomsList[roomCode].users.length;
+        const index = Math.floor(Math.random() * largestIndex);
 
-        socketIO.to(roomCode).emit('next question selector', person);
+        const username = roomsList[roomCode].users[index];
+        socketIO.to(roomCode).emit('next question selector', username);
     }
 }
     /*
