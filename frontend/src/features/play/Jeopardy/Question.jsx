@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { useSocket } from '../../../services/SocketContext';
+import { useAuth } from '../../../services/AuthContext';
 
 const Question = ({ selectedQuestion }) => {
   const [answer, setAnswer] = useState('');
+  const socket = useSocket();
+  const { getUsername } = useAuth();
+  const [buzzed, setBuzzed] = useState(false);
+  const username = getUsername();
 
-  const handleBuzz = () => {
-    // Handle clicking buzz with socket.io
-    // Answering contestant gets to answer question
+  // Handler on who gets to answer
+  useEffect(() => {
+    function onBuzzed(buzzedUsername) {
+      setBuzzed(username === buzzedUsername);
+    }
+
+    if (socket) {
+      socket.on('first pressed', onBuzzed);
+
+      return () => {
+        socket.off('first pressed', onBuzzed);
+      };
+    } else {
+      console.warn('Jeopardy Question: Socket is not initialized');
+    }
+  }, [socket]);
+
+  const handleBuzzer = () => {
+    // Handle clicking buzzer with socket.io
+    // Buzzed contestant gets to answer question
+    socket.emit('buzzer pressed');
   };
 
   const handleSubmit = () => {
@@ -30,13 +54,15 @@ const Question = ({ selectedQuestion }) => {
         </Row>
         <Row className="justify-content-center">
           <Col md={4}>
-            <Button>Buzz</Button>
-            <Form.Control
-              type="text"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder={`Enter your answer here.`}
-            />
+            <Button onClick={() => handleBuzzer()}>Buzz</Button>
+            { buzzed && (
+              <Form.Control
+                type="text"
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder={`Enter your answer here.`}
+              />
+            )}
           </Col>
         </Row>
       </Container>
