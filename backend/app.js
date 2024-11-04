@@ -64,7 +64,7 @@ const gameModes = [
 const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames, totalQuestions) => {
     //unused
     let currentQuestionIndex = 0;
-
+    
     const GameClass = gameModes[mode];
     if (!GameClass) {
         console.error(`Game mode at index ${mode} not found.`);
@@ -155,6 +155,7 @@ socketIO.on('connection', (socket) => {
 
         // Automatically add the creator to the room and emit the updated player list
         roomsList[roomCode].users.push(username);
+        socket.roomCode = roomCode;
         socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
         console.log(`[${new Date().toISOString()}] Room created: ${roomCode}, Creator: ${username}`);
@@ -167,7 +168,7 @@ socketIO.on('connection', (socket) => {
         if (roomsList[roomCode]) {
             // Add username to socket (Referenced ChatGPT about this)
             socket.username = username;
-
+            socket.roomCode = roomCode;
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
@@ -201,8 +202,8 @@ socketIO.on('connection', (socket) => {
             
 
             //testing
-            console.log(mode);
-            console.log(duration);
+            console.log('Game mode: ' + mode);
+            console.log('Duration: ' + duration);
 
             if (mode === 1) { // TriviaBoard
                 totalQuestions = 30;
@@ -265,7 +266,10 @@ socketIO.on('connection', (socket) => {
     // Handle when buzzer is pressed 
     socket.on('buzzer pressed', () => {
         // Emits to the room the username of the person who pressed the buzzer first
-        socketIO.to(roomCode).emit('first pressed', socket.username);
+        const roomCode = socket.roomCode;
+        const username = socket.username;
+        console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
+        socketIO.to(roomCode).emit('first pressed', username);
     });
 
     // Handle disconnects
