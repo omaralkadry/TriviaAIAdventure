@@ -245,7 +245,21 @@ socketIO.on('connection', (socket) => {
             // testing
             // console.log(selectedAnswer);
             // console.log(answer);
-        
+
+        // Check if gamemode is Trivia Board
+        if (roomsList[roomCode].gameInstance === TriviaBoard) {
+            const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
+
+            if (result) {
+                // Answer was correct
+                socketIO.to(roomCode).emit('next question selector', username);
+            }
+            else {
+                // Answer was wrong
+                socketIO.to(roomCode).emit('continue question');
+            }
+        }
+
         roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
@@ -271,6 +285,12 @@ socketIO.on('connection', (socket) => {
         console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
         socketIO.to(roomCode).emit('first pressed', username);
     });
+
+    // Handle when a person selects a Trivia Board question
+    socket.on('selected question', (questionIndex) => {
+        // Emits to the room what question index was picked
+        socketIO.to(roomCode).emit('selected question', questionIndex);
+    })
 
     // Handle disconnects
     socket.on('disconnect', () => {
