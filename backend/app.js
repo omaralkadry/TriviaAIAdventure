@@ -246,9 +246,10 @@ socketIO.on('connection', (socket) => {
             // console.log(selectedAnswer);
             // console.log(answer);
 
+        const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
+
         // Check if gamemode is Trivia Board
         if (roomsList[roomCode].gameInstance === TriviaBoard) {
-            const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
             if (result) {
                 // Answer was correct
@@ -259,8 +260,6 @@ socketIO.on('connection', (socket) => {
                 socketIO.to(roomCode).emit('continue question');
             }
         }
-
-        roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
         socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
