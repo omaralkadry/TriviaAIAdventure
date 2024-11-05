@@ -278,6 +278,11 @@ class TriviaBoard extends GameMode {
                     max_tokens: 200 * 5, // 5 questions per topic
                 });
     
+                // Referenced GPT documentation to see how to handle inappropriate topics
+                if (response.choices[0].message.finish_reason === "content_filter") {
+                    return "content_filter";
+                }
+
                 const result = response.choices[0].message.content;
 
                 const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
