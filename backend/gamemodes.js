@@ -298,15 +298,27 @@ class TriviaBoard extends GameMode {
         }
 
     checkAnswer(player, answer, qindex) {
-        
-        if (answer == this.question_array[qindex].correctAnswer)
-            this.generateScores(player, qindex);
-        this.answered_array[qindex] = true;
+        if (answer == this.question_array[qindex].correctAnswer) {
+            this.increaseScore(player, qindex);
+            this.answered_array[qindex] = true;
+            return true;
+        }
+        else {
+            this.decreaseScore(player, qindex);
+            return false;
+        }
     }
-    generateScores(player, qindex) {
+
+    increaseScore(player, qindex) {
         let adjustedIndex = qindex % 5;
         const points = (adjustedIndex + 1) * 200;
         this.scores[player] += points;
+    }
+
+    decreaseScore(player, qindex) {
+        let adjustedIndex = qindex % 5;
+        const points = (adjustedIndex + 1) * 200;
+        this.scores[player] -= points;
     }
 
     async getQuestionArray() {
