@@ -101,6 +101,10 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
         socketIO.to(roomCode).emit('question', { questions: transformedQuestions, duration: questionDuration });
     };
 
+    // Send game settings to all users inside room
+    // So socket.io-clients know which mode to play
+    socketIO.to(roomCode).emit('game settings', mode);
+
     sendQuestion();  // Send the all questions
 
     // If gamemode is Trivia Board, then randomly pick who will go first

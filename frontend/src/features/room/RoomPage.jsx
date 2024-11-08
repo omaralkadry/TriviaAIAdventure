@@ -5,6 +5,7 @@ import './RoomPage.css';
 import { useAuth } from '../../services/AuthContext.jsx';
 import Chat from '../../components/Chat';
 import { useSocket } from '../../services/SocketContext';
+import JeopardyBoard from '../play/Jeopardy/Jeopardy.jsx';
 
 function RoomPage() {
   const socket = useSocket();
@@ -73,12 +74,18 @@ function RoomPage() {
       setScores(updatedScores);
     };
 
+    const handleGameSettings = (mode) => {
+      console.log('Mode:', mode);
+      setMode(mode);
+    };
+
     socket.on('update players', handleUpdatePlayers);
     socket.on('question', handleQuestion);
     socket.on('game over', handleGameOver);
     socket.on('start game', handleStartGame);
     socket.on('answer result', handleAnswerResult);
     socket.on('update scores', handleUpdateScores);
+    socket.on('game settings', handleGameSettings);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -87,6 +94,7 @@ function RoomPage() {
       socket.off('start game', handleStartGame);
       socket.off('answer result', handleAnswerResult);
       socket.off('update scores', handleUpdateScores);
+      socket.off('game settings', handleGameSettings);
     };
   }, [socket]);
 
@@ -179,26 +187,36 @@ function RoomPage() {
 
   const renderGameContent = () => {
     if (gameStarted && questions.length > 0 && !gameOver) {
-      return (
-        <>
-          {answerResponse && (
-            <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
-              {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
-            </Alert>
-          )}
-          <Play
-            timePerQuestion= {duration}
-            currentQuestion={questions[currentQuestionIndex]}
-            selectedAnswer={selectedAnswer}
-            setSelectedAnswer={setSelectedAnswer}
-            isCountdownFinished={isCountdownFinished}
-            handleAnswerSubmit={handleAnswerSubmit}
-            handleCountdownFinish={handleCountdownFinish}
-            handleNextQuestion={handleNextQuestion}
-            key={key}
-          />
-        </>
-      );
+      // Classic Trivia
+      if (mode === 0) {
+        return (
+          <>
+            {answerResponse && (
+              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
+                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
+              </Alert>
+            )}
+            <Play
+              timePerQuestion= {duration}
+              currentQuestion={questions[currentQuestionIndex]}
+              selectedAnswer={selectedAnswer}
+              setSelectedAnswer={setSelectedAnswer}
+              isCountdownFinished={isCountdownFinished}
+              handleAnswerSubmit={handleAnswerSubmit}
+              handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
+              key={key}
+            />
+          </>
+        );
+      } 
+      // Jeopardy
+      else if (mode === 1) {
+        return (
+          <JeopardyBoard></JeopardyBoard>
+        );
+      }
+      
     }
 
     if (gameOver) {
