@@ -25,6 +25,7 @@ function RoomPage() {
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
   const username = getUsername();
+  const [selector, setSelector] = useState('');
 
   // Game and room settings
   const [topic, setTopic] = useState('');
@@ -78,6 +79,11 @@ function RoomPage() {
       console.log('Mode:', mode);
       setMode(mode);
     };
+    
+    const handleSelector = (selectorUsername) => {
+      console.log('Selector:', selectorUsername);
+      setSelector(selectorUsername);
+    };
 
     socket.on('update players', handleUpdatePlayers);
     socket.on('question', handleQuestion);
@@ -86,6 +92,7 @@ function RoomPage() {
     socket.on('answer result', handleAnswerResult);
     socket.on('update scores', handleUpdateScores);
     socket.on('game settings', handleGameSettings);
+    socket.on('next question selector', handleSelector);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -95,6 +102,7 @@ function RoomPage() {
       socket.off('answer result', handleAnswerResult);
       socket.off('update scores', handleUpdateScores);
       socket.off('game settings', handleGameSettings);
+      socket.off('next question selector', handleSelector);
     };
   }, [socket]);
 
@@ -213,7 +221,9 @@ function RoomPage() {
       // Jeopardy
       else if (mode === 1) {
         return (
-          <JeopardyBoard></JeopardyBoard>
+          <JeopardyBoard
+            selectorUsername={selector}
+          />
         );
       }
       
