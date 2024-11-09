@@ -296,7 +296,7 @@ socketIO.on('connection', (socket) => {
     // Handle when a person selects a Trivia Board question
     socket.on('selected question', (questionIndex) => {
         // Emits to the room what question index was picked
-        socketIO.to(roomCode).emit('selected question', questionIndex);
+        socketIO.to(socket.roomCode).emit('selected question', questionIndex);
     })
 
     // Handle disconnects

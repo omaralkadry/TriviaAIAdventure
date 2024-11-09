@@ -9,8 +9,9 @@ import { useAuth } from '../../../services/AuthContext';
 const JeopardyBoard = ({ selectorUsername }) => {
   const [gameState, setGameState] = useState(null);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [questionIndex, setQuestionIndex] = useState({});
   const [clickedQuestions, setClickedQuestions] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(false);
   const [selector, setSelector] = useState(selectorUsername);
   const socket = useSocket();
   const { getUsername } = useAuth();
@@ -84,25 +85,50 @@ const JeopardyBoard = ({ selectorUsername }) => {
     ]
   };
 
-  // Handles clicked question
-  const handleCardClick = (categoryIndex, pointIndex) => {
-    const selectedQuestionObj = jeopardyData.categories[categoryIndex].questions[pointIndex];
+  // Converts question indices into question
+  const indexToQuestion = (selectedIndex) => {
+    const selectedQuestionObj = jeopardyData.categories[selectedIndex['category']].questions[selectedIndex['point']];
     setSelectedQuestion(selectedQuestionObj);
   };
+
+  // Handles clicked question
+  const handleSelectedQuestion = (categoryIndex, pointIndex) => {
+    let selectedIndex = {};
+    selectedIndex['category'] = categoryIndex;
+    selectedIndex['point'] = pointIndex;
+    console.log(`Selected category: ${selectedIndex['category']}`);
+    console.log(`Selected points: ${selectedIndex['point']}`);
+    if (selected || username === selectorUsername) {
+      socket.emit('selected question', selectedIndex );
+    } else {
+      console.log("You are not allowed to select a question right now.");
+    }
+  };
   
-  // Handler on who gets choose question
+  // Handlers socket.on receiving
   useEffect(() => {
+    // On who gets choose question
     function onSelector(selectorUsername) {
       console.log(`Selector: ${selectorUsername}`);
       setSelected(username === selectorUsername);
       setSelector(selectorUsername);
     }
 
+    // On what the question is selected
+    function onSelectedQuestion(selectedQuestionIndex) {
+      setQuestionIndex(selectedQuestionIndex);
+      console.log(`Selected category: ${selectedQuestionIndex['category']}`);
+      console.log(`Selected points: ${selectedQuestionIndex['point']}`);
+      indexToQuestion(selectedQuestionIndex);
+    }
+
     if (socket) {
       socket.on('next question selector', onSelector);
+      socket.on('selected question', onSelectedQuestion);
 
       return () => {
         socket.off('next question selector', onSelector);
+        socket.off('selected question', onSelectedQuestion);
       };
     } else {
       console.warn('Jeopardy Board: Socket is not initialized');
@@ -136,7 +162,7 @@ const JeopardyBoard = ({ selectorUsername }) => {
                   <Col 
                     key={`${categoryIndex}-${pointIndex}`} 
                     className="clickable-card" 
-                    onClick={() => handleCardClick(categoryIndex, pointIndex)} 
+                    onClick={() => handleSelectedQuestion(categoryIndex, pointIndex)} 
                   >
                     <Card 
                       className="prevent-select" 
