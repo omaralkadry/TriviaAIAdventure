@@ -254,6 +254,10 @@ socketIO.on('connection', (socket) => {
 
         // Check if gamemode is Trivia Board
         if (roomsList[roomCode].gameInstance === TriviaBoard) {
+            // Check if 30 questions have been answered, and if so, the game should end
+            if (roomsList[roomCode].gameInstance.getNumberAnswered() === 30) {
+                socketIO.to(roomCode).emit('game over', { message: 'The game is over' });
+            }
 
             if (result) {
                 // Answer was correct

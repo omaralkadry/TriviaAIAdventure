@@ -223,6 +223,7 @@ class TriviaBoard extends GameMode {
         this.topics = [];
         this.question_array= [];
         this.answered_array= [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+        this.numberAnswered = 0;
     }
 
     async startGame(pointsperquestion, totalQuestions, usernames, topics, duration) {
@@ -306,6 +307,7 @@ class TriviaBoard extends GameMode {
         if (answer == this.question_array[qindex].correctAnswer) {
             this.increaseScore(player, qindex);
             this.answered_array[qindex] = true;
+            this.numberAnswered++;
             return true;
         }
         else {
@@ -328,6 +330,10 @@ class TriviaBoard extends GameMode {
 
     async getQuestionArray() {
         return this.question_array;
+    }
+
+    getNumberAnswered() {
+        return this.numberAnswered;
     }
 
 }
