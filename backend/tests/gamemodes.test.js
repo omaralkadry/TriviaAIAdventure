@@ -223,10 +223,14 @@ describe.only('RandomTrivia Game Mode', () => {
         expect(results).toHaveProperty('Player2');
         expect(results).toHaveProperty('Player3');
         expect(typeof results.Player1).toBe('boolean');
+        console.log(game.scores);
+        expect(game.scores['Player1']).toBe(10);
+        //expect(game.scores['Player2']).toBe(10);
+        expect(game.scores['Player3']).toBe(0);
       }, 30000);
   
     test('should increment questions and get current topic', async () => {
-      game.startGame(10, 5, ['Player1', 'Player2', 'Player3'], [], 30);
+      game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
       await game.generateQuestion();
       expect(game.currentQuestion).toBe(0);
       expect(game.getCurrentTopic()).toBe(game.topics[0]);
