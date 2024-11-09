@@ -30,7 +30,7 @@ function RoomPage() {
   // Game and room settings
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [mode, setMode] = useState('');
+  const [mode, setMode] = useState(-1);
 	const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
@@ -149,7 +149,7 @@ function RoomPage() {
     });
 
     //left topic down here. cant replace since with topic_array since its not a global variable-omar
-  }, [socket, roomCode, topic, totalQuestions]);
+  }, [socket, roomCode, topic, totalQuestions, mode]);
 
   const handleAnswerSubmit = useCallback(() => {
     if (!socket) return;
@@ -313,7 +313,7 @@ function RoomPage() {
             <Row className="justify-content-center mb-3">
               <Col md={3}>
                 <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
-                  <option value="" disabled>Select Game Mode</option>
+                  <option value={-1} disabled>Select Game Mode</option>
                   <option value={0}>Classic Trivia</option>
                   <option value={1}>Jeopardy</option>
                   <option value={2}>Trivia Crack</option>
