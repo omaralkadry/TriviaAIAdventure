@@ -1,6 +1,7 @@
 const { Db } = require('mongodb');
 const { ClassicTrivia } = require('../gamemodes');
 const { TriviaBoard } = require('../gamemodes');
+const { RandomTrivia } = require('../gamemodes');
 require('dotenv').config();
 
 
@@ -120,7 +121,7 @@ describe('ClassicTrivia Question Retrieval', () => {
 
 
 
-describe.only('TriviaBoard Game Mode', () => {
+describe('TriviaBoard Game Mode', () => {
     let game;
 
     beforeEach(async () => {
@@ -172,4 +173,65 @@ describe.only('TriviaBoard Game Mode', () => {
         const expectedPoints = (questionIndex % 5 + 1) * 200; // Should be 800 for questionIndex 3
         expect(game.scores['Player1']).toBe(expectedPoints);
     }, 6000);
+});
+
+describe.only('RandomTrivia Game Mode', () => {
+    let game;
+  
+    beforeEach(() => {
+      game = new RandomTrivia(2);
+    });
+  
+    test('should initialize with correct settings', () => {
+      game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
+      expect(game.players.length).toBe(3);
+      expect(game.totalQuestions).toBe(3);
+      expect(game.timePerQuestion).toBe(30);
+      expect(game.pointsperquestion).toBe(10);
+      expect(game.topics.length).toBe(3);
+    });
+  
+    test('should set unique topics for each question', () => {
+      game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
+      const uniqueTopics = new Set(game.topics);
+      expect(uniqueTopics.size).toBe(3);
+    });
+  
+    test('should generate questions for all topics', async () => {
+      game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
+      await game.generateQuestion();
+      const questions = await game.getQuestionArray();
+      expect(questions.length).toBe(3);
+      questions.forEach((question, index) => {
+        expect(question.topic).toBe(game.topics[index]);
+        expect(question).toHaveProperty('question');
+        expect(question).toHaveProperty('topic');
+      });
+    }, 30000);
+  
+    test('should correctly check multiple answers', async () => {
+        game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
+        await game.generateQuestion();
+        const playerAnswers = {
+          'Player1': 'Correct answer',
+          'Player2': 'Partially correct answer',
+          'Player3': 'Incorrect answer'
+        };
+        const results = await game.checkAnswer(playerAnswers, 0);
+        console.log(results)
+        expect(results).toHaveProperty('Player1');
+        expect(results).toHaveProperty('Player2');
+        expect(results).toHaveProperty('Player3');
+        expect(typeof results.Player1).toBe('boolean');
+      }, 30000);
+  
+    test('should increment questions and get current topic', async () => {
+      game.startGame(10, 5, ['Player1', 'Player2', 'Player3'], [], 30);
+      await game.generateQuestion();
+      expect(game.currentQuestion).toBe(0);
+      expect(game.getCurrentTopic()).toBe(game.topics[0]);
+      await game.incrementQuestion();
+      expect(game.currentQuestion).toBe(1);
+      expect(game.getCurrentTopic()).toBe(game.topics[1]);
+    });
 });

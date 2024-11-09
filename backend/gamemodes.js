@@ -333,4 +333,212 @@ class TriviaBoard extends GameMode {
 }
 
 
-module.exports = { GameMode, ClassicTrivia, TriviaBoard };
+
+class RandomTrivia extends GameMode {
+    constructor(playerCount = 1) {
+        super(playerCount);
+        this.topics = [];
+        this.question_array = [];
+    }
+   
+    setTopic(totalQuestions) {
+        const defaultTopics = [
+            "History", "Science", "Literature", "Mathematics", "Geography",
+            "Art", "Music", "Sports", "Technology", "Philosophy",
+            "Politics", "Economics", "Biology", "Physics", "Chemistry",
+            "Astronomy", "Psychology", "Sociology", "Anthropology", "Linguistics",
+            "Film", "Television", "Theater", "Dance", "Architecture",
+            "Cuisine", "Fashion", "Mythology", "Religion", "Law",
+            "Medicine", "Environmental Science", "Computer Science", "Engineering", "Agriculture",
+            "Archaeology", "Geology", "Meteorology", "Oceanography", "Genetics",
+            "Cryptography", "Robotics", "Artificial Intelligence", "Quantum Physics", "Nanotechnology",
+            "Space Exploration", "Renewable Energy", "Cybersecurity", "Biotechnology", "Neuroscience"
+        ];
+
+        const topicsCopy = [...defaultTopics];
+        this.topics = []
+        for (let i = 0; i < totalQuestions; i++) {
+            const randomIndex = Math.floor(Math.random() * topicsCopy.length);
+            this.topics.push(topicsCopy[randomIndex]);
+            topicsCopy.splice(randomIndex, 1);
+        }
+    }
+
+    // from parent class
+    async startGame(pointsperquestion, totalQuestions, usernames, topic_array, duration) {
+        this.setSettings(totalQuestions, duration, pointsperquestion)
+        this.gameID = 'Random';
+        this.setTopic(totalQuestions);
+        console.log(this.topics);
+        if (!Array.isArray(usernames) || usernames.length === 0) {
+            throw new Error('Usernames must be a non-empty array.');
+        }
+        //testing
+        //console.log(this.scores);
+        //console.log(usernames);
+        usernames.forEach(name => {
+            this.addPlayer(name);
+            //console.log(this.scores[name]);
+        });
+
+        //testing
+        //console.log(this.scores);
+        //may adjust here if you want to call generatequestion
+    }
+
+    //TODO
+    /*
+    async checkAnswer(player, answers, qindex) {
+        try {
+            let prompt = `Question: "${question}"\n\nAnswers:\n`;
+        answers.forEach((answer, index) => {
+            prompt += `${playerNames[index]}: ${answer}\n`;
+        });
+        prompt += "\nEvaluate each answer and respond with a JSON array of boolean values (true for correct, false for incorrect) in the same order as the answers provided. Only return the JSON array, no additional text.";
+
+
+            const response = await client.chat.completions.create({
+                model: "gpt-4o-mini", //most cost effective as of rn
+                messages: [
+                    { role: "system", content: "You are an AI assistant that evaluates trivia answers." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
+                //response_format: "json_schema"
+            });
+            const result = response.choices[0].message.content;
+            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
+            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
+            const parsedAnswers = JSON.parse(cleanedResult);
+
+            for (let answerIndex = 0; answerIndex < answers.length; answerIndex++) {
+                if (answers[answerIndex] === true) {
+                    this.generateScores(player[answerIndex]);
+                }
+            }
+
+
+        } catch (error) {
+            console.error('Error checking question answers:', error);
+        }
+    }
+    */
+
+    async generateQuestion() {
+        try {
+            const topicsString = this.topics.join('", "')
+            const prompt = `Generate a trivia question on each of the following topics: "${topicsString}" with the topic used in the following JSON format:
+        {
+            "question": "<trivia question>",  
+            "topic": "<topic used>"
+        }`;
+
+            const response = await client.chat.completions.create({
+                model: "gpt-4o-mini", //most cost effective as of rn
+                messages: [
+                    { role: "system", content: "You are a trivia game question generator." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
+                //response_format: "json_schema"
+            });
+
+            //testing
+            //console.log('Full OpenAI API Response:', JSON.stringify(response, null, 2));
+
+            // Referenced GPT documentation to see how to handle inappropriate topics
+            if (response.choices[0].message.finish_reason === "content_filter") {
+                return "content_filter";
+            }
+
+            const result = response.choices[0].message.content;
+
+            //testing
+            //console.log('FIltered Result:', JSON.stringify(result, null, 2));
+            //console.log('Raw API Message:', result);
+
+            //needed to remove non json elements at the start and end (not sure why they are occurring)
+            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
+            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
+
+            //console.log(cleanedResult);
+            const parsedQuestions = JSON.parse(cleanedResult);
+
+            //testing
+            //console.log('Parsed Question:', parsedQuestions);
+            //console.log('Question: ', parsedQuestions[0].question);
+            //console.log('Choices: ', parsedQuestions[0].choices);
+            //console.log('QA: ', parsedQuestions[0].choices.a);
+            //console.log('Answer: ', parsedQuestions[0].correctAnswer);
+
+            this.question_array = parsedQuestions;
+
+            //testing
+            //console.log('Question Array:', this.question_array);
+
+        } catch (error) {
+            console.error('Error generating question:', error);
+        }
+    }
+
+    async checkAnswer(playerAnswers, qindex) {
+        try {
+            const question = this.question_array[qindex].question;
+            //const exampleAnswer = this.question_array[qindex].exampleAnswer;
+            //let prompt = `Question: "${question}"\nExample Answer: "${exampleAnswer}"\n\nPlayer Answers:\n`;
+            let prompt = `Question: "${question}"\nPlayer Answers:\n`;
+            
+            Object.entries(playerAnswers).forEach(([player, answer]) => {
+              prompt += `${player}: ${answer}\n`;
+            });
+            
+            prompt += "\nEvaluate each player's answer and respond with a JSON object where keys are player names and values are boolean (true for correct, false for incorrect). Consider alternative phrasings and partial correctness. Only return the JSON object, no additional text.";
+
+            const response = await client.chat.completions.create({
+                model: "gpt-4o-mini", //most cost effective as of rn
+                messages: [
+                    { role: "system", content: "You are an AI assistant that evaluates trivia answers." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 150,
+                //response_format: "json_schema"
+            });
+            const result = response.choices[0].message.content;
+            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
+            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
+            const parsedAnswers = JSON.parse(cleanedResult);
+
+            Object.entries(parsedAnswers).forEach(([player, isCorrect]) => {
+                if (isCorrect) {
+                    this.generateScores(player);
+                }
+            });
+
+            //for testing only and may not use in code
+            return parsedAnswers;
+
+
+        } catch (error) {
+            console.error('Error checking answers:', error);
+            return {};
+          }
+    }
+
+    async getQuestionArray() {
+        return this.question_array;
+    }
+    async getQuestion(question_array) {
+        return this.question_array[this.currentQuestion].question;
+    }
+    async incrementQuestion(question_array) {
+        this.currentQuestion = this.currentQuestion + 1;
+    }
+    getCurrentTopic() {
+        return this.topics[this.currentQuestion];
+    }
+
+}
+
+
+
+module.exports = { GameMode, ClassicTrivia, TriviaBoard, RandomTrivia };
