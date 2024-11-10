@@ -103,7 +103,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
 
     // Send game settings to all users inside room
     // So socket.io-clients know which mode to play
-    socketIO.to(roomCode).emit('game settings', mode);
+    socketIO.to(roomCode).emit('game settings', mode, gameInstance.topics);
 
     sendQuestion();  // Send the all questions
 

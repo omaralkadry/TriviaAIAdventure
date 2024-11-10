@@ -43,6 +43,7 @@ function RoomPage() {
     };
 
     const handleQuestion = (allQuestions) => {
+      console.log(allQuestions);
       setQuestions(allQuestions.questions);
       setDuration(allQuestions.duration);  
       setCurrentQuestionIndex(0);
@@ -75,9 +76,11 @@ function RoomPage() {
       setScores(updatedScores);
     };
 
-    const handleGameSettings = (mode) => {
+    const handleGameSettings = (mode, topics) => {
       console.log('Mode:', mode);
+      console.log('Topics:', topics);
       setMode(mode);
+      setJeopardyTopics(topics || ["History", "Science", "Art", "Literature", "Geography", "Sports"]);
     };
     
     const handleSelector = (selectorUsername) => {
@@ -223,6 +226,8 @@ function RoomPage() {
         return (
           <JeopardyBoard
             selectorUsername={selector}
+            questions={questions}
+            topics={jeopardyTopics}
           />
         );
       }
