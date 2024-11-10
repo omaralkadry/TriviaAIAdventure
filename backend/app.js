@@ -286,11 +286,16 @@ socketIO.on('connection', (socket) => {
 
     // Handle when buzzer is pressed 
     socket.on('buzzer pressed', () => {
-        // Emits to the room the username of the person who pressed the buzzer first
         const roomCode = socket.roomCode;
         const username = socket.username;
         console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
+
+        // socket.on submit answer 
+        // check answer
+        
+        /* Removed first pressed buzzing
         socketIO.to(roomCode).emit('first pressed', username);
+        */
     });
 
     // Handle when a person selects a Trivia Board question

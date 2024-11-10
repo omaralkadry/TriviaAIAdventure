@@ -12,15 +12,10 @@ const Question = ({ selectedQuestion }) => {
 
   // Handler on who gets to answer
   useEffect(() => {
-    function onBuzzed(buzzedUsername) {
-      setBuzzed(username === buzzedUsername);
-    }
-
     if (socket) {
-      socket.on('first pressed', onBuzzed);
 
       return () => {
-        socket.off('first pressed', onBuzzed);
+
       };
     } else {
       console.warn('Jeopardy Question: Socket is not initialized');
@@ -31,6 +26,7 @@ const Question = ({ selectedQuestion }) => {
     // Handle clicking buzzer with socket.io
     // Buzzed contestant gets to answer question
     socket.emit('buzzer pressed');
+    setBuzzed(true);
   };
 
   const handleSubmit = () => {
