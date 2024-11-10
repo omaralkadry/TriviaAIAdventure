@@ -22,6 +22,21 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
   const [jeopardyData, setJeopardyData] = useState(questions);
   const [jeopardyTopics, setJeopardyTopics] = useState(topics);
 
+  // If question indices are already clicked previously
+  const isClicked = (category, point) => {
+    return clickedQuestions.some(
+      question => question.category === category && question.point === point
+    );
+  };
+
+  // Add the selectedQuestionIndex object to the clickedQuestions array
+  const handleClick = (selectedQuestionIndex) => {
+    setClickedQuestions(prevClickedQuestions => [
+      ...prevClickedQuestions,
+      selectedQuestionIndex
+    ]);
+  };
+
   // Converts question indices into question
   const indexToQuestion = (selectedIndex) => {
     const selectedQuestionObj = jeopardyData[((selectedIndex['category'] + 1) * (selectedIndex['point'] + 1)) - 1];
@@ -35,10 +50,10 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
     selectedIndex['point'] = pointIndex;
     console.log(`Selected category: ${selectedIndex['category']}`);
     console.log(`Selected points: ${selectedIndex['point']}`);
-    if (selected || username === selectorUsername) {
+    if ((selected || username === selectorUsername) && !isClicked(categoryIndex, pointIndex)) {
       socket.emit('selected question', selectedIndex );
     } else {
-      console.log("You are not allowed to select a question right now.");
+      console.log("You are not allowed to select that question right now.");
     }
   };
   
@@ -56,6 +71,7 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
       setQuestionIndex(selectedQuestionIndex);
       console.log(`Selected category: ${selectedQuestionIndex['category']}`);
       console.log(`Selected points: ${selectedQuestionIndex['point']}`);
+      handleClick(selectedQuestionIndex);
       indexToQuestion(selectedQuestionIndex);
     }
 
@@ -106,7 +122,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
                       style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
                     >
                       <Card.Body className='prevent-select'>
-                        <Card.Title className="prevent-select text-center">{jeopardyPoints[pointIndex]}</Card.Title>
+                        { !isClicked(categoryIndex, pointIndex) && (
+                          <Card.Title className="prevent-select text-center">
+                            {jeopardyPoints[pointIndex]}
+                          </Card.Title>
+                        )}
                       </Card.Body>
                     </Card>
                   </Col>
