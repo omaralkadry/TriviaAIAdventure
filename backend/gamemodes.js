@@ -306,7 +306,7 @@ class TriviaBoard extends GameMode {
     checkAnswer(player, answer, qindex) {
         if (answer == this.question_array[qindex].correctAnswer) {
             this.increaseScore(player, qindex);
-            this.answered_array[qindex] = true;
+            // this.answered_array[qindex] = true;
             this.numberAnswered++;
             return true;
         }
@@ -336,6 +336,15 @@ class TriviaBoard extends GameMode {
         return this.numberAnswered;
     }
 
+    checkIfAnswered(qindex) {
+        if (!this.answered_array[qindex]) {
+            this.answered_array[qindex] = true;
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
 }
 
 

@@ -233,7 +233,7 @@ socketIO.on('connection', (socket) => {
 
     //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
-    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex) => {
+    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
         console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
 
         let answer;
@@ -259,13 +259,18 @@ socketIO.on('connection', (socket) => {
                 socketIO.to(roomCode).emit('game over', { message: 'The game is over' });
             }
 
+            // Answer is correct
             if (result) {
-                // Answer was correct
-                socketIO.to(roomCode).emit('next question selector', username);
+                // The first person to answer correctly gets to pick the next question
+                if (!roomsList[roomCode].gameInstance.checkIfAnswered(currentQuestionIndex))
+                    socketIO.to(roomCode).emit('next question selector', username);
+
+                callback({ success: true });
             }
+            // Answer is wrong
             else {
-                // Answer was wrong
-                socketIO.to(roomCode).emit('continue question');
+                // socketIO.to(roomCode).emit('continue question');
+                callback({ success: false });
             }
         }
 
