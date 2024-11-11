@@ -16,7 +16,7 @@ const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
-const { ClassicTrivia } = require('./gamemodes');
+const { ClassicTrivia, TriviaBoard } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
 
@@ -56,15 +56,15 @@ let roomsList = {};
 
 const gameModes = [
     ClassicTrivia, // Index 0
-    //TriviaBoard,   // Index 1
+    TriviaBoard,   // Index 1
     //thirdmode here
 ];
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode, mode, duration, topic, usernames, totalQuestions) => {
+const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames, totalQuestions) => {
     //unused
     let currentQuestionIndex = 0;
-
+    
     const GameClass = gameModes[mode];
     if (!GameClass) {
         console.error(`Game mode at index ${mode} not found.`);
@@ -72,7 +72,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic, usernames, total
     }
     const gameInstance = new GameClass();
 
-    gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
+    gameInstance.startGame(10, totalQuestions, usernames, topic_array, duration);
     const error = await gameInstance.generateQuestion();
 
     if (error === "content_filter") {
@@ -101,7 +101,21 @@ const startTriviaGame = async (roomCode, mode, duration, topic, usernames, total
         socketIO.to(roomCode).emit('question', { questions: transformedQuestions, duration: questionDuration });
     };
 
+    // Send game settings to all users inside room
+    // So socket.io-clients know which mode to play
+    socketIO.to(roomCode).emit('game settings', mode, gameInstance.topics);
+
     sendQuestion();  // Send the all questions
+
+    // If gamemode is Trivia Board, then randomly pick who will go first
+    if (mode === 1) {
+        // Referenced https://www.geeksforgeeks.org/how-to-generate-random-number-in-given-range-using-javascript/
+        const largestIndex = roomsList[roomCode].users.length;
+        const index = Math.floor(Math.random() * largestIndex);
+
+        const username = roomsList[roomCode].users[index];
+        socketIO.to(roomCode).emit('next question selector', username);
+    }
 }
     /*
     // Send each question after 30 seconds, reset the timer and send new question
@@ -127,6 +141,7 @@ socketIO.on('connection', (socket) => {
         socket.username = username;
 
         const generateRoomCode = () => {
+            // Referenced https://www.geeksforgeeks.org/how-to-generate-random-number-in-given-range-using-javascript/
             const largestRoomNumber = 90000;
             const smallestRoomNumber = 10000;
             const roomCode = (Math.floor(Math.random() * (largestRoomNumber - smallestRoomNumber + 1)) + smallestRoomNumber).toString();
@@ -144,6 +159,7 @@ socketIO.on('connection', (socket) => {
 
         // Automatically add the creator to the room and emit the updated player list
         roomsList[roomCode].users.push(username);
+        socket.roomCode = roomCode;
         socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
         console.log(`[${new Date().toISOString()}] Room created: ${roomCode}, Creator: ${username}`);
@@ -156,7 +172,7 @@ socketIO.on('connection', (socket) => {
         if (roomsList[roomCode]) {
             // Add username to socket (Referenced ChatGPT about this)
             socket.username = username;
-
+            socket.roomCode = roomCode;
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
@@ -184,19 +200,19 @@ socketIO.on('connection', (socket) => {
             //     // roomsList[roomCode] = { gamemode: triviaGamemode };
             // }
     // Handle starting the game
-    socket.on('start game', (roomCode, topic, totalQuestions = null, duration, mode, callback) => {
+    socket.on('start game', (roomCode, topic_array, totalQuestions = null, duration, mode, callback) => {
         if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
             
 
             //testing
-            console.log(mode);
-            console.log(duration);
+            console.log('Game mode: ' + mode);
+            console.log('Duration: ' + duration);
 
             if (mode === 1) { // TriviaBoard
                 totalQuestions = 30;
             }
-            const error = startTriviaGame(roomCode, mode, duration, topic, roomsList[roomCode].users, totalQuestions);
+            const error = startTriviaGame(roomCode, mode, duration, topic_array, roomsList[roomCode].users, totalQuestions);
 
             // Check if GPT doesn't want to generate questions because of an innapropriate topic
             if (error === "content_filter") {
@@ -204,8 +220,8 @@ socketIO.on('connection', (socket) => {
                 callback({ success: false, message: 'Please enter a different topic' });
                 return;
             }
-
-            console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Topic: ${topic}, Total Questions: ${totalQuestions}`);
+            //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
+            console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
         } else {
@@ -233,8 +249,25 @@ socketIO.on('connection', (socket) => {
             // testing
             // console.log(selectedAnswer);
             // console.log(answer);
-        
-        roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
+
+        const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
+
+        // Check if gamemode is Trivia Board
+        if (roomsList[roomCode].gameInstance === TriviaBoard) {
+            // Check if 30 questions have been answered, and if so, the game should end
+            if (roomsList[roomCode].gameInstance.getNumberAnswered() === 30) {
+                socketIO.to(roomCode).emit('game over', { message: 'The game is over' });
+            }
+
+            if (result) {
+                // Answer was correct
+                socketIO.to(roomCode).emit('next question selector', username);
+            }
+            else {
+                // Answer was wrong
+                socketIO.to(roomCode).emit('continue question');
+            }
+        }
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
         socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
@@ -250,6 +283,26 @@ socketIO.on('connection', (socket) => {
         //     socket.emit('answer result', { result: 'no question' });
         // }
     });
+
+    // Handle when buzzer is pressed 
+    socket.on('buzzer pressed', () => {
+        const roomCode = socket.roomCode;
+        const username = socket.username;
+        console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
+
+        // socket.on submit answer 
+        // check answer
+        
+        /* Removed first pressed buzzing
+        socketIO.to(roomCode).emit('first pressed', username);
+        */
+    });
+
+    // Handle when a person selects a Trivia Board question
+    socket.on('selected question', (questionIndex) => {
+        // Emits to the room what question index was picked
+        socketIO.to(socket.roomCode).emit('selected question', questionIndex);
+    })
 
     // Handle disconnects
     socket.on('disconnect', () => {

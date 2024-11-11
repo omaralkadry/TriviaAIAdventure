@@ -5,6 +5,7 @@ import './RoomPage.css';
 import { useAuth } from '../../services/AuthContext.jsx';
 import Chat from '../../components/Chat';
 import { useSocket } from '../../services/SocketContext';
+import JeopardyBoard from '../play/Jeopardy/Jeopardy.jsx';
 
 function RoomPage() {
   const socket = useSocket();
@@ -24,11 +25,12 @@ function RoomPage() {
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
   const username = getUsername();
+  const [selector, setSelector] = useState('');
 
   // Game and room settings
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [mode, setMode] = useState('');
+  const [mode, setMode] = useState(-1);
 	const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
@@ -41,6 +43,7 @@ function RoomPage() {
     };
 
     const handleQuestion = (allQuestions) => {
+      console.log(allQuestions);
       setQuestions(allQuestions.questions);
       setDuration(allQuestions.duration);  
       setCurrentQuestionIndex(0);
@@ -73,12 +76,26 @@ function RoomPage() {
       setScores(updatedScores);
     };
 
+    const handleGameSettings = (mode, topics) => {
+      console.log('Mode:', mode);
+      console.log('Topics:', topics);
+      setMode(mode);
+      setJeopardyTopics(topics || ["History", "Science", "Art", "Literature", "Geography", "Sports"]);
+    };
+    
+    const handleSelector = (selectorUsername) => {
+      console.log('Selector:', selectorUsername);
+      setSelector(selectorUsername);
+    };
+
     socket.on('update players', handleUpdatePlayers);
     socket.on('question', handleQuestion);
     socket.on('game over', handleGameOver);
     socket.on('start game', handleStartGame);
     socket.on('answer result', handleAnswerResult);
     socket.on('update scores', handleUpdateScores);
+    socket.on('game settings', handleGameSettings);
+    socket.on('next question selector', handleSelector);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -87,6 +104,8 @@ function RoomPage() {
       socket.off('start game', handleStartGame);
       socket.off('answer result', handleAnswerResult);
       socket.off('update scores', handleUpdateScores);
+      socket.off('game settings', handleGameSettings);
+      socket.off('next question selector', handleSelector);
     };
   }, [socket]);
 
@@ -111,12 +130,29 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    socket.emit('start game', roomCode, topic, totalQuestions, duration, mode, (response) => {
+    const topic_array =[];
+    if (mode === 0) {
+      //Classic Trivia
+      topic_array.push(topic);
+    } else if (mode === 1) {
+      //Trivia Board
+      //TODO
+    } else if (mode === 2) {
+      // Trivia Crack
+      //TODO
+    } else {
+      //TODO error handle for wrong mode
+      console.error("Invalid game mode", mode);
+    }
+
+    socket.emit('start game', roomCode, topic_array, totalQuestions || 5, duration || 20, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
-  }, [socket, roomCode, topic, totalQuestions]);
+
+    //left topic down here. cant replace since with topic_array since its not a global variable-omar
+  }, [socket, roomCode, topic, totalQuestions, mode]);
 
   const handleAnswerSubmit = useCallback(() => {
     if (!socket) return;
@@ -162,26 +198,40 @@ function RoomPage() {
 
   const renderGameContent = () => {
     if (gameStarted && questions.length > 0 && !gameOver) {
-      return (
-        <>
-          {answerResponse && (
-            <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
-              {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
-            </Alert>
-          )}
-          <Play
-            timePerQuestion= {duration}
-            currentQuestion={questions[currentQuestionIndex]}
-            selectedAnswer={selectedAnswer}
-            setSelectedAnswer={setSelectedAnswer}
-            isCountdownFinished={isCountdownFinished}
-            handleAnswerSubmit={handleAnswerSubmit}
-            handleCountdownFinish={handleCountdownFinish}
-            handleNextQuestion={handleNextQuestion}
-            key={key}
+      // Classic Trivia
+      if (mode === 0) {
+        return (
+          <>
+            {answerResponse && (
+              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
+                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
+              </Alert>
+            )}
+            <Play
+              timePerQuestion= {duration}
+              currentQuestion={questions[currentQuestionIndex]}
+              selectedAnswer={selectedAnswer}
+              setSelectedAnswer={setSelectedAnswer}
+              isCountdownFinished={isCountdownFinished}
+              handleAnswerSubmit={handleAnswerSubmit}
+              handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
+              key={key}
+            />
+          </>
+        );
+      } 
+      // Jeopardy
+      else if (mode === 1) {
+        return (
+          <JeopardyBoard
+            selectorUsername={selector}
+            questions={questions}
+            topics={jeopardyTopics}
           />
-        </>
-      );
+        );
+      }
+      
     }
 
     if (gameOver) {
@@ -268,7 +318,7 @@ function RoomPage() {
             <Row className="justify-content-center mb-3">
               <Col md={3}>
                 <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
-                  <option value="" disabled>Select Game Mode</option>
+                  <option value={-1} disabled>Select Game Mode</option>
                   <option value={0}>Classic Trivia</option>
                   <option value={1}>Jeopardy</option>
                   <option value={2}>Trivia Crack</option>
