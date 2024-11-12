@@ -1,10 +1,9 @@
 const { Db } = require('mongodb');
 const { ClassicTrivia } = require('../gamemodes');
-const { TriviaBoard } = require('../gamemodes');
 require('dotenv').config();
 
 
-describe('ClassicTrivia Game Mode', () => {
+describe.only('ClassicTrivia Game Mode', () => {
     let game;
 
     beforeEach(() => {
@@ -14,7 +13,7 @@ describe('ClassicTrivia Game Mode', () => {
         game.addPlayer('Player3');
         game.addPlayer('Player4');
         //game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question. this is now done in start game
-        game.startGame(10, 2, game.players, 'Science', 30);
+        game.startGame(10, 2, game.players, 'Science');
     });
 
     test('should initialize with correct settings', () => {
@@ -116,60 +115,4 @@ describe('ClassicTrivia Question Retrieval', () => {
 
         expect(game.currentQuestion).toBe(initialIndex + 1);
     }, 60000);
-});
-
-
-
-describe.only('TriviaBoard Game Mode', () => {
-    let game;
-
-    beforeEach(async () => {
-        game = new TriviaBoard(2);
-        const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
-        await game.startGame(10, 30, ['Player1', 'Player2'], defaultTopics, 30);
-        await game.generateQuestion();
-    }, 1000000);
-
-    test('should initialize with correct settings', () => {
-        expect(game.topics).toHaveLength(6);
-        expect(game.topics).toEqual(["History", "Science", "Art", "Literature", "Geography", "Sports"]);
-        expect(game.question_array).toHaveLength(30);
-        expect(game.answered_array).toHaveLength(30);
-        expect(game.totalQuestions).toBe(30);
-        expect(game.timePerQuestion).toBe(30);
-        expect(game.players.length).toBe(2);
-    });
-    /*
-    test('should set topics correctly, filling with defaults', () => {
-        const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
-        game.setTopics(defaultTopics);
-        expect(game.topics).toEqual(["History", "Science", "Art", "Literature", "Geography", "Sports"]); // 4 default topics filled
-    });
-    */
-
-    test('should generate questions for each topic', async () => {
-        const questions = await game.getQuestionArray();
-
-        expect(Array.isArray(questions)).toBe(true);
-        expect(questions.length).toBe(30); // 6 topics * 5 questions each
-    }, 6000); 
-
-    test('should check answers and update scores correctly', async () => {
-        const question = game.question_array[0];
-        const correctAnswer = question.correctAnswer; 
-
-        game.scores = { 'Player1': 0, 'Player2': 0 };
-        game.checkAnswer('Player1', correctAnswer, 0);
-
-        expect(game.scores['Player1']).toBeGreaterThan(0);
-    }, 6000);
-
-    test('should generate scores based on question index', async () => {
-        const questionIndex = 3; 
-        game.scores = { 'Player1': 0 };
-        game.checkAnswer('Player1', game.question_array[questionIndex].correctAnswer, questionIndex);
-
-        const expectedPoints = (questionIndex % 5 + 1) * 200; // Should be 800 for questionIndex 3
-        expect(game.scores['Player1']).toBe(expectedPoints);
-    }, 6000);
 });

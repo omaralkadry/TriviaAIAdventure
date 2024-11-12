@@ -1,13 +1,22 @@
+javascript
 import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
 import { useAuth } from '../services/AuthContext';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function CustomNavbar() {
   const { isAuthenticated, getUsername, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    // Optionally, you can add navigation logic here if needed
+  const handleLogout = async (e) => {
+    e.preventDefault(); // Prevent default navigation
+    try {
+      await logout();
+      // Navigation is handled in AuthContext after successful logout
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Optionally show error message to user
+    }
   };
 
   return (
@@ -23,24 +32,37 @@ function CustomNavbar() {
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
             <Nav.Link href="/jeopardy">Jeopardy</Nav.Link>
           </Nav>
-          <Navbar.Collapse className="justify-content-end">
-            {
-              isAuthenticated() ?
-                <Navbar.Text>
+          <Nav>
+            {isAuthenticated() ? (
+              <>
+                <Navbar.Text className="me-2">
                   Signed in as:
-                  <NavDropdown title={getUsername()}>
-                    <Nav.Link onClick={handleLogout} href="/">Logout</Nav.Link>
-                  </NavDropdown>
                 </Navbar.Text>
-                :
-                <Navbar.Text>
-                  <NavDropdown title='Account'>
-                    <Nav.Link href="/login">Login</Nav.Link>
-                    <Nav.Link href="/register">Register</Nav.Link>
-                  </NavDropdown>
-                </Navbar.Text>
-            }
-          </Navbar.Collapse>
+                <NavDropdown
+                  title={getUsername()}
+                  id="user-dropdown"
+                  align="end"
+                >
+                  <NavDropdown.Item onClick={handleLogout}>
+                    Logout
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
+            ) : (
+              <NavDropdown
+                title="Account"
+                id="account-dropdown"
+                align="end"
+              >
+                <NavDropdown.Item href="/login">
+                  Login
+                </NavDropdown.Item>
+                <NavDropdown.Item href="/register">
+                  Register
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
+          </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>

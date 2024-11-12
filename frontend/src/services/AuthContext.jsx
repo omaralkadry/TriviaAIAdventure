@@ -1,13 +1,15 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // Save user data in session storage
   const login = (userData) => {
-    // Converts userData javascript object to JSON string
+    // Converts user data to JSON string format
     // Then stores into sessionStorage
     sessionStorage.setItem('user', JSON.stringify(userData.username));
     setUser(userData.username);
@@ -17,22 +19,36 @@ export const AuthProvider = ({ children }) => {
   // Clear user data in session storage on logout
   const logout = async () => {
     try {
-      const response = await fetch('http://localhost:3000/logout', {
+      const response = await fetch('/api/logout', {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
       if (response.ok) {
+        // Clear session storage
         sessionStorage.removeItem('user');
         setUser(null);
+
+        // Disconnect socket if needed
+        // TODO: Implement socket cleanup if needed
+
+        // Navigate to home page after successful logout
+        navigate('/');
       } else {
-        console.error('Logout failed');
+        const data = await response.json();
+        console.error('Logout failed:', data.message);
+        throw new Error(data.message || 'Logout failed');
       }
     } catch (error) {
       console.error('Error during logout:', error);
+      throw error; // Propagate error to component for handling
     }
   };
 
-  // Returns original javascript object by parsing
+  // Parse and return stored user data
   /*
   const getUser = () => {
     const storedUser = sessionStorage.getItem('user');
