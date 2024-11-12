@@ -301,12 +301,17 @@ class TriviaBoard extends GameMode {
         } catch (error) {
             console.error('Error generating questions:', error);
         }
-        }
+    }
 
     checkAnswer(player, answer, qindex) {
         if (answer == this.question_array[qindex].correctAnswer) {
-            this.increaseScore(player, qindex);
             // this.answered_array[qindex] = true;
+            // The first person to get the question right gets double points
+            if (!this.answered_array[qindex])
+                this.increaseScore(player, qindex, true);
+            else
+                this.increaseScore(player, qindex);
+
             this.numberAnswered++;
             return true;
         }
@@ -316,9 +321,11 @@ class TriviaBoard extends GameMode {
         }
     }
 
-    increaseScore(player, qindex) {
+    increaseScore(player, qindex, firstToAnswer = false) {
         let adjustedIndex = qindex % 5;
         const points = (adjustedIndex + 1) * 200;
+        if (firstToAnswer)
+            points *= 2;
         this.scores[player] += points;
     }
 

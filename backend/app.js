@@ -261,11 +261,13 @@ socketIO.on('connection', (socket) => {
 
             // Answer is correct
             if (result) {
-                // The first person to answer correctly gets to pick the next question
-                if (!roomsList[roomCode].gameInstance.checkIfAnswered(currentQuestionIndex))
+                // The first person to answer correctly gets double points and to pick the next question
+                if (!roomsList[roomCode].gameInstance.checkIfAnswered(currentQuestionIndex)) {
                     socketIO.to(roomCode).emit('next question selector', username);
-
-                callback({ success: true });
+                    callback({ success: true, isFirstToAnswer: true });
+                }
+                else 
+                    callback({ success: true, isFirstToAnswer: false });
             }
             // Answer is wrong
             else {
