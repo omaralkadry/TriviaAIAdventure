@@ -234,6 +234,11 @@ socketIO.on('connection', (socket) => {
     //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
     socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
+        // Fallback to socket properties if the values are null or undefined
+        // roomCode and username no longer necessary to be received
+        roomCode = roomCode || socket.roomCode;
+        username = username || socket.username;
+
         console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
 
         let answer;
