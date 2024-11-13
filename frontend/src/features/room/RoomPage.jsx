@@ -228,6 +228,7 @@ function RoomPage() {
             selectorUsername={selector}
             questions={questions}
             topics={jeopardyTopics}
+            duration={duration}
           />
         );
       }

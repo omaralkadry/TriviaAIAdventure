@@ -6,7 +6,7 @@ import Question from './Question.jsx';
 import { useSocket } from '../../../services/SocketContext';
 import { useAuth } from '../../../services/AuthContext';
 
-const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
+const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
   const [gameState, setGameState] = useState(null);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState({});
@@ -39,7 +39,7 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
 
   // Converts question indices into question
   const indexToQuestion = (selectedIndex) => {
-    const selectedQuestionObj = jeopardyData[((selectedIndex['category'] + 1) * (selectedIndex['point'] + 1)) - 1];
+    const selectedQuestionObj = jeopardyData[selectedIndex['category'] * 5 + selectedIndex['point']];
     setSelectedQuestion(selectedQuestionObj);
   };
 
@@ -109,8 +109,8 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
 
           {/* Topic questions with click handlers */}
           <Row xs={6} md={6} className="g-3">
-            {Array.from({ length: 5 }, (_, pointIndex) => (
-              <React.Fragment key={pointIndex}>
+          {Array.from({ length: 5 }, (_, pointIndex) => (
+            <React.Fragment key={pointIndex}>
                 {Array.from({ length: 6 }, (_, categoryIndex) => (
                   <Col 
                     key={`${categoryIndex}-${pointIndex}`} 
@@ -131,8 +131,8 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
                     </Card>
                   </Col>
                 ))}
-              </React.Fragment>
-            ))}
+            </React.Fragment>
+          ))}
           </Row>
           <a>
             <strong>{selector}</strong> is choosing the question.
