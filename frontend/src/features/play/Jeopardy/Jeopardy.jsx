@@ -23,9 +23,9 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
   const [jeopardyTopics, setJeopardyTopics] = useState(topics);
 
   // If question indices are already clicked previously
-  const isClicked = (category, point) => {
+  const isClicked = (selectedIndex) => {
     return clickedQuestions.some(
-      question => question.category === category && question.point === point
+      index => index === selectedIndex
     );
   };
 
@@ -39,18 +39,14 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
 
   // Converts question indices into question
   const indexToQuestion = (selectedIndex) => {
-    const selectedQuestionObj = jeopardyData[selectedIndex['category'] * 5 + selectedIndex['point']];
+    const selectedQuestionObj = jeopardyData[selectedIndex];
     setSelectedQuestion(selectedQuestionObj);
   };
 
   // Handles clicked question
-  const handleSelectedQuestion = (categoryIndex, pointIndex) => {
-    let selectedIndex = {};
-    selectedIndex['category'] = categoryIndex;
-    selectedIndex['point'] = pointIndex;
-    console.log(`Selected category: ${selectedIndex['category']}`);
-    console.log(`Selected points: ${selectedIndex['point']}`);
-    if ((selected || username === selectorUsername) && !isClicked(categoryIndex, pointIndex)) {
+  const handleSelectedQuestion = (selectedIndex) => {
+    // Makes sure user is the one selecting and has not clicked that index
+    if ((selected || username === selectorUsername) && !isClicked(selectedIndex)) {
       socket.emit('selected question', selectedIndex );
     } else {
       console.log("You are not allowed to select that question right now.");
@@ -67,12 +63,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
     }
 
     // On what the question is selected
-    function onSelectedQuestion(selectedQuestionIndex) {
-      setQuestionIndex(selectedQuestionIndex);
-      console.log(`Selected category: ${selectedQuestionIndex['category']}`);
-      console.log(`Selected points: ${selectedQuestionIndex['point']}`);
-      handleClick(selectedQuestionIndex);
-      indexToQuestion(selectedQuestionIndex);
+    function onSelectedQuestion(selectedIndex) {
+      console.log(`Selected index: ${selectedIndex}`);
+      setQuestionIndex(selectedIndex);
+      handleClick(selectedIndex);
+      indexToQuestion(selectedIndex);
     }
 
     if (socket) {
@@ -111,18 +106,20 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
           <Row xs={6} md={6} className="g-3">
           {Array.from({ length: 5 }, (_, pointIndex) => (
             <React.Fragment key={pointIndex}>
-                {Array.from({ length: 6 }, (_, categoryIndex) => (
+                {Array.from({ length: 6 }, (_, categoryIndex) => { 
+                  const selectedIndex = categoryIndex * 5 + pointIndex;
+                  return (
                   <Col 
                     key={`${categoryIndex}-${pointIndex}`} 
                     className="clickable-card" 
-                    onClick={() => handleSelectedQuestion(categoryIndex, pointIndex)} 
+                    onClick={() => handleSelectedQuestion(selectedIndex)} 
                   >
                     <Card 
                       className="prevent-select" 
                       style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
                     >
                       <Card.Body className='prevent-select'>
-                        { !isClicked(categoryIndex, pointIndex) && (
+                        { !isClicked(selectedIndex) && (
                           <Card.Title className="prevent-select text-center">
                             {jeopardyPoints[pointIndex]}
                           </Card.Title>
@@ -130,7 +127,8 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
                       </Card.Body>
                     </Card>
                   </Col>
-                ))}
+                  );
+                })}
             </React.Fragment>
           ))}
           </Row>
@@ -143,8 +141,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
       {/* Display selected question */}
       { selectedQuestion && (
           <>
-            <Question selectedQuestion={selectedQuestion} /> 
-            <Button onClick={() => {setSelectedQuestion(null)}}>Exit</Button>
+            <Question 
+              selectedQuestion={selectedQuestion} 
+              duration={duration}
+              handleNextQuestion={() => setSelectedQuestion(null)}
+            /> 
           </>
         )
       }
