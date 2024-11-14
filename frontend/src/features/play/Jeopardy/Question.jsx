@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useSocket } from '../../../services/SocketContext';
-import { useAuth } from '../../../services/AuthContext';
+import Play from '../Play';
 
-const Question = ({ selectedQuestion }) => {
-  const [answer, setAnswer] = useState('');
+const Question = ({ selectedQuestion, duration, handleNextQuestion }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState('');
   const socket = useSocket();
-  const { getUsername } = useAuth();
   const [buzzed, setBuzzed] = useState(false);
-  const username = getUsername();
+  const [isCountdownFinished, setIsCountdownFinished] = useState(false);
+  const [key, setKey] = useState(Date.now());
 
   // Handler on who gets to answer
   useEffect(() => {
@@ -29,39 +29,39 @@ const Question = ({ selectedQuestion }) => {
     setBuzzed(true);
   };
 
-  const handleSubmit = () => {
+  const handleAnswerSubmit = () => {
     // Handle submiting answer
   };
+
+  const handleCountdownFinish = useCallback(() => {
+    setIsCountdownFinished(true);
+  }, []);
   
   return (
     <>
-      <Container fluid className="justify-content-center mt-5">
-        <Row className="justify-content-center">
-          <Col md={10} lg={8} xl={6} xxl={4}>
-            <Card className="question-card">
-              <Card.Body
-                className="text-center d-flex justify-content-center align-items-center question-body"
-                style={{ height: '200px', padding: '20px' }}
-              >
-                {selectedQuestion.question}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col md={4}>
-            <Button onClick={() => handleBuzzer()}>Buzz</Button>
-            { buzzed && (
-              <Form.Control
-                type="text"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder={`Enter your answer here.`}
-              />
-            )}
-          </Col>
-        </Row>
-      </Container>
+      <Play
+        timePerQuestion= {duration}
+        currentQuestion={selectedQuestion}
+        selectedAnswer={selectedAnswer}
+        setSelectedAnswer={setSelectedAnswer}
+        isCountdownFinished={isCountdownFinished}
+        handleAnswerSubmit={handleAnswerSubmit}
+        handleCountdownFinish={handleCountdownFinish}
+        handleNextQuestion={handleNextQuestion}
+        key={key}
+        buzzed={buzzed}
+      />
+      { !buzzed && (
+        <Container fluid className="justify-content-center mt-5">
+          <Row className="justify-content-center">
+            <Col md={4}>
+              <Button onClick={() => handleBuzzer()}>
+                Buzz
+              </Button>
+            </Col>
+          </Row>
+        </Container>
+      )}
     </>
   );
 };
