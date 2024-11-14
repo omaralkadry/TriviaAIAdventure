@@ -9,6 +9,7 @@ const Question = ({ selectedQuestion, duration, handleNextQuestion }) => {
   const [buzzed, setBuzzed] = useState(false);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [key, setKey] = useState(Date.now());
+  const [submitted, setSubmitted] = useState(false);
 
   // Handler on who gets to answer
   useEffect(() => {
@@ -31,6 +32,10 @@ const Question = ({ selectedQuestion, duration, handleNextQuestion }) => {
 
   const handleAnswerSubmit = () => {
     // Handle submiting answer
+    if (!submitted) {
+      socket.emit('submit answer', null, null, selectedAnswer, null);
+      setSubmitted(true);
+    }
   };
 
   const handleCountdownFinish = useCallback(() => {
@@ -51,17 +56,19 @@ const Question = ({ selectedQuestion, duration, handleNextQuestion }) => {
         key={key}
         buzzed={buzzed}
       />
-      { !buzzed && (
-        <Container fluid className="justify-content-center mt-5">
-          <Row className="justify-content-center">
-            <Col md={4}>
-              <Button onClick={() => handleBuzzer()}>
-                Buzz
-              </Button>
-            </Col>
-          </Row>
-        </Container>
-      )}
+
+      <Container fluid className="justify-content-center mt-5">
+        <Row className="justify-content-center">
+          <Col md={4}>
+            { !buzzed && !isCountdownFinished && (
+              <Button onClick={() => handleBuzzer()}>Buzz</Button>
+            )}
+            { !submitted && buzzed && !isCountdownFinished && (
+              <Button onClick={() => handleAnswerSubmit()}>Submit</Button>
+            )}
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 };
