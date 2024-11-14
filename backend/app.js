@@ -235,9 +235,11 @@ socketIO.on('connection', (socket) => {
     //Handle answer submission
     socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
         // Fallback to socket properties if the values are null or undefined
-        // roomCode and username no longer necessary to be received
+        // roomCode, username, currentQuesitonIndex no longer necessary to be received
         roomCode = roomCode || socket.roomCode;
         username = username || socket.username;
+        const gameInstance = roomsList[roomCode].gameInstance;
+        currentQuestionIndex = currentQuestionIndex || gameInstance.currentQuestion;
 
         console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
 
@@ -312,8 +314,14 @@ socketIO.on('connection', (socket) => {
 
     // Handle when a person selects a Trivia Board question
     socket.on('selected question', (questionIndex) => {
+        const roomCode = socket.roomCode;
+
+        // Store current question index into gameInstance
+        const gameInstance = roomsList[roomCode].gameInstance;
+        gameInstance.currentQuestion = questionIndex;
+
         // Emits to the room what question index was picked
-        socketIO.to(socket.roomCode).emit('selected question', questionIndex);
+        socketIO.to(roomCode).emit('selected question', questionIndex);
     })
 
     // Handle disconnects
