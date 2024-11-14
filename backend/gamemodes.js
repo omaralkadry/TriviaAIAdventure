@@ -323,7 +323,7 @@ class TriviaBoard extends GameMode {
 
     increaseScore(player, qindex, firstToAnswer = false) {
         let adjustedIndex = qindex % 5;
-        const points = (adjustedIndex + 1) * 200;
+        let points = (adjustedIndex + 1) * 200;
         if (firstToAnswer)
             points *= 2;
         this.scores[player] += points;
