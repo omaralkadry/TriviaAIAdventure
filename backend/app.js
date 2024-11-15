@@ -257,10 +257,9 @@ socketIO.on('connection', (socket) => {
             // console.log(selectedAnswer);
             // console.log(answer);
 
-        const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
-
         // Check if gamemode is Trivia Board
-        if (roomsList[roomCode].gameInstance === TriviaBoard) {
+        if (roomsList[roomCode].gameInstance.constructor.name === "TriviaBoard") { // Referenced https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
+            let result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
             // Check if 30 questions have been answered, and if so, the game should end
             if (roomsList[roomCode].gameInstance.getNumberAnswered() === 30) {
                 socketIO.to(roomCode).emit('game over', { message: 'The game is over' });
@@ -271,17 +270,20 @@ socketIO.on('connection', (socket) => {
                 // The first person to answer correctly gets double points and to pick the next question
                 if (!roomsList[roomCode].gameInstance.checkIfAnswered(currentQuestionIndex)) {
                     socketIO.to(roomCode).emit('next question selector', username);
-                    callback({ success: true, isFirstToAnswer: true });
+                    // callback({ success: true, isFirstToAnswer: true });
                 }
-                else 
-                    callback({ success: true, isFirstToAnswer: false });
+                else {
+                    // callback({ success: true, isFirstToAnswer: false });
+                }
             }
             // Answer is wrong
             else {
-                // socketIO.to(roomCode).emit('continue question');
-                callback({ success: false });
+                // callback({ success: false });
             }
         }
+        // If the gamemode is not TriviaBoard
+        else
+            roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
         socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
