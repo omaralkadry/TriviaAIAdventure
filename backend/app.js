@@ -322,7 +322,13 @@ socketIO.on('connection', (socket) => {
 
         // Emits to the room what question index was picked
         socketIO.to(roomCode).emit('selected question', questionIndex);
-    })
+    });
+
+    // Handle going back to board after a question
+    socket.on('back to board', () => {
+        // Emits to everyone in room
+        socketIO.to(socket.roomCode).emit('back to board');
+    });
 
     // Handle disconnects
     socket.on('disconnect', () => {

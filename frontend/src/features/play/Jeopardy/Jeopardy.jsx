@@ -7,7 +7,6 @@ import { useSocket } from '../../../services/SocketContext';
 import { useAuth } from '../../../services/AuthContext';
 
 const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
-  const [gameState, setGameState] = useState(null);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState({});
   const [clickedQuestions, setClickedQuestions] = useState([]);
@@ -52,6 +51,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
       console.log("You are not allowed to select that question right now.");
     }
   };
+
+  // Handles sending 'back to board' to server
+  const handleBackToBoard = () => {
+    socket.emit('back to board');
+  };
   
   // Handlers socket.on receiving
   useEffect(() => {
@@ -70,13 +74,20 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
       indexToQuestion(selectedIndex);
     }
 
+    // Sets selected question to null, putting users to the board
+    function onBackToBoard() {
+      setSelectedQuestion(null);
+    }
+
     if (socket) {
       socket.on('next question selector', onSelector);
       socket.on('selected question', onSelectedQuestion);
+      socket.on('back to board', onBackToBoard);
 
       return () => {
         socket.off('next question selector', onSelector);
         socket.off('selected question', onSelectedQuestion);
+        socket.off('back to board', onBackToBoard);
       };
     } else {
       console.warn('Jeopardy Board: Socket is not initialized');
@@ -144,7 +155,7 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
             <Question 
               selectedQuestion={selectedQuestion} 
               duration={duration}
-              handleNextQuestion={() => setSelectedQuestion(null)}
+              handleNextQuestion={() => handleBackToBoard()}
             /> 
           </>
         )
