@@ -26,6 +26,7 @@ function RoomPage() {
   const [scores, setScores] = useState({});
   const username = getUsername();
   const [selector, setSelector] = useState('');
+  const [waiting, setWaiting] = useState(false);
 
   // Game and room settings
   const [topic, setTopic] = useState('');
@@ -50,6 +51,7 @@ function RoomPage() {
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
       setKey(Date.now());
+      setWaiting(false);
     };
 
     const handleGameOver = (data) => {
@@ -64,6 +66,8 @@ function RoomPage() {
       setQuestions([]);
       setCurrentQuestionIndex(0);
       setSelectedAnswer(-1);
+      // Waiting state to display 'loading' message when true
+      setWaiting(true);
     };
 
     const handleAnswerResult = (data) => {
@@ -257,6 +261,18 @@ function RoomPage() {
           </Table>
           <Button onClick={handleBackToLobby}>Back to Lobby</Button>
         </>
+      );
+    }
+
+    if (waiting) {
+      return (
+        <Container>
+          <Row className="justify-content-center mt-5">
+            <Col>
+              <h2>Loading game...</h2>
+            </Col>
+          </Row>
+        </Container>
       );
     }
 
