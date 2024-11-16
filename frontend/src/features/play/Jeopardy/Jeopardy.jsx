@@ -99,22 +99,23 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
       {/* Display board if not currently in a question */}
       {!selectedQuestion && (
         <React.Fragment>
+          <Row xs={6} md={6} className="g-3">
 
           {/* Topic headers row */}
-          <Row className="g-3 mb-3">
-            {jeopardyTopics.map((topic, index) => (
-              <Col key={index} className="text-center">
-                <Card style={{ minHeight: '100px' }}>
-                  <Card.Body>
-                    <Card.Title>{topic}</Card.Title>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+          {jeopardyTopics.map((topic, index) => (
+            <Col key={index} className="text-center">
+              <Card 
+                className="prevent-select" 
+                style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
+              >
+                <Card.Body className='prevent-select'>
+                  <Card.Title className="prevent-select text-center">{topic}</Card.Title>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
 
           {/* Topic questions with click handlers */}
-          <Row xs={6} md={6} className="g-3">
           {Array.from({ length: 5 }, (_, pointIndex) => (
             <React.Fragment key={pointIndex}>
                 {Array.from({ length: 6 }, (_, categoryIndex) => { 
@@ -143,6 +144,7 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
             </React.Fragment>
           ))}
           </Row>
+          
           <a>
             <strong>{selector}</strong> is choosing the question.
           </a>
