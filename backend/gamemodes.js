@@ -243,13 +243,14 @@ class TriviaBoard extends GameMode {
     }
 
     setTopics(topics) {
-        this.topics = topics.slice(0, 6);
+        this.topics = topics.filter(topic => topic.trim() !== '').slice(0, 6);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
         let topic_index = 0;
         while (this.topics.length < 6) {
             this.topics.push(defaultTopics[topic_index]); 
             topic_index++;
         }
+        console.log(this.topics);
     }
 
     async generateQuestion() {
