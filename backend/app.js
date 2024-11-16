@@ -16,7 +16,7 @@ const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
-const { ClassicTrivia, TriviaBoard } = require('./gamemodes');
+const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
 
@@ -57,7 +57,7 @@ let roomsList = {};
 const gameModes = [
     ClassicTrivia, // Index 0
     TriviaBoard,   // Index 1
-    //thirdmode here
+    RandomTrivia //thirdmode here
 ];
 
 // Function to start trivia game in a room
@@ -80,12 +80,20 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
     }
 
     const questions = await gameInstance.getQuestionArray();
-
-    const transformedQuestions = questions.map(q => ({
-        question: q.question,
-        answers: Object.values(q.choices),
-        answer: Object.keys(q.choices).indexOf(q.correctAnswer)
-      }));
+    let transformedQuestions;
+    if (mode === 2) { // RandomTrivia
+        transformedQuestions = questions.map(q => ({
+            question: q.question,
+            topic: q.topic
+        }));
+    } else {
+        transformedQuestions = questions.map(q => ({
+            question: q.question,
+            answers: Object.values(q.choices),
+            answer: Object.keys(q.choices).indexOf(q.correctAnswer)
+        }));
+    }
+    
 
       //testing
       //console.log(transformedQuestions);

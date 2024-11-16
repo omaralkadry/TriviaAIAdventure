@@ -75,7 +75,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
           )}
         </Container>
         {/* TODO: Adjust timer variable */}
-        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 5}/>
+        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 15}/>
       </Container>
   );
 };
