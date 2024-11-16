@@ -134,13 +134,13 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    const topic_array =[];
+    let topic_array = [];
     if (mode === 0) {
       //Classic Trivia
       topic_array.push(topic);
     } else if (mode === 1) {
       //Trivia Board
-      //TODO
+      topic_array = jeopardyTopics;
     } else if (mode === 2) {
       // Trivia Crack
       //TODO
