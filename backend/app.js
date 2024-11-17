@@ -260,6 +260,8 @@ socketIO.on('connection', (socket) => {
             answer = "c";
             } else if (selectedAnswer === 3) {
             answer = "d";
+            } else {
+            answer = selectedAnswer;
             }
             // testing
             // console.log(selectedAnswer);

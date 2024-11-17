@@ -341,8 +341,8 @@ function RoomPage() {
                 <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
                   <option value={-1} disabled>Select Game Mode</option>
                   <option value={0}>Classic Trivia</option>
-                  <option value={1}>Jeopardy</option>
-                  <option value={2}>Trivia Crack</option>
+                  <option value={1}>Trivia Board</option>
+                  <option value={2}>Random Trivia</option>
                 </Form.Select>
               </Col>
               <Col md={3}>

@@ -315,6 +315,8 @@ class TriviaBoard extends GameMode {
 
             this.numberAnswered++;
             return true;
+        } else if (answer == ""){
+            //nothing happens no loss or change in score
         }
         else {
             this.decreaseScore(player, qindex);
