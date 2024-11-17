@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap';
+import { Button, Container, Col, Row, Form, Table, Alert, Spinner } from 'react-bootstrap';
 import Play from '../play/Play';
 import './RoomPage.css';
 import { useAuth } from '../../services/AuthContext.jsx';
@@ -270,6 +270,8 @@ function RoomPage() {
           <Row className="justify-content-center mt-5">
             <Col>
               <h2>Loading game...</h2>
+              {/* Referenced https://react-bootstrap.netlify.app/docs/components/spinners */}
+              <Spinner animation="border"/>
             </Col>
           </Row>
         </Container>
