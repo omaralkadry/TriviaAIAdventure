@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ProgressBar } from 'react-bootstrap';
 import './Timer.css';
 
 const Timer = ({ duration, onCountdownFinish }) => {
@@ -25,9 +26,16 @@ const Timer = ({ duration, onCountdownFinish }) => {
   }, [duration]);
 
   return (
+    /* Referenced
+      https://react-bootstrap.netlify.app/docs/components/progress
+      https://stackoverflow.com/questions/48886726/why-do-i-get-the-error-expressions-must-have-one-parent-element-how-do-i-fix
+    */
+    <>
       <div className="timer">
         <span>{timeLeft}s</span>
       </div>
+      <ProgressBar now={timeLeft} max={0} min={duration}/>
+    </>
   );
 };
 
