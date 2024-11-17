@@ -271,7 +271,9 @@ function RoomPage() {
             <Col>
               <h2>Loading game...</h2>
               {/* Referenced https://react-bootstrap.netlify.app/docs/components/spinners */}
-              <Spinner animation="border"/>
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading game...</span>
+              </Spinner>
             </Col>
           </Row>
         </Container>
