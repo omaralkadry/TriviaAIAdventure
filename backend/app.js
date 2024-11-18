@@ -16,7 +16,7 @@ const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
-const { ClassicTrivia, TriviaBoard } = require('./gamemodes');
+const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
 
@@ -57,7 +57,7 @@ let roomsList = {};
 const gameModes = [
     ClassicTrivia, // Index 0
     TriviaBoard,   // Index 1
-    //thirdmode here
+    RandomTrivia //thirdmode here
 ];
 
 // Function to start trivia game in a room
@@ -80,12 +80,20 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
     }
 
     const questions = await gameInstance.getQuestionArray();
-
-    const transformedQuestions = questions.map(q => ({
-        question: q.question,
-        answers: Object.values(q.choices),
-        answer: Object.keys(q.choices).indexOf(q.correctAnswer)
-      }));
+    let transformedQuestions;
+    if (mode === 2) { // RandomTrivia
+        transformedQuestions = questions.map(q => ({
+            question: q.question,
+            topic: q.topic
+        }));
+    } else {
+        transformedQuestions = questions.map(q => ({
+            question: q.question,
+            answers: Object.values(q.choices),
+            answer: Object.keys(q.choices).indexOf(q.correctAnswer)
+        }));
+    }
+    
 
       //testing
       //console.log(transformedQuestions);
@@ -233,7 +241,14 @@ socketIO.on('connection', (socket) => {
 
     //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
-    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex) => {
+    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
+        // Fallback to socket properties if the values are null or undefined
+        // roomCode, username, currentQuesitonIndex no longer necessary to be received
+        roomCode = roomCode || socket.roomCode;
+        username = username || socket.username;
+        const gameInstance = roomsList[roomCode].gameInstance;
+        currentQuestionIndex = currentQuestionIndex || gameInstance.currentQuestion;
+
         console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
 
         let answer;
@@ -245,29 +260,40 @@ socketIO.on('connection', (socket) => {
             answer = "c";
             } else if (selectedAnswer === 3) {
             answer = "d";
+            } else {
+            answer = selectedAnswer;
             }
             // testing
             // console.log(selectedAnswer);
             // console.log(answer);
 
-        const result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
-
         // Check if gamemode is Trivia Board
-        if (roomsList[roomCode].gameInstance === TriviaBoard) {
+        if (roomsList[roomCode].gameInstance.constructor.name === "TriviaBoard") { // Referenced https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
+            let result = roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
             // Check if 30 questions have been answered, and if so, the game should end
             if (roomsList[roomCode].gameInstance.getNumberAnswered() === 30) {
                 socketIO.to(roomCode).emit('game over', { message: 'The game is over' });
             }
 
+            // Answer is correct
             if (result) {
-                // Answer was correct
-                socketIO.to(roomCode).emit('next question selector', username);
+                // The first person to answer correctly gets double points and to pick the next question
+                if (!roomsList[roomCode].gameInstance.checkIfAnswered(currentQuestionIndex)) {
+                    socketIO.to(roomCode).emit('next question selector', username);
+                    // callback({ success: true, isFirstToAnswer: true });
+                }
+                else {
+                    // callback({ success: true, isFirstToAnswer: false });
+                }
             }
+            // Answer is wrong
             else {
-                // Answer was wrong
-                socketIO.to(roomCode).emit('continue question');
+                // callback({ success: false });
             }
         }
+        // If the gamemode is not TriviaBoard
+        else
+            roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
         socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
@@ -300,9 +326,21 @@ socketIO.on('connection', (socket) => {
 
     // Handle when a person selects a Trivia Board question
     socket.on('selected question', (questionIndex) => {
+        const roomCode = socket.roomCode;
+
+        // Store current question index into gameInstance
+        const gameInstance = roomsList[roomCode].gameInstance;
+        gameInstance.currentQuestion = questionIndex;
+
         // Emits to the room what question index was picked
-        socketIO.to(socket.roomCode).emit('selected question', questionIndex);
-    })
+        socketIO.to(roomCode).emit('selected question', questionIndex);
+    });
+
+    // Handle going back to board after a question
+    socket.on('back to board', () => {
+        // Emits to everyone in room
+        socketIO.to(socket.roomCode).emit('back to board');
+    });
 
     // Handle disconnects
     socket.on('disconnect', () => {

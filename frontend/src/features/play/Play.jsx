@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Container, Row, Col, Card, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer.jsx';
 
-const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, key}) => {
+const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, key, buzzed = true}) => {
 
   useEffect(() => {
     if (isCountdownFinished) {
@@ -39,7 +39,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
           </Row>
         </Container>
         <Container className="mt-5">
-          {Array.isArray(currentQuestion.answers) && (
+          { (buzzed || isCountdownFinished) && Array.isArray(currentQuestion.answers) && (
               <Row xs={1} md={2} className="g-4 mb-3">
                 {currentQuestion.answers.map((answer, idx) => (
                     <Col key={idx}>
@@ -75,7 +75,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
           )}
         </Container>
         {/* TODO: Adjust timer variable */}
-        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 5}/>
+        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 15}/>
       </Container>
   );
 };

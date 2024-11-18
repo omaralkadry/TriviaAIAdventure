@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Button, Container, Col, Row, Form, Table, Alert } from 'react-bootstrap';
+import { Button, Container, Col, Row, Form, Table, Alert, Spinner } from 'react-bootstrap';
 import Play from '../play/Play';
 import './RoomPage.css';
 import { useAuth } from '../../services/AuthContext.jsx';
@@ -26,6 +26,7 @@ function RoomPage() {
   const [scores, setScores] = useState({});
   const username = getUsername();
   const [selector, setSelector] = useState('');
+  const [waiting, setWaiting] = useState(false);
 
   // Game and room settings
   const [topic, setTopic] = useState('');
@@ -50,6 +51,7 @@ function RoomPage() {
       setSelectedAnswer(-1);
       setIsCountdownFinished(false);
       setKey(Date.now());
+      setWaiting(false);
     };
 
     const handleGameOver = (data) => {
@@ -64,6 +66,8 @@ function RoomPage() {
       setQuestions([]);
       setCurrentQuestionIndex(0);
       setSelectedAnswer(-1);
+      // Waiting state to display 'loading' message when true
+      setWaiting(true);
     };
 
     const handleAnswerResult = (data) => {
@@ -130,13 +134,13 @@ function RoomPage() {
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
-    const topic_array =[];
+    let topic_array = [];
     if (mode === 0) {
       //Classic Trivia
       topic_array.push(topic);
     } else if (mode === 1) {
       //Trivia Board
-      //TODO
+      topic_array = jeopardyTopics;
     } else if (mode === 2) {
       // Trivia Crack
       //TODO
@@ -145,7 +149,7 @@ function RoomPage() {
       console.error("Invalid game mode", mode);
     }
 
-    socket.emit('start game', roomCode, topic_array, totalQuestions || 5, duration || 20, mode, (response) => {
+    socket.emit('start game', roomCode, topic_array, totalQuestions || 5, duration , mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
@@ -228,6 +232,7 @@ function RoomPage() {
             selectorUsername={selector}
             questions={questions}
             topics={jeopardyTopics}
+            duration={duration}
           />
         );
       }
@@ -256,6 +261,22 @@ function RoomPage() {
           </Table>
           <Button onClick={handleBackToLobby}>Back to Lobby</Button>
         </>
+      );
+    }
+
+    if (waiting) {
+      return (
+        <Container>
+          <Row className="justify-content-center mt-5">
+            <Col>
+              <h2>Loading game...</h2>
+              {/* Referenced https://react-bootstrap.netlify.app/docs/components/spinners */}
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading game...</span>
+              </Spinner>
+            </Col>
+          </Row>
+        </Container>
       );
     }
 
@@ -320,8 +341,8 @@ function RoomPage() {
                 <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
                   <option value={-1} disabled>Select Game Mode</option>
                   <option value={0}>Classic Trivia</option>
-                  <option value={1}>Jeopardy</option>
-                  <option value={2}>Trivia Crack</option>
+                  <option value={1}>Trivia Board</option>
+                  <option value={2}>Random Trivia</option>
                 </Form.Select>
               </Col>
               <Col md={3}>

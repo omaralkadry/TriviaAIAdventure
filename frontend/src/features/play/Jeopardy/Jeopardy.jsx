@@ -6,8 +6,7 @@ import Question from './Question.jsx';
 import { useSocket } from '../../../services/SocketContext';
 import { useAuth } from '../../../services/AuthContext';
 
-const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
-  const [gameState, setGameState] = useState(null);
+const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState({});
   const [clickedQuestions, setClickedQuestions] = useState([]);
@@ -23,9 +22,9 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
   const [jeopardyTopics, setJeopardyTopics] = useState(topics);
 
   // If question indices are already clicked previously
-  const isClicked = (category, point) => {
+  const isClicked = (selectedIndex) => {
     return clickedQuestions.some(
-      question => question.category === category && question.point === point
+      index => index === selectedIndex
     );
   };
 
@@ -39,22 +38,23 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
 
   // Converts question indices into question
   const indexToQuestion = (selectedIndex) => {
-    const selectedQuestionObj = jeopardyData[((selectedIndex['category'] + 1) * (selectedIndex['point'] + 1)) - 1];
+    const selectedQuestionObj = jeopardyData[selectedIndex];
     setSelectedQuestion(selectedQuestionObj);
   };
 
   // Handles clicked question
-  const handleSelectedQuestion = (categoryIndex, pointIndex) => {
-    let selectedIndex = {};
-    selectedIndex['category'] = categoryIndex;
-    selectedIndex['point'] = pointIndex;
-    console.log(`Selected category: ${selectedIndex['category']}`);
-    console.log(`Selected points: ${selectedIndex['point']}`);
-    if ((selected || username === selectorUsername) && !isClicked(categoryIndex, pointIndex)) {
+  const handleSelectedQuestion = (selectedIndex) => {
+    // Makes sure user is the one selecting and has not clicked that index
+    if ((selected || username === selectorUsername) && !isClicked(selectedIndex)) {
       socket.emit('selected question', selectedIndex );
     } else {
       console.log("You are not allowed to select that question right now.");
     }
+  };
+
+  // Handles sending 'back to board' to server
+  const handleBackToBoard = () => {
+    socket.emit('back to board');
   };
   
   // Handlers socket.on receiving
@@ -67,21 +67,27 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
     }
 
     // On what the question is selected
-    function onSelectedQuestion(selectedQuestionIndex) {
-      setQuestionIndex(selectedQuestionIndex);
-      console.log(`Selected category: ${selectedQuestionIndex['category']}`);
-      console.log(`Selected points: ${selectedQuestionIndex['point']}`);
-      handleClick(selectedQuestionIndex);
-      indexToQuestion(selectedQuestionIndex);
+    function onSelectedQuestion(selectedIndex) {
+      console.log(`Selected index: ${selectedIndex}`);
+      setQuestionIndex(selectedIndex);
+      handleClick(selectedIndex);
+      indexToQuestion(selectedIndex);
+    }
+
+    // Sets selected question to null, putting users to the board
+    function onBackToBoard() {
+      setSelectedQuestion(null);
     }
 
     if (socket) {
       socket.on('next question selector', onSelector);
       socket.on('selected question', onSelectedQuestion);
+      socket.on('back to board', onBackToBoard);
 
       return () => {
         socket.off('next question selector', onSelector);
         socket.off('selected question', onSelectedQuestion);
+        socket.off('back to board', onBackToBoard);
       };
     } else {
       console.warn('Jeopardy Board: Socket is not initialized');
@@ -93,36 +99,39 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
       {/* Display board if not currently in a question */}
       {!selectedQuestion && (
         <React.Fragment>
+          <Row xs={6} md={6} className="g-3">
 
           {/* Topic headers row */}
-          <Row className="g-3 mb-3">
-            {jeopardyTopics.map((topic, index) => (
-              <Col key={index} className="text-center">
-                <Card style={{ minHeight: '100px' }}>
-                  <Card.Body>
-                    <Card.Title>{topic}</Card.Title>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+          {jeopardyTopics.map((topic, index) => (
+            <Col key={index} className="text-center">
+              <Card 
+                className="prevent-select" 
+                style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
+              >
+                <Card.Body className='prevent-select'>
+                  <Card.Title className="prevent-select text-center">{topic}</Card.Title>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
 
           {/* Topic questions with click handlers */}
-          <Row xs={6} md={6} className="g-3">
-            {Array.from({ length: 5 }, (_, pointIndex) => (
-              <React.Fragment key={pointIndex}>
-                {Array.from({ length: 6 }, (_, categoryIndex) => (
+          {Array.from({ length: 5 }, (_, pointIndex) => (
+            <React.Fragment key={pointIndex}>
+                {Array.from({ length: 6 }, (_, categoryIndex) => { 
+                  const selectedIndex = categoryIndex * 5 + pointIndex;
+                  return (
                   <Col 
                     key={`${categoryIndex}-${pointIndex}`} 
                     className="clickable-card" 
-                    onClick={() => handleSelectedQuestion(categoryIndex, pointIndex)} 
+                    onClick={() => handleSelectedQuestion(selectedIndex)} 
                   >
                     <Card 
                       className="prevent-select" 
                       style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
                     >
                       <Card.Body className='prevent-select'>
-                        { !isClicked(categoryIndex, pointIndex) && (
+                        { !isClicked(selectedIndex) && (
                           <Card.Title className="prevent-select text-center">
                             {jeopardyPoints[pointIndex]}
                           </Card.Title>
@@ -130,10 +139,12 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
                       </Card.Body>
                     </Card>
                   </Col>
-                ))}
-              </React.Fragment>
-            ))}
+                  );
+                })}
+            </React.Fragment>
+          ))}
           </Row>
+          
           <a>
             <strong>{selector}</strong> is choosing the question.
           </a>
@@ -143,8 +154,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics }) => {
       {/* Display selected question */}
       { selectedQuestion && (
           <>
-            <Question selectedQuestion={selectedQuestion} /> 
-            <Button onClick={() => {setSelectedQuestion(null)}}>Exit</Button>
+            <Question 
+              selectedQuestion={selectedQuestion} 
+              duration={duration}
+              handleNextQuestion={() => handleBackToBoard()}
+            /> 
           </>
         )
       }

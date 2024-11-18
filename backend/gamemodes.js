@@ -243,13 +243,14 @@ class TriviaBoard extends GameMode {
     }
 
     setTopics(topics) {
-        this.topics = topics.slice(0, 6);
+        this.topics = topics.filter(topic => topic.trim() !== '').slice(0, 6);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
         let topic_index = 0;
         while (this.topics.length < 6) {
             this.topics.push(defaultTopics[topic_index]); 
             topic_index++;
         }
+        console.log(this.topics);
     }
 
     async generateQuestion() {
@@ -301,14 +302,21 @@ class TriviaBoard extends GameMode {
         } catch (error) {
             console.error('Error generating questions:', error);
         }
-        }
+    }
 
     checkAnswer(player, answer, qindex) {
         if (answer == this.question_array[qindex].correctAnswer) {
-            this.increaseScore(player, qindex);
-            this.answered_array[qindex] = true;
+            // this.answered_array[qindex] = true;
+            // The first person to get the question right gets double points
+            if (!this.answered_array[qindex])
+                this.increaseScore(player, qindex, true);
+            else
+                this.increaseScore(player, qindex);
+
             this.numberAnswered++;
             return true;
+        } else if (answer == ""){
+            //nothing happens no loss or change in score
         }
         else {
             this.decreaseScore(player, qindex);
@@ -316,9 +324,11 @@ class TriviaBoard extends GameMode {
         }
     }
 
-    increaseScore(player, qindex) {
+    increaseScore(player, qindex, firstToAnswer = false) {
         let adjustedIndex = qindex % 5;
-        const points = (adjustedIndex + 1) * 200;
+        let points = (adjustedIndex + 1) * 200;
+        if (firstToAnswer)
+            points *= 2;
         this.scores[player] += points;
     }
 
@@ -336,6 +346,15 @@ class TriviaBoard extends GameMode {
         return this.numberAnswered;
     }
 
+    checkIfAnswered(qindex) {
+        if (!this.answered_array[qindex]) {
+            this.answered_array[qindex] = true;
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
 }
 
 
