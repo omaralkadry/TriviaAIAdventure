@@ -17,7 +17,7 @@ function RoomPage() {
   const [canStart, setCanStart] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(-1);
+  const [selectedAnswer, setSelectedAnswer] = useState('');
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
@@ -48,7 +48,7 @@ function RoomPage() {
       setQuestions(allQuestions.questions);
       setDuration(allQuestions.duration);  
       setCurrentQuestionIndex(0);
-      setSelectedAnswer(-1);
+      setSelectedAnswer('');
       setIsCountdownFinished(false);
       setKey(Date.now());
       setWaiting(false);
@@ -65,7 +65,7 @@ function RoomPage() {
       setGameStarted(true);
       setQuestions([]);
       setCurrentQuestionIndex(0);
-      setSelectedAnswer(-1);
+      setSelectedAnswer('');
       // Waiting state to display 'loading' message when true
       setWaiting(true);
     };
@@ -143,7 +143,7 @@ function RoomPage() {
       topic_array = jeopardyTopics;
     } else if (mode === 2) {
       // Trivia Crack
-      //TODO
+        //console.log("not adding any topics here")
     } else {
       //TODO error handle for wrong mode
       console.error("Invalid game mode", mode);
@@ -170,7 +170,7 @@ function RoomPage() {
   const handleNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(-1);
+      setSelectedAnswer('');
       setIsCountdownFinished(false);
       setKey(Date.now());
     } else {
@@ -220,6 +220,7 @@ function RoomPage() {
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
               handleNextQuestion={handleNextQuestion}
+              mode = {mode}
               key={key}
             />
           </>
@@ -236,6 +237,30 @@ function RoomPage() {
           />
         );
       }
+      else if (mode === 2) {
+        console.log("random trivia mode start");
+        return (
+          <>
+            {answerResponse && (
+              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
+                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
+              </Alert>
+            )}
+            <Play
+              timePerQuestion= {duration}
+              currentQuestion={questions[currentQuestionIndex]}
+              selectedAnswer={selectedAnswer}
+              setSelectedAnswer={setSelectedAnswer}
+              isCountdownFinished={isCountdownFinished}
+              handleAnswerSubmit={handleAnswerSubmit}
+              handleCountdownFinish={handleCountdownFinish}
+              handleNextQuestion={handleNextQuestion}
+              mode = {mode}
+              key={key}
+            />
+          </>
+        );
+    }
       
     }
 
