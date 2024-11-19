@@ -426,6 +426,22 @@ function RoomPage() {
                 </> 
                 : <></>
               }
+
+              {/* Random Trivia */}
+              { mode === 2 ?
+                <>
+                  <Col md={3}>
+                    <Form.Control
+                      type="text"
+                      value={totalQuestions}
+                      onChange={(e) => setTotalQuestions(e.target.value)}
+                      placeholder="Enter Number of Questions" 
+                    />
+                  </Col>
+                </> 
+                : <></>
+              }
+
             </Row>
           </>
         )}
