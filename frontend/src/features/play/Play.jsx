@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Container, Row, Col, Card, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer.jsx';
 
-const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, mode, key, buzzed = true}) => {
+const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, freeResponse = false, key, buzzed = true}) => {
 
   useEffect(() => {
     if (isCountdownFinished) {
@@ -39,7 +39,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
           </Row>
         </Container>
         <Container className="mt-5">
-          { (buzzed || isCountdownFinished) && Array.isArray(currentQuestion.answers) && mode !== 2 && (
+          { (buzzed || isCountdownFinished) && Array.isArray(currentQuestion.answers) && !freeResponse && (
               <Row xs={1} md={2} className="g-4 mb-3">
                 {currentQuestion.answers.map((answer, idx) => (
                     <Col key={idx}>
@@ -59,8 +59,8 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
                 ))}
               </Row>
           )}
-          {/* Render text input for mode = 2 */}
-          {mode === 2 && (
+          {/* Render text input when freeResponse prop is true */}
+          {freeResponse && (
                     <Row className="justify-content-center mb-3">
                         <Col md={8}>
                             <input 

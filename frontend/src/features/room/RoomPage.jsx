@@ -221,7 +221,6 @@ function RoomPage() {
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
               handleNextQuestion={handleNextQuestion}
-              mode = {mode}
               key={key}
             />
           </>
@@ -256,7 +255,7 @@ function RoomPage() {
               handleAnswerSubmit={handleAnswerSubmit}
               handleCountdownFinish={handleCountdownFinish}
               handleNextQuestion={handleNextQuestion}
-              mode = {mode}
+              freeResponse={true}
               key={key}
             />
           </>
