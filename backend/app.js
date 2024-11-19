@@ -241,7 +241,7 @@ socketIO.on('connection', (socket) => {
 
     //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
-    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
+    socket.on('submit answer', async (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
         // Fallback to socket properties if the values are null or undefined
         // roomCode, username, currentQuesitonIndex no longer necessary to be received
         roomCode = roomCode || socket.roomCode;
@@ -290,8 +290,13 @@ socketIO.on('connection', (socket) => {
             else {
                 // callback({ success: false });
             }
+        // If the gamemode is RandomTrivia
+          
+        }else if (roomsList[roomCode].gameInstance.constructor.name === "RandomTrivia"){
+
+            await roomsList[roomCode].gameInstance.storeAnswer(username, answer, currentQuestionIndex);
         }
-        // If the gamemode is not TriviaBoard
+        // All other gamemodes
         else
             roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 

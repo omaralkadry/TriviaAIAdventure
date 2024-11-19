@@ -364,6 +364,7 @@ class RandomTrivia extends GameMode {
         super(playerCount);
         this.topics = [];
         this.question_array = [];
+        this.answers = [];
     }
    
     setTopic(totalQuestions) {
@@ -505,20 +506,42 @@ class RandomTrivia extends GameMode {
             console.error('Error generating question:', error);
         }
     }
+    async storeAnswer(username, answer, qindex) {
+        if (!this.answers[qindex]) {
+            this.answers[qindex] = [];
+        }
+        this.answers[qindex].push({username, answer});
 
-    async checkAnswer(playerAnswers, qindex) {
+        //console.log(this.answers);
+        //console.log(this.players);
+        if (this.answers[qindex].length === this.players.length) {
+            //console.log ("player length: ", this.players.length);
+            //console.log ("answer length: ", this.answers[qindex].length);
+            await this.checkAnswer(qindex);
+        }
+
+    }
+    async checkAnswer(qindex) {
         try {
+            //testing
+            console.log("index:", qindex)
+            console.log("exact Answer", this.answers[qindex])
+            console.log("exact question: ",this.question_array[qindex].question);
             const question = this.question_array[qindex].question;
             //const exampleAnswer = this.question_array[qindex].exampleAnswer;
             //let prompt = `Question: "${question}"\nExample Answer: "${exampleAnswer}"\n\nPlayer Answers:\n`;
             let prompt = `Question: "${question}"\nPlayer Answers:\n`;
             
-            Object.entries(playerAnswers).forEach(([player, answer]) => {
-              prompt += `${player}: ${answer}\n`;
-            });
+            /*    Object.entries(playerAnswers).forEach(([player, answer]) => {
+                prompt += `${player}: ${answer}\n`;
+                });*/
+            this.answers[qindex].forEach(({username, answer}) => {
+                prompt += `- ${username}: ${answer}\n`;
+            })
             
             prompt += "\nEvaluate each player's answer and respond with a JSON object where keys are player names and values are boolean (true for correct, false for incorrect). Consider alternative phrasings and partial correctness. Only return the JSON object, no additional text.";
 
+            //console.log(prompt);
             const response = await client.chat.completions.create({
                 model: "gpt-4o-mini", //most cost effective as of rn
                 messages: [
@@ -532,12 +555,20 @@ class RandomTrivia extends GameMode {
             const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
             const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
             const parsedAnswers = JSON.parse(cleanedResult);
+            //console.log(parsedAnswers);
 
-            Object.entries(parsedAnswers).forEach(([player, isCorrect]) => {
-                if (isCorrect) {
+            Object.entries(parsedAnswers).forEach(([player, bool]) => {
+                if (bool === true) {
                     this.generateScores(player);
+                    //console.log("worked")
+                } else if (bool === false) {
+                    //console.log("also worked");
+                } else {
+                    //console.log("did not work");
                 }
+                
             });
+            console.log(this.scores);
 
             //for testing only and may not use in code
             return parsedAnswers;
