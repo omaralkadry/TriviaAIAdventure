@@ -369,15 +369,15 @@ class RandomTrivia extends GameMode {
     setTopic(totalQuestions) {
         const defaultTopics = [
             "History", "Science", "Literature", "Mathematics", "Geography",
-            "Art", "Music", "Sports", "Technology", "Philosophy",
-            "Politics", "Economics", "Biology", "Physics", "Chemistry",
-            "Astronomy", "Psychology", "Sociology", "Anthropology", "Linguistics",
-            "Film", "Television", "Theater", "Dance", "Architecture",
-            "Cuisine", "Fashion", "Mythology", "Religion", "Law",
+            "Art", "Music", "Sports", "Technology", "US Government",
+            "Economics", "Biology", "Physics", "Chemistry",
+            "Astronomy", "Psychology", "Sociology", "Linguistics",
+            "Film", "Television", "Architecture", "Animals",
+            "Cuisine", "Law", "Famous Landmarks",
             "Medicine", "Environmental Science", "Computer Science", "Engineering", "Agriculture",
-            "Archaeology", "Geology", "Meteorology", "Oceanography", "Genetics",
-            "Cryptography", "Robotics", "Artificial Intelligence", "Quantum Physics", "Nanotechnology",
-            "Space Exploration", "Renewable Energy", "Cybersecurity", "Biotechnology", "Neuroscience"
+            "Geology", "Meteorology", "Oceanography",
+            "Robotics", "Artificial Intelligence",
+            "Space Exploration", "Renewable Energy", "Cybersecurity"
         ];
 
         const topicsCopy = [...defaultTopics];
