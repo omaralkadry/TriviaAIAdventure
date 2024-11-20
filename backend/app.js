@@ -305,14 +305,17 @@ socketIO.on('connection', (socket) => {
         console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
         console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
-        // const currentQuestion = roomsList[roomCode].currentQuestion;
-        // if (currentQuestion) {
-        //     const isCorrect = currentQuestion.answer === answerIndex;
-        //     const resultMessage = isCorrect ? 'correct' : 'wrong';
-        //     socket.emit('answer result', { result: resultMessage });
-        // } else {
-        //     socket.emit('answer result', { result: 'no question' });
-        // }
+        //testing
+        //console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
+        //console.log("current question index: ", currentQuestionIndex + 1);
+
+        //endgame for all modes
+        if (roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1)) {
+            roomsList[roomCode].gameInstance.playerDone(username);
+            
+            //TODO this is done, just commented out so as to not overpopulate the database when testing
+            //roomsList[roomCode].gameInstance.allPlayersDone();
+        }
     });
 
     // Handle when buzzer is pressed 

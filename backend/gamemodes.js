@@ -21,11 +21,13 @@ class GameMode {
         this.ranks = {};
         this.pointsperquestion = 10;
         this.gameID = '';
+        this.finishedGame = {}
     }
 
     addPlayer(player) {
         this.players.push(player);
         this.scores[player] = 0; 
+        this.finishedGame[player] = false;
     }
 
     setSettings(totalQuestions, timePerQuestion, pointsperquestion) {
@@ -57,6 +59,22 @@ class GameMode {
         //console.log(this.scores);
     }
 
+    async playerDone(username) {
+        this.finishedGame[username] = true;
+        console.log(this.finishedGame);
+    }
+
+    async allPlayersDone() {
+        for (const [player, isFinished] of Object.entries(this.finishedGame)) {
+            if (!isFinished) {
+                return false
+            }
+        }
+        console.log("all player checks work")
+        this.endGame();
+        return true
+    }
+
     //function created with chatgpt
     //not tested
     async endGame() {
@@ -81,11 +99,21 @@ class GameMode {
         const uri = process.env.Database_Url;
         const db = new Database(uri);
 
+        //TODO test code for data retrieval from database
+        /*
+        try {
+            const games = await db.getAllGamesForUser(this.players[0]);
+            console.log(games);
+        } catch (error) {
+            console.error('Error retrieving games:', error);
+        } */
+
         await Promise.all(this.players.map(async (player) => {
             const score = this.scores[player];
             const rank = this.ranks[player];
             const gameID = this.gameID;
-            await db.saveGame(player, gameID, score, rank);
+            const qNum = this.totalQuestions;
+            await db.saveGame(player, gameID, score, rank, qNum);
         }));
         db.close();
         
