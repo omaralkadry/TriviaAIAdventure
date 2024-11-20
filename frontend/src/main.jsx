@@ -1,12 +1,13 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import CustomNavbar from './components/CustomNavbar'
-import HomePage from './features/home/HomePage'
-import LoginForm from './features/login/LoginForm'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Layout from "./components/Layout";
+import CustomNavbar from "./components/CustomNavbar";
+import HomePage from "./features/home/HomePage";
+import LoginForm from "./features/login/LoginForm";
 import RegistrationForm from "./features/login/RegistrationForm";
-import JoinPage from "./features/room/JoinPage"
+import JoinPage from "./features/room/JoinPage";
 import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
@@ -32,56 +33,54 @@ const router = createBrowserRouter([
   {
     path: "/join",
     element: (
-      <ProtectedRoute>
-        <JoinPage />
-      </ProtectedRoute>
+        <ProtectedRoute>
+          <JoinPage />
+        </ProtectedRoute>
     ),
   },
   {
     path: "/play",
     element: (
-      <ProtectedRoute>
-        <Play />
-      </ProtectedRoute>
+        <ProtectedRoute>
+          <Play />
+        </ProtectedRoute>
     ),
   },
   {
     path: "/room",
     element: (
-      <ProtectedRoute>
-        <RoomPage />
-      </ProtectedRoute>
+        <ProtectedRoute>
+          <RoomPage />
+        </ProtectedRoute>
     ),
   },
   {
     path: "/chat",
     element: (
-      <ProtectedRoute>
-        <Chat />
-      </ProtectedRoute>
+        <ProtectedRoute>
+          <Chat />
+        </ProtectedRoute>
     ),
   },
   {
     path: "/leaderboard",
-    element: (
-      <Leaderboard />
-    ),
+    element: <Leaderboard />,
   },
   {
     path: "/jeopardy",
-    element: (
-      <JeopardyBoard />
-    ),
+    element: <JeopardyBoard />,
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <SocketProvider>
-        <CustomNavbar />
-        <RouterProvider router={router} />
-      </SocketProvider>
-    </AuthProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+      <AuthProvider>
+        <SocketProvider>
+          <Layout>
+            <CustomNavbar />
+            <RouterProvider router={router} />
+          </Layout>
+        </SocketProvider>
+      </AuthProvider>
+    </React.StrictMode>
 );
