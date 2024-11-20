@@ -145,7 +145,6 @@ function RoomPage() {
       // Trivia Crack
         //console.log("not adding any topics here")
     } else {
-      //TODO error handle for wrong mode
       console.error("Invalid game mode", mode);
     }
 
@@ -157,7 +156,7 @@ function RoomPage() {
     });
 
     //left topic down here. cant replace since with topic_array since its not a global variable-omar
-  }, [socket, roomCode, topic, totalQuestions, mode]);
+  }, [socket, roomCode, topic, totalQuestions, duration, mode]);
 
   const handleAnswerSubmit = useCallback(() => {
     if (!socket) return;
