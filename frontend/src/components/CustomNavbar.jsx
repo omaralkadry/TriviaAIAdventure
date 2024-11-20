@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useAuth } from "../services/AuthContext";
-import "./CustomNavbar.css";
+import "./CustomNavBar.css";
 
 function CustomNavbar() {
   const { isAuthenticated, getUsername, logout } = useAuth();
