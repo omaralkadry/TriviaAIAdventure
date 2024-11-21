@@ -145,7 +145,7 @@ class ClassicTrivia extends GameMode {
 
         // topic_array is not an array in this gamemode
         this.setTopic(topic_array);
-        console.log(topic_array);
+        console.log("Topic: " + this.topic);
 
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
@@ -266,7 +266,7 @@ class TriviaBoard extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion);
         this.gameID = 'TriviaBoard';
         this.setTopics(topics);
-        console.log(this.topics);
+        console.log("Topics: " + this.topics);
 
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
@@ -431,7 +431,7 @@ class RandomTrivia extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Random';
         this.setTopic(totalQuestions);
-        console.log(this.topics);
+        console.log("Topics: " + this.topics);
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
