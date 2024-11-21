@@ -1,0 +1,108 @@
+/* Page container */
+.form-page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: url("cool-background (1).png") no-repeat center center fixed; /* Background image applied */
+  background-size: cover; /* Ensures the image covers the entire area */
+  padding: 20px;
+}
+
+/* Form card */
+.form-card {
+  background: #2d2a3d; /* Darker background for the form box */
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  color: #ffffff; /* Ensure text remains visible */
+}
+
+/* Form title */
+.form-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #ffffff; /* Ensure title is visible on darker background */
+}
+
+/* Form control */
+.form-control {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-control input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ccc; /* Subtle border for white input */
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #000000; /* Dark text for readability on white background */
+  background-color: #ffffff; /* White background for input fields */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus effect for inputs */
+.form-control input:focus {
+  border-color: #6a11cb;
+  background-color: #ffffff; /* Keep the background white on focus */
+  box-shadow: 0px 0px 8px rgba(106, 17, 203, 0.3);
+  outline: none;
+}
+
+.form-control label {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  font-size: 1rem;
+  color: #777; /* Adjusted for better contrast with white background */
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control input:focus + label,
+.form-control input:not(:placeholder-shown) + label {
+  top: -8px;
+  left: 12px;
+  font-size: 0.85rem;
+  color: #6a11cb;
+}
+
+/* Button */
+.btn {
+  background: linear-gradient(45deg, #6a11cb, #2575fc);
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Footer */
+.form-footer {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.form-footer .form-link {
+  color: #6a11cb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.form-footer .form-link:hover {
+  text-decoration: underline;
+}
