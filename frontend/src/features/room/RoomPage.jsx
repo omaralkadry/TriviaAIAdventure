@@ -27,6 +27,7 @@ function RoomPage() {
   const username = getUsername();
   const [selector, setSelector] = useState('');
   const [waiting, setWaiting] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
   // Game and room settings
   const [topic, setTopic] = useState('');
@@ -80,16 +81,21 @@ function RoomPage() {
       setScores(updatedScores);
     };
 
-    const handleGameSettings = (mode, topics) => {
-      console.log('Mode:', mode);
-      console.log('Topics:', topics);
-      setMode(mode);
-      setJeopardyTopics(topics || ["History", "Science", "Art", "Literature", "Geography", "Sports"]);
+    const handleGameSettings = (settings) => {
+      if (settings.mode !== undefined) setMode(settings.mode);
+      if (settings.duration !== undefined) setDuration(settings.duration);
+      if (settings.topic !== undefined) setTopic(settings.topic);
+      if (settings.jeopardyTopics !== undefined) setJeopardyTopics(settings.jeopardyTopics);
+      if (settings.totalQuestions !== undefined) setTotalQuestions(settings.totalQuestions);
     };
     
     const handleSelector = (selectorUsername) => {
       console.log('Selector:', selectorUsername);
       setSelector(selectorUsername);
+    };
+
+    const handleHostStatus = (status) => {
+      setIsHost(status);
     };
 
     socket.on('update players', handleUpdatePlayers);
@@ -100,6 +106,7 @@ function RoomPage() {
     socket.on('update scores', handleUpdateScores);
     socket.on('game settings', handleGameSettings);
     socket.on('next question selector', handleSelector);
+    socket.on('host status', handleHostStatus);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -110,6 +117,7 @@ function RoomPage() {
       socket.off('update scores', handleUpdateScores);
       socket.off('game settings', handleGameSettings);
       socket.off('next question selector', handleSelector);
+      socket.off('host status', handleHostStatus);
     };
   }, [socket]);
 
@@ -362,7 +370,18 @@ function RoomPage() {
             {/* All game modes general settings */}
             <Row className="justify-content-center mb-3">
               <Col md={3}>
-                <Form.Select value={mode} onChange={(e) => setMode(parseInt(e.target.value, 10))}>
+                <Form.Select 
+                  value={mode} 
+                  onChange={(e) => {
+                    const newMode = parseInt(e.target.value, 10);
+                    socket.emit('update_game_mode', roomCode, newMode, (response) => {
+                      if (response.success) {
+                        setMode(newMode);
+                      }
+                    });
+                  }}
+                  disabled={!isHost}
+                >
                   <option value={-1} disabled>Select Game Mode</option>
                   <option value={0}>Classic Trivia</option>
                   <option value={1}>Trivia Board</option>
@@ -373,9 +392,17 @@ function RoomPage() {
                 <Form.Control 
                   type='number' 
                   value={duration} 
-                  onChange={(e) => setDuration(parseInt(e.target.value, 10))} 
+                  onChange={(e) => {
+                    const newDuration = parseInt(e.target.value, 10);
+                    socket.emit('update_duration', roomCode, newDuration, (response) => {
+                      if (response.success) {
+                        setDuration(newDuration);
+                      }
+                    });
+                  }}
                   min={1}
                   placeholder='Enter Question Time Limit (seconds)'
+                  disabled={!isHost}
                 />
               </Col>
             </Row>
@@ -390,16 +417,32 @@ function RoomPage() {
                     <Form.Control
                       type="text"
                       value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
+                      onChange={(e) => {
+                        const newTopic = e.target.value;
+                        socket.emit('update_topic', roomCode, newTopic, (response) => {
+                          if (response.success) {
+                            setTopic(newTopic);
+                          }
+                        });
+                      }}
                       placeholder="Enter Trivia Topic" 
+                      disabled={!isHost}
                     />
                   </Col>
                   <Col md={3}>
                     <Form.Control
                       type="text"
                       value={totalQuestions}
-                      onChange={(e) => setTotalQuestions(e.target.value)}
+                      onChange={(e) => {
+                        const newTotal = e.target.value;
+                        socket.emit('update_total_questions', roomCode, newTotal, (response) => {
+                          if (response.success) {
+                            setTotalQuestions(newTotal);
+                          }
+                        });
+                      }}
                       placeholder="Enter Number of Questions" 
+                      disabled={!isHost}
                     />
                   </Col>
                 </> 
@@ -409,14 +452,23 @@ function RoomPage() {
               {/* Jeopardy */}
               { mode === 1 ?
                 <>
+                  {/* {Array.from({ length: 6 }, (input, index) => ( */}
                   {jeopardyTopics.map((input, index) => (
                     <Col key={index} md={2}>
                       <Form.Group controlId={`input-${index}`}>
                         <Form.Control
                           type="text"
                           value={input}
-                          onChange={(e) => handleTopicChange(index, e.target.value)}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            socket.emit('update_jeopardy_topic', roomCode, index, newValue, (response) => {
+                              if (response.success) {
+                                handleTopicChange(index, newValue);
+                              }
+                            });
+                          }}
                           placeholder={`Enter Topic ${index + 1}`}
+                          disabled={!isHost}
                         />
                       </Form.Group>
                     </Col>
@@ -432,8 +484,16 @@ function RoomPage() {
                     <Form.Control
                       type="text"
                       value={totalQuestions}
-                      onChange={(e) => setTotalQuestions(e.target.value)}
+                      onChange={(e) => {
+                        const newTotal = e.target.value;
+                        socket.emit('update_total_questions', roomCode, newTotal, (response) => {
+                          if (response.success) {
+                            setTotalQuestions(newTotal);
+                          }
+                        });
+                      }}
                       placeholder="Enter Number of Questions" 
+                      disabled={!isHost}
                     />
                   </Col>
                 </> 
@@ -444,7 +504,7 @@ function RoomPage() {
           </>
         )}
 
-        {canStart && (
+        {canStart && isHost && (
           <Row className="justify-content-center mb-3">
             <Col md={6}>
               <Button onClick={handleStartGame}>Start Game</Button>
