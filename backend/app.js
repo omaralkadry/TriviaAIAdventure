@@ -189,12 +189,20 @@ socketIO.on('connection', (socket) => {
     // Handle joining a room
     socket.on('join room', (roomCode, username, callback) => {
         if (roomsList[roomCode]) {
+            // Check if user is already in room
+            if (roomsList[roomCode].users.includes(username)) {
+                callback({ success: false, message: 'User already in room' });
+                return;
+            }
+
             // Add username to socket (Referenced ChatGPT about this)
             socket.username = username;
             socket.roomCode = roomCode;
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
+            socket.emit('host status', false);
+
             console.log(`[${new Date().toISOString()}] User ${username} joined room ${roomCode}`);
             console.log(`[${new Date().toISOString()}] Current users in room ${roomCode}: ${roomsList[roomCode].users}`);
             if (typeof callback === 'function') {
@@ -440,7 +448,7 @@ socketIO.on('connection', (socket) => {
         if (!roomsList[roomCode].settings.jeopardyTopics) {
             roomsList[roomCode].settings.jeopardyTopics = Array(6).fill('');
         }
-        
+
         roomsList[roomCode].settings.jeopardyTopics[index] = topic;
         socketIO.to(roomCode).emit('game settings', {
             jeopardyTopics: roomsList[roomCode].settings.jeopardyTopics
