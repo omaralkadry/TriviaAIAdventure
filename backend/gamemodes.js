@@ -130,7 +130,12 @@ class ClassicTrivia extends GameMode {
     }
    
     setTopic(topic) {
-        this.topic = topic || "General Knowledge";
+        // https://stackoverflow.com/questions/2647867/how-can-i-determine-if-a-variable-is-undefined-or-null
+        if (topic == '')
+            this.topic = "General Knowledge";
+        else
+            this.topic = topic;
+        // this.topic = topic || "General Knowledge";
     }
 
     // from parent class
@@ -261,6 +266,7 @@ class TriviaBoard extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion);
         this.gameID = 'TriviaBoard';
         this.setTopics(topics);
+        console.log(this.topics);
 
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
@@ -281,7 +287,6 @@ class TriviaBoard extends GameMode {
             this.topics.push(defaultTopics[topic_index]); 
             topic_index++;
         }
-        console.log(this.topics);
     }
 
     async generateQuestion() {
