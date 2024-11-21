@@ -137,8 +137,11 @@ class ClassicTrivia extends GameMode {
     async startGame(pointsperquestion, totalQuestions, usernames, topic_array, duration) {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Classic';
-        this.setTopic(topic_array[0]);
-        console.log(topic_array[0]);
+
+        // topic_array is not an array in this gamemode
+        this.setTopic(topic_array);
+        console.log(topic_array);
+
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
