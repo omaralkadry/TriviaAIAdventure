@@ -179,7 +179,7 @@ describe.only('RandomTrivia Game Mode', () => {
     let game;
   
     beforeEach(() => {
-      game = new RandomTrivia(2);
+      game = new RandomTrivia(3);
     });
   
     test('should initialize with correct settings', () => {
@@ -217,8 +217,12 @@ describe.only('RandomTrivia Game Mode', () => {
           'Player2': 'Partially correct answer',
           'Player3': 'Incorrect answer'
         };
-        const results = await game.checkAnswer(playerAnswers, 0);
-        console.log(results)
+        // const results = await game.checkAnswer(playerAnswers, 0);
+        // console.log(results)
+        game.storeAnswer('Player1', 'Correct answer', 0);
+        game.storeAnswer('Player2', 'Partially correct answer', 0);
+        const results = await game.storeAnswer('Player3', 'Incorrect answer', 0);
+        // checkAnswer is called in storeAnswer when the number of answers equals the number of players
         expect(results).toHaveProperty('Player1');
         expect(results).toHaveProperty('Player2');
         expect(results).toHaveProperty('Player3');
@@ -229,7 +233,7 @@ describe.only('RandomTrivia Game Mode', () => {
         expect(game.scores['Player3']).toBe(0);
       }, 30000);
   
-    test('should increment questions and get current topic', async () => {
+    test('should increment current question and get current topic', async () => {
       game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
       await game.generateQuestion();
       expect(game.currentQuestion).toBe(0);

@@ -545,7 +545,7 @@ class RandomTrivia extends GameMode {
         if (this.answers[qindex].length === this.players.length) {
             //console.log ("player length: ", this.players.length);
             //console.log ("answer length: ", this.answers[qindex].length);
-            await this.checkAnswer(qindex);
+            return await this.checkAnswer(qindex);
         }
 
     }
