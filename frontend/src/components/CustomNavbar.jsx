@@ -47,6 +47,10 @@ function CustomNavbar() {
               <Nav.Link className="navbar-link" href="/">
                 Home
               </Nav.Link>
+              <Nav.Link className="navbar-link" href="/history">
+                Game History
+              </Nav.Link>
+              {/* TODO below commented needs to be removed
               <Nav.Link className="navbar-link" href="/play">
                 Play Test
               </Nav.Link>
@@ -59,6 +63,7 @@ function CustomNavbar() {
               <Nav.Link className="navbar-link" href="/jeopardy">
                 Jeopardy
               </Nav.Link>
+              */}
             </Nav>
             <Navbar.Collapse className="justify-content-end">
               {isAuthenticated() ? (

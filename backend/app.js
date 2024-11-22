@@ -19,6 +19,7 @@ const { join } = require('node:path');
 const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
+const history = require('./routes/history.js');
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use("/register", register);
 app.use("/login", login);
+app.use("/history", history);
 
 // Add a new route for logout
 app.post("/logout", (req, res) => {

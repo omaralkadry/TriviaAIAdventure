@@ -84,11 +84,10 @@ class Database {
 
     async getAllGamesForUser(username) {
         const collection = this.client.db("Users").collection(username);
-        
         try {
             
-            const games = await collection.find({}).toArray();
-            console.log(games);
+            const games = await collection.find().toArray();
+            console.log("database.js: ");
             return games;
         } catch (error) {
             console.error(`Failed to retrieve games for user ${username}:`, error);
