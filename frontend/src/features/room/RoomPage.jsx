@@ -164,7 +164,7 @@ function RoomPage() {
     });
 
     //left topic down here. cant replace since with topic_array since its not a global variable-omar
-  }, [socket, roomCode, topic, totalQuestions, duration, mode]);
+  }, [socket, roomCode, topic, totalQuestions, duration, mode, jeopardyTopics]);
 
   const handleAnswerSubmit = useCallback(() => {
     if (!socket) return;
