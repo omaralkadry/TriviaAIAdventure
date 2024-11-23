@@ -6,7 +6,7 @@ import { useAuth } from '../../services/AuthContext.jsx';
 import Chat from '../../components/Chat';
 import { useSocket } from '../../services/SocketContext';
 import JeopardyBoard from '../play/Jeopardy/Jeopardy.jsx';
-import Sidebar from '../../components/SideBar.jsx';
+import Sidebar from '../../components/Sidebar.jsx';
 
 function RoomPage() {
   const socket = useSocket();
