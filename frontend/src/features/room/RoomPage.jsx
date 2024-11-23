@@ -6,6 +6,7 @@ import { useAuth } from '../../services/AuthContext.jsx';
 import Chat from '../../components/Chat';
 import { useSocket } from '../../services/SocketContext';
 import JeopardyBoard from '../play/Jeopardy/Jeopardy.jsx';
+import Sidebar from '../../components/SideBar.jsx';
 
 function RoomPage() {
   const socket = useSocket();
@@ -523,7 +524,7 @@ function RoomPage() {
         </Col>
         {gameStarted && isAuthenticated() && roomCode && (
           <Col md={4} className="mt-5">
-            <Chat roomCode={roomCode} />
+            <Sidebar roomCode={roomCode} />
           </Col>
         )}
       </Row>

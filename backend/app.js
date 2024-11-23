@@ -126,6 +126,8 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
         const username = roomsList[roomCode].users[index];
         socketIO.to(roomCode).emit('next question selector', username);
     }
+
+    socketIO.to(roomCode).emit('update scores', gameInstance.scores);
 }
     /*
     // Send each question after 30 seconds, reset the timer and send new question
@@ -270,6 +272,7 @@ socketIO.on('connection', (socket) => {
                 callback({ success: false, message: 'Please enter a different topic' });
                 return;
             }
+
             //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);

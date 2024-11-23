@@ -63,7 +63,7 @@ function Chat({ roomCode }) {
 
   return (
     <Container fluid className="py-5">
-      <Row className="d-flex justify-content-center">
+      <Row className="d-flex">
         <Col md={8} lg={6} xl={4}>
           <Card style={{ borderRadius: "15px", width: '500px', height: '600px', display: 'flex', flexDirection: 'column' }}>
             <Card.Body style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
