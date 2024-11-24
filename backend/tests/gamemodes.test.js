@@ -77,15 +77,16 @@ describe('ClassicTrivia Game Mode', () => {
 
 });
 
-describe.skip('ClassicTrivia Question Retrieval', () => {
+describe('ClassicTrivia Question Retrieval', () => {
     let game;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         game = new ClassicTrivia(2); // 2 players
-        game.addPlayer('Player1');
-        game.addPlayer('Player2');
-        game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question
-        game.setTopic('Science');
+        // game.addPlayer('Player1');
+        // game.addPlayer('Player2');
+        // game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question
+        // game.setTopic('Science');
+        game.startGame(10, 5, ['Player1', 'Player2'], 'Science', 30);
         await game.generateQuestion(); // Generate questions before running the tests
     });
 
@@ -119,10 +120,10 @@ describe.skip('ClassicTrivia Question Retrieval', () => {
 
 
 
-describe.skip('TriviaBoard Game Mode', () => {
+describe('TriviaBoard Game Mode', () => {
     let game;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         game = new TriviaBoard(2);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
         await game.startGame(10, 30, ['Player1', 'Player2'], defaultTopics, 30);
@@ -168,7 +169,7 @@ describe.skip('TriviaBoard Game Mode', () => {
         game.scores = { 'Player1': 0 };
         game.checkAnswer('Player1', game.question_array[questionIndex].correctAnswer, questionIndex);
 
-        const expectedPoints = (questionIndex % 5 + 1) * 200; // Should be 800 for questionIndex 3
+        const expectedPoints = 2 * ((questionIndex % 5 + 1) * 200); // Should be 800 * 2 for questionIndex 3 for first person answering correctly
         expect(game.scores['Player1']).toBe(expectedPoints);
     }, 6000);
 });
@@ -219,8 +220,9 @@ describe('RandomTrivia Game Mode', () => {
         // console.log(results)
         game.storeAnswer('Player1', 'Correct answer', 0);
         game.storeAnswer('Player2', 'Partially correct answer', 0);
-        const results = await game.storeAnswer('Player3', 'Incorrect answer', 0);
         // checkAnswer is called in storeAnswer when the number of answers equals the number of players
+        const results = await game.storeAnswer('Player3', 'Incorrect answer', 0);
+        // These checks may not always work
         expect(results).toHaveProperty('Player1');
         expect(results).toHaveProperty('Player2');
         expect(results).toHaveProperty('Player3');
