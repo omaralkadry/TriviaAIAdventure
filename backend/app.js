@@ -19,6 +19,7 @@ const { join } = require('node:path');
 const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
+const history = require('./routes/history.js');
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use("/register", register);
 app.use("/login", login);
+app.use("/history", history);
 
 // Add a new route for logout
 app.post("/logout", (req, res) => {
@@ -111,7 +113,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
 
     // Send game settings to all users inside room
     // So socket.io-clients know which mode to play
-    socketIO.to(roomCode).emit('game settings', mode, gameInstance.topics);
+    socketIO.to(roomCode).emit('game settings', { jeopardyTopics: gameInstance.topics });
 
     sendQuestion();  // Send the all questions
 
@@ -124,6 +126,8 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
         const username = roomsList[roomCode].users[index];
         socketIO.to(roomCode).emit('next question selector', username);
     }
+
+    socketIO.to(roomCode).emit('update scores', gameInstance.scores);
 }
     /*
     // Send each question after 30 seconds, reset the timer and send new question
@@ -163,13 +167,24 @@ socketIO.on('connection', (socket) => {
             roomCode = generateRoomCode();
         }
 
-        roomsList[roomCode] = { users: [] };
+        roomsList[roomCode] = {
+            users: [],
+            host: username,
+            settings: {
+                mode: null,
+                duration: null,
+                totalQuestions: null,
+                topic: null
+            }
+        };
 
         // Automatically add the creator to the room and emit the updated player list
         roomsList[roomCode].users.push(username);
         socket.roomCode = roomCode;
         socket.join(roomCode);
         socket.emit('update players', roomsList[roomCode].users);
+        socket.emit('host status', true); // Notify creator they are the host
+
         console.log(`[${new Date().toISOString()}] Room created: ${roomCode}, Creator: ${username}`);
         console.log(`[${new Date().toISOString()}] Current rooms: ${Object.keys(roomsList)}`);
         callback({ success: true, roomCode });
@@ -178,12 +193,20 @@ socketIO.on('connection', (socket) => {
     // Handle joining a room
     socket.on('join room', (roomCode, username, callback) => {
         if (roomsList[roomCode]) {
+            // Check if user is already in room
+            if (roomsList[roomCode].users.includes(username)) {
+                callback({ success: false, message: 'User already in room' });
+                return;
+            }
+
             // Add username to socket (Referenced ChatGPT about this)
             socket.username = username;
             socket.roomCode = roomCode;
             socket.join(roomCode);
             roomsList[roomCode].users.push(username);
             socketIO.to(roomCode).emit('update players', roomsList[roomCode].users);
+            socket.emit('host status', false);
+
             console.log(`[${new Date().toISOString()}] User ${username} joined room ${roomCode}`);
             console.log(`[${new Date().toISOString()}] Current users in room ${roomCode}: ${roomsList[roomCode].users}`);
             if (typeof callback === 'function') {
@@ -207,11 +230,32 @@ socketIO.on('connection', (socket) => {
             //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
             //     // roomsList[roomCode] = { gamemode: triviaGamemode };
             // }
+
+    const errorCheck = (roomCode, username, message, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return true;
+        }
+
+        // Verify that the requesting user is the host
+        if (username !== roomsList[roomCode].host) {
+            callback({ success: false, message: `Only the host can ${message}` });
+            return true;
+        }
+
+        // No error
+        return false;
+    };
+    
     // Handle starting the game
     socket.on('start game', (roomCode, topic_array, totalQuestions = null, duration, mode, callback) => {
-        if (roomsList[roomCode] && roomsList[roomCode].users.length >= 2) {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'start game', callback)) {
+            return;
+        }
+
+        if (roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
-            
 
             //testing
             console.log('Game mode: ' + mode);
@@ -228,6 +272,7 @@ socketIO.on('connection', (socket) => {
                 callback({ success: false, message: 'Please enter a different topic' });
                 return;
             }
+
             //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
             console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
@@ -241,7 +286,7 @@ socketIO.on('connection', (socket) => {
 
     //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
-    socket.on('submit answer', (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
+    socket.on('submit answer', async (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
         // Fallback to socket properties if the values are null or undefined
         // roomCode, username, currentQuesitonIndex no longer necessary to be received
         roomCode = roomCode || socket.roomCode;
@@ -290,8 +335,13 @@ socketIO.on('connection', (socket) => {
             else {
                 // callback({ success: false });
             }
+        // If the gamemode is RandomTrivia
+          
+        }else if (roomsList[roomCode].gameInstance.constructor.name === "RandomTrivia"){
+
+            await roomsList[roomCode].gameInstance.storeAnswer(username, answer, currentQuestionIndex);
         }
-        // If the gamemode is not TriviaBoard
+        // All other gamemodes
         else
             roomsList[roomCode].gameInstance.checkAnswer(username, answer, currentQuestionIndex);
 
@@ -300,14 +350,17 @@ socketIO.on('connection', (socket) => {
         console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
         console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
-        // const currentQuestion = roomsList[roomCode].currentQuestion;
-        // if (currentQuestion) {
-        //     const isCorrect = currentQuestion.answer === answerIndex;
-        //     const resultMessage = isCorrect ? 'correct' : 'wrong';
-        //     socket.emit('answer result', { result: resultMessage });
-        // } else {
-        //     socket.emit('answer result', { result: 'no question' });
-        // }
+        //testing
+        //console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
+        //console.log("current question index: ", currentQuestionIndex + 1);
+
+        //endgame for all modes
+        if (roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1)) {
+            roomsList[roomCode].gameInstance.playerDone(username);
+            
+            //TODO this is done, just commented out so as to not overpopulate the database when testing
+            //roomsList[roomCode].gameInstance.allPlayersDone();
+        }
     });
 
     // Handle when buzzer is pressed 
@@ -340,6 +393,72 @@ socketIO.on('connection', (socket) => {
     socket.on('back to board', () => {
         // Emits to everyone in room
         socketIO.to(socket.roomCode).emit('back to board');
+    });
+
+    // Handle game mode updates
+    socket.on('update_game_mode', (roomCode, mode, callback) => {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'change mode', callback)) {
+            return;
+        }
+
+        roomsList[roomCode].settings.mode = mode;
+        socketIO.to(roomCode).emit('game settings', { mode });
+        callback({ success: true });
+    });
+
+    // Handle duration updates
+    socket.on('update_duration', (roomCode, duration, callback) => {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'change question duration', callback)) {
+            return;
+        }
+
+        roomsList[roomCode].settings.duration = duration;
+        socketIO.to(roomCode).emit('game settings', { duration });
+        callback({ success: true });
+    });
+
+    // Handle topic updates
+    socket.on('update_topic', (roomCode, topic, callback) => {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'change topic', callback)) {
+            return;
+        }
+
+        roomsList[roomCode].settings.topic = topic;
+        socketIO.to(roomCode).emit('game settings', { topic });
+        callback({ success: true });
+    });
+
+    // Handle total questions updates
+    socket.on('update_total_questions', (roomCode, totalQuestions, callback) => {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'change total questions', callback)) {
+            return;
+        }
+
+        roomsList[roomCode].settings.totalQuestions = totalQuestions;
+        socketIO.to(roomCode).emit('game settings', { totalQuestions });
+        callback({ success: true });
+    });
+
+    // Handle Jeopardy topic updates
+    socket.on('update_jeopardy_topic', (roomCode, index, topic, callback) => {
+        // Call errorCheck function
+        if (errorCheck(roomCode, socket.username, 'change Trivia Board topics', callback)) {
+            return;
+        }
+
+        if (!roomsList[roomCode].settings.jeopardyTopics) {
+            roomsList[roomCode].settings.jeopardyTopics = Array(6).fill('');
+        }
+
+        roomsList[roomCode].settings.jeopardyTopics[index] = topic;
+        socketIO.to(roomCode).emit('game settings', {
+            jeopardyTopics: roomsList[roomCode].settings.jeopardyTopics
+        });
+        callback({ success: true });
     });
 
     // Handle disconnects

@@ -1,0 +1,28 @@
+.history-container {
+    padding: 20px;
+    background-color: #17035e;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.history-table th {
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+}
+
+.history-table tr:nth-child(even) {
+    background-color: #af0a0a; /* Zebra striping */
+}
+
+.history-table tr:hover {
+    background-color: #0b862a; /* Highlight row on hover */
+}

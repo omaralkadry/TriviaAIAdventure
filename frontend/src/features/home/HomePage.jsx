@@ -1,29 +1,20 @@
-import { Button, Card, Container, Col, Row, ListGroup } from 'react-bootstrap';
+import React from "react";
+import "./HomePage.css";
 
-function HomePage() {
-  return (
-    <Container fluid className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-      <Row className="justify-content-center">
-        <Col md={12}>
-          <Card className="text-center">
-            <Card.Body>
-              <Card.Title>Trivia AI Adventure</Card.Title>
-              <ListGroup variant="flush">
-                <ListGroup.Item>
-
-                  <Button href='/room'>Create Room</Button>
-
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Button href='/join'>Join Room</Button>
-                </ListGroup.Item>
-              </ListGroup>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
-  );
-}
+const HomePage = () => {
+    return (
+        <div className="homepage-content">
+            <h1 className="homepage-title">Welcome to Trivia AI Adventure</h1>
+            <div className="homepage-buttons">
+                <a href="/room" className="btn btn-primary">
+                    Create Room
+                </a>
+                <a href="/join" className="btn btn-secondary">
+                    Join Room
+                </a>
+            </div>
+        </div>
+    );
+};
 
 export default HomePage;

@@ -2,63 +2,110 @@
 .container {
     margin-top: 20px;
     padding: 20px;
+    background: linear-gradient(to right, #261948, #3a206e);
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Players Table */
 .players-table {
     width: 300px;
     margin-bottom: 20px;
+    background: #2d2a3d;
+    color: white;
+    border-radius: 8px;
+    border: 1px solid #444;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+    padding: 10px;
 }
 
 /* Control Card */
 .control-card {
     margin-bottom: 20px;
     padding: 20px;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(50, 50, 70, 0.9);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    color: white;
 }
 
 /* Question Card */
 .question-card {
-    background-color: #f1f1f1;
-    border: 2px solid #dee2e6;
-    border-radius: 5px;
+    background-color: rgba(60, 60, 90, 0.8);
+    border: 2px solid #6a11cb;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    color: white;
+    padding: 20px;
 }
 
 /* Question Body */
 .question-body {
     height: 200px;
     padding: 20px;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Answer Card */
 .answer-card {
-    transition: transform 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(45, 42, 61, 0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
 .answer-card:hover {
     transform: scale(1.05);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 /* Next Button */
 .next-button {
-    background-color: #28a745;
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
     color: white;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 5px;
+    border-radius: 25px;
     font-size: 1.2rem;
+    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .next-button:hover {
-    background-color: #218838;
+    transform: scale(1.1);
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Form Control */
 .form-control {
     margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+/* Add any custom styles for better responsiveness */
+@media (max-width: 768px) {
+    .question-body {
+        font-size: 1.2rem;
+        height: auto;
+    }
+
+    .players-table {
+        width: 100%;
+    }
 }

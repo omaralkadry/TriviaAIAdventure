@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row, Alert } from 'react-bootstrap';
 import { useSocket } from '../../services/SocketContext';
 import { useNavigate } from 'react-router-dom';
+import './JoinPage.css';
 
 function JoinPage() {
   const [roomCode, setRoomCode] = useState('');
@@ -26,28 +27,31 @@ function JoinPage() {
   };
 
   return (
-    <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Row className="justify-content-center">
-        <Col md={10}>
-          <Card className='p-3'>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label>Enter room code.</Form.Label>
-                <Form.Control
-                  placeholder="code"
-                  value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value)}
-                />
-              </Form.Group>
-              {error && <Alert variant="danger">{error}</Alert>}
-              <Button variant="primary" type="submit">
-                Submit
-              </Button>
-            </Form>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      <Container className="join-page-container">
+        <Row className="justify-content-center">
+          <Col md={10}>
+            <Card className="join-page-card">
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="join-page-form-label">
+                    Enter Room Code
+                  </Form.Label>
+                  <Form.Control
+                      className="join-page-form-input"
+                      placeholder="Code"
+                      value={roomCode}
+                      onChange={(e) => setRoomCode(e.target.value)}
+                  />
+                </Form.Group>
+                {error && <Alert variant="danger">{error}</Alert>}
+                <Button className="join-page-btn" type="submit">
+                  Submit
+                </Button>
+              </Form>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
   );
 }
 

@@ -21,11 +21,13 @@ class GameMode {
         this.ranks = {};
         this.pointsperquestion = 10;
         this.gameID = '';
+        this.finishedGame = {}
     }
 
     addPlayer(player) {
         this.players.push(player);
         this.scores[player] = 0; 
+        this.finishedGame[player] = false;
     }
 
     setSettings(totalQuestions, timePerQuestion, pointsperquestion) {
@@ -57,6 +59,22 @@ class GameMode {
         //console.log(this.scores);
     }
 
+    async playerDone(username) {
+        this.finishedGame[username] = true;
+        console.log(this.finishedGame);
+    }
+
+    async allPlayersDone() {
+        for (const [player, isFinished] of Object.entries(this.finishedGame)) {
+            if (!isFinished) {
+                return false
+            }
+        }
+        console.log("all player checks work")
+        this.endGame();
+        return true
+    }
+
     //function created with chatgpt
     //not tested
     async endGame() {
@@ -81,11 +99,21 @@ class GameMode {
         const uri = process.env.Database_Url;
         const db = new Database(uri);
 
+        //TODO test code for data retrieval from database
+        /*
+        try {
+            const games = await db.getAllGamesForUser(this.players[0]);
+            console.log(games);
+        } catch (error) {
+            console.error('Error retrieving games:', error);
+        } */
+
         await Promise.all(this.players.map(async (player) => {
             const score = this.scores[player];
             const rank = this.ranks[player];
             const gameID = this.gameID;
-            await db.saveGame(player, gameID, score, rank);
+            const qNum = this.totalQuestions;
+            await db.saveGame(player, gameID, score, rank, qNum);
         }));
         db.close();
         
@@ -102,15 +130,23 @@ class ClassicTrivia extends GameMode {
     }
    
     setTopic(topic) {
-        this.topic = topic || "General Knowledge";
+        // https://stackoverflow.com/questions/2647867/how-can-i-determine-if-a-variable-is-undefined-or-null
+        if (topic == '')
+            this.topic = "General Knowledge";
+        else
+            this.topic = topic;
+        // this.topic = topic || "General Knowledge";
     }
 
     // from parent class
     async startGame(pointsperquestion, totalQuestions, usernames, topic_array, duration) {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Classic';
-        this.setTopic(topic_array[0]);
-        console.log(topic_array[0]);
+
+        // topic_array is not an array in this gamemode
+        this.setTopic(topic_array);
+        console.log("Topic: " + this.topic);
+
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
@@ -230,6 +266,7 @@ class TriviaBoard extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion);
         this.gameID = 'TriviaBoard';
         this.setTopics(topics);
+        console.log("Topics: " + this.topics);
 
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
@@ -250,7 +287,6 @@ class TriviaBoard extends GameMode {
             this.topics.push(defaultTopics[topic_index]); 
             topic_index++;
         }
-        console.log(this.topics);
     }
 
     async generateQuestion() {
@@ -364,20 +400,21 @@ class RandomTrivia extends GameMode {
         super(playerCount);
         this.topics = [];
         this.question_array = [];
+        this.answers = [];
     }
    
     setTopic(totalQuestions) {
         const defaultTopics = [
             "History", "Science", "Literature", "Mathematics", "Geography",
-            "Art", "Music", "Sports", "Technology", "Philosophy",
-            "Politics", "Economics", "Biology", "Physics", "Chemistry",
-            "Astronomy", "Psychology", "Sociology", "Anthropology", "Linguistics",
-            "Film", "Television", "Theater", "Dance", "Architecture",
-            "Cuisine", "Fashion", "Mythology", "Religion", "Law",
+            "Art", "Music", "Sports", "Technology", "US Government",
+            "Economics", "Biology", "Physics", "Chemistry",
+            "Astronomy", "Psychology", "Sociology", "Linguistics",
+            "Film", "Television", "Architecture", "Animals",
+            "Cuisine", "Law", "Famous Landmarks",
             "Medicine", "Environmental Science", "Computer Science", "Engineering", "Agriculture",
-            "Archaeology", "Geology", "Meteorology", "Oceanography", "Genetics",
-            "Cryptography", "Robotics", "Artificial Intelligence", "Quantum Physics", "Nanotechnology",
-            "Space Exploration", "Renewable Energy", "Cybersecurity", "Biotechnology", "Neuroscience"
+            "Geology", "Meteorology", "Oceanography",
+            "Robotics", "Artificial Intelligence",
+            "Space Exploration", "Renewable Energy", "Cybersecurity"
         ];
 
         const topicsCopy = [...defaultTopics];
@@ -394,7 +431,7 @@ class RandomTrivia extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Random';
         this.setTopic(totalQuestions);
-        console.log(this.topics);
+        console.log("Topics: " + this.topics);
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
@@ -505,20 +542,42 @@ class RandomTrivia extends GameMode {
             console.error('Error generating question:', error);
         }
     }
+    async storeAnswer(username, answer, qindex) {
+        if (!this.answers[qindex]) {
+            this.answers[qindex] = [];
+        }
+        this.answers[qindex].push({username, answer});
 
-    async checkAnswer(playerAnswers, qindex) {
+        //console.log(this.answers);
+        //console.log(this.players);
+        if (this.answers[qindex].length === this.players.length) {
+            //console.log ("player length: ", this.players.length);
+            //console.log ("answer length: ", this.answers[qindex].length);
+            return await this.checkAnswer(qindex);
+        }
+
+    }
+    async checkAnswer(qindex) {
         try {
+            //testing
+            console.log("index:", qindex)
+            console.log("exact Answer", this.answers[qindex])
+            console.log("exact question: ",this.question_array[qindex].question);
             const question = this.question_array[qindex].question;
             //const exampleAnswer = this.question_array[qindex].exampleAnswer;
             //let prompt = `Question: "${question}"\nExample Answer: "${exampleAnswer}"\n\nPlayer Answers:\n`;
             let prompt = `Question: "${question}"\nPlayer Answers:\n`;
             
-            Object.entries(playerAnswers).forEach(([player, answer]) => {
-              prompt += `${player}: ${answer}\n`;
-            });
+            /*    Object.entries(playerAnswers).forEach(([player, answer]) => {
+                prompt += `${player}: ${answer}\n`;
+                });*/
+            this.answers[qindex].forEach(({username, answer}) => {
+                prompt += `- ${username}: ${answer}\n`;
+            })
             
             prompt += "\nEvaluate each player's answer and respond with a JSON object where keys are player names and values are boolean (true for correct, false for incorrect). Consider alternative phrasings and partial correctness. Only return the JSON object, no additional text.";
 
+            //console.log(prompt);
             const response = await client.chat.completions.create({
                 model: "gpt-4o-mini", //most cost effective as of rn
                 messages: [
@@ -532,12 +591,20 @@ class RandomTrivia extends GameMode {
             const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
             const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
             const parsedAnswers = JSON.parse(cleanedResult);
+            //console.log(parsedAnswers);
 
-            Object.entries(parsedAnswers).forEach(([player, isCorrect]) => {
-                if (isCorrect) {
+            Object.entries(parsedAnswers).forEach(([player, bool]) => {
+                if (bool === true) {
                     this.generateScores(player);
+                    //console.log("worked")
+                } else if (bool === false) {
+                    //console.log("also worked");
+                } else {
+                    //console.log("did not work");
                 }
+                
             });
+            console.log(this.scores);
 
             //for testing only and may not use in code
             return parsedAnswers;

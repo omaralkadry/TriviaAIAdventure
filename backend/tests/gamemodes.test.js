@@ -1,3 +1,4 @@
+// Referenced https://jestjs.io/
 const { Db } = require('mongodb');
 const { ClassicTrivia } = require('../gamemodes');
 const { TriviaBoard } = require('../gamemodes');
@@ -9,13 +10,13 @@ describe('ClassicTrivia Game Mode', () => {
     let game;
 
     beforeEach(() => {
-        game = new ClassicTrivia(4); // 2 players
-        game.addPlayer('Player1');
-        game.addPlayer('Player2');
-        game.addPlayer('Player3');
-        game.addPlayer('Player4');
+        game = new ClassicTrivia(4); // 4 players
+        // game.addPlayer('Player1');
+        // game.addPlayer('Player2');
+        // game.addPlayer('Player3');
+        // game.addPlayer('Player4');
         //game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question. this is now done in start game
-        game.startGame(10, 2, game.players, 'Science', 30);
+        game.startGame(10, 2, ['Player1', 'Player2', 'Player3', 'Player4'], 'Science', 30);
     });
 
     test('should initialize with correct settings', () => {
@@ -54,16 +55,15 @@ describe('ClassicTrivia Game Mode', () => {
     }, 30000);
 
     test('should simulate a running game and then run endgame() function', async () => {
-        
         await game.generateQuestion();
-        
-        answers = {"Player1": "a", "Player2": "b", "Player3": "c","Player4": "d", }
-        
         expect(game.currentQuestion).toBe(0);
+        answers = {"Player1": "a", "Player2": "b", "Player3": "c","Player4": "d", }
+
         game.players.forEach(player => {
             game.scores[player] = 0;
-            game.checkAnswer(player, answers[player]);
+            game.checkAnswer(player, answers[player], 0);
         });
+
         await game.incrementQuestion();
         expect(game.currentQuestion).toBe(1);
 
@@ -73,8 +73,6 @@ describe('ClassicTrivia Game Mode', () => {
         //console.log("question1: ", game.question_array[0])
         //console.log('Final Scores:', game.scores);
         //console.log('Final Ranks:', game.ranks);
-
-
     }, 60000);
 
 });
@@ -82,12 +80,13 @@ describe('ClassicTrivia Game Mode', () => {
 describe('ClassicTrivia Question Retrieval', () => {
     let game;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         game = new ClassicTrivia(2); // 2 players
-        game.addPlayer('Player1');
-        game.addPlayer('Player2');
-        game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question
-        game.setTopic('Science');
+        // game.addPlayer('Player1');
+        // game.addPlayer('Player2');
+        // game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question
+        // game.setTopic('Science');
+        game.startGame(10, 5, ['Player1', 'Player2'], 'Science', 30);
         await game.generateQuestion(); // Generate questions before running the tests
     });
 
@@ -124,7 +123,7 @@ describe('ClassicTrivia Question Retrieval', () => {
 describe('TriviaBoard Game Mode', () => {
     let game;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         game = new TriviaBoard(2);
         const defaultTopics = ["History", "Science", "Art", "Literature", "Geography", "Sports"];
         await game.startGame(10, 30, ['Player1', 'Player2'], defaultTopics, 30);
@@ -170,16 +169,16 @@ describe('TriviaBoard Game Mode', () => {
         game.scores = { 'Player1': 0 };
         game.checkAnswer('Player1', game.question_array[questionIndex].correctAnswer, questionIndex);
 
-        const expectedPoints = (questionIndex % 5 + 1) * 200; // Should be 800 for questionIndex 3
+        const expectedPoints = 2 * ((questionIndex % 5 + 1) * 200); // Should be 800 * 2 for questionIndex 3 for first person answering correctly
         expect(game.scores['Player1']).toBe(expectedPoints);
     }, 6000);
 });
 
-describe.only('RandomTrivia Game Mode', () => {
+describe('RandomTrivia Game Mode', () => {
     let game;
   
     beforeEach(() => {
-      game = new RandomTrivia(2);
+      game = new RandomTrivia(3);
     });
   
     test('should initialize with correct settings', () => {
@@ -217,8 +216,13 @@ describe.only('RandomTrivia Game Mode', () => {
           'Player2': 'Partially correct answer',
           'Player3': 'Incorrect answer'
         };
-        const results = await game.checkAnswer(playerAnswers, 0);
-        console.log(results)
+        // const results = await game.checkAnswer(playerAnswers, 0);
+        // console.log(results)
+        game.storeAnswer('Player1', 'Correct answer', 0);
+        game.storeAnswer('Player2', 'Partially correct answer', 0);
+        // checkAnswer is called in storeAnswer when the number of answers equals the number of players
+        const results = await game.storeAnswer('Player3', 'Incorrect answer', 0);
+        // These checks may not always work
         expect(results).toHaveProperty('Player1');
         expect(results).toHaveProperty('Player2');
         expect(results).toHaveProperty('Player3');
@@ -229,7 +233,7 @@ describe.only('RandomTrivia Game Mode', () => {
         expect(game.scores['Player3']).toBe(0);
       }, 30000);
   
-    test('should increment questions and get current topic', async () => {
+    test('should increment current question and get current topic', async () => {
       game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
       await game.generateQuestion();
       expect(game.currentQuestion).toBe(0);

@@ -64,13 +64,14 @@ class Database {
         return user;
     }
 
-    async saveGame(username, gameID, score, rank) {
+    async saveGame(username, gameID, score, rank, qNum) {
         const collection = this.client.db("Users").collection(username);
         try {
             await collection.insertOne({
                 gameID: gameID,
                 score: score,
                 rank: rank,
+                questionAmount: qNum,
                 date: new Date()
             });
             //testing
@@ -78,6 +79,19 @@ class Database {
         } catch (error) {
             console.error(`Failed to save game for user ${username}:`, error);
             throw error;
+        }
+    }
+
+    async getAllGamesForUser(username) {
+        const collection = this.client.db("Users").collection(username);
+        try {
+            
+            const games = await collection.find().toArray();
+            console.log("database.js: ");
+            return games;
+        } catch (error) {
+            console.error(`Failed to retrieve games for user ${username}:`, error);
+            throw error; 
         }
     }
 
