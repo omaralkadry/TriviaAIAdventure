@@ -359,7 +359,7 @@ socketIO.on('connection', (socket) => {
             roomsList[roomCode].gameInstance.playerDone(username);
             
             //TODO this is done, just commented out so as to not overpopulate the database when testing
-            //roomsList[roomCode].gameInstance.allPlayersDone();
+            roomsList[roomCode].gameInstance.allPlayersDone();
         }
     });
 
