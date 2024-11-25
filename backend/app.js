@@ -351,13 +351,14 @@ socketIO.on('connection', (socket) => {
         console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
         //testing
-        //console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
-        //console.log("current question index: ", currentQuestionIndex + 1);
+        console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
+        console.log("current question index: ", currentQuestionIndex + 1);
+        console.log("Checking Condition:", roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1));
 
         //endgame for all modes
-        if (roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1)) {
+        if (parseInt(roomsList[roomCode].gameInstance.totalQuestions, 10) === (currentQuestionIndex + 1)) {
             roomsList[roomCode].gameInstance.playerDone(username);
-            
+            console.log("checking");
             //TODO this is done, just commented out so as to not overpopulate the database when testing
             roomsList[roomCode].gameInstance.allPlayersDone();
         }
