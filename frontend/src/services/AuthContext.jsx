@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   // Clear user data in session storage on logout
   const logout = async () => {
     try {
-      const response = await fetch('http://localhost:3000/logout', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/logout`, {
         method: 'POST',
         credentials: 'include',
       });

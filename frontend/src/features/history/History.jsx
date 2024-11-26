@@ -23,7 +23,7 @@ const History = () => {
                     body: JSON.stringify({ username: username}),
                 };
                 try {
-                    const response = await fetch("http://localhost:3000/history", options);
+                    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/history`, options);
                     if (!response.ok) {
                         throw new Error('Failed to fetch game history');
                     }
