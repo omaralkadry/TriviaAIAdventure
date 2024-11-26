@@ -396,6 +396,16 @@ socketIO.on('connection', (socket) => {
         socketIO.to(socket.roomCode).emit('back to board');
     });
 
+    // Handles going to next question for everyone synced
+    socket.on('next question', () => {
+        socketIO.to(socket.roomCode).emit('next question');
+    });
+
+    // Handles ending game for everyone synced
+    socket.on('game over', () => {
+        socketIO.to(socket.roomCode).emit('game over');
+    });
+
     // Handle game mode updates
     socket.on('update_game_mode', (roomCode, mode, callback) => {
         // Call errorCheck function

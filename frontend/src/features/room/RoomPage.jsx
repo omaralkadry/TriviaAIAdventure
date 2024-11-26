@@ -56,8 +56,7 @@ function RoomPage() {
       setWaiting(false);
     };
 
-    const handleGameOver = (data) => {
-      alert(data.message);
+    const handleGameOver = () => {
       setGameOver(true);
       setGameStarted(false);
     };
@@ -99,6 +98,13 @@ function RoomPage() {
       setIsHost(status);
     };
 
+    const handleNextQuestion = ()  => {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer('');
+      setIsCountdownFinished(false);
+      setKey(Date.now());
+    };
+
     socket.on('update players', handleUpdatePlayers);
     socket.on('question', handleQuestion);
     socket.on('game over', handleGameOver);
@@ -108,6 +114,7 @@ function RoomPage() {
     socket.on('game settings', handleGameSettings);
     socket.on('next question selector', handleSelector);
     socket.on('host status', handleHostStatus);
+    socket.on('next question', handleNextQuestion);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -119,8 +126,9 @@ function RoomPage() {
       socket.off('game settings', handleGameSettings);
       socket.off('next question selector', handleSelector);
       socket.off('host status', handleHostStatus);
+      socket.off('next question', handleNextQuestion);
     };
-  }, [socket]);
+  }, [socket, currentQuestionIndex, Date]);
 
   const handleCreateRoom = useCallback(() => {
     if (!socket) return;
@@ -177,18 +185,14 @@ function RoomPage() {
   }, []);
 
   const handleNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer('');
-      setIsCountdownFinished(false);
-      setKey(Date.now());
-    } else {
-      if (socket) {
-        socket.emit('game over', roomCode);
+    if (socket) {
+      if (currentQuestionIndex < questions.length - 1) {
+        socket.emit('next question');
+      } else {
+        socket.emit('game over');
       }
-      setGameOver(true);
     }
-  }, [currentQuestionIndex, questions.length, socket, roomCode]);
+  }, [currentQuestionIndex, questions.length, socket]);
 
   const handleBackToLobby = useCallback(() => {
     setGameOver(false);
