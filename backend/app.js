@@ -23,7 +23,7 @@ const history = require('./routes/history.js');
 
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 const server = createServer(app);
 const socketIO = new Server(server, { cors: { origin: '*' } });
 
