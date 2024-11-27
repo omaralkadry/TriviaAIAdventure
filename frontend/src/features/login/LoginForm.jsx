@@ -21,7 +21,7 @@ function LoginForm({ onLogin }) {
             body: JSON.stringify({ username: username, password: password }),
         };
 
-        fetch("http://localhost:3000/login", options).then((response) => {
+        fetch(`${import.meta.env.VITE_BASE_URL}/login`, options).then((response) => {
             if (response.ok) {
                 console.log("Login Successful");
                 response.json().then((data) => {

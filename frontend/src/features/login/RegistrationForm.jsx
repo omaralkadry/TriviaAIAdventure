@@ -25,7 +25,7 @@ function RegistrationForm() {
       body: JSON.stringify({ username, password }),
     };
 
-    fetch("http://localhost:3000/register", options)
+    fetch(`${import.meta.env.VITE_BASE_URL}/register`, options)
         .then(response => {
           if (response.ok) {
             response.json().then(data => {

@@ -16,6 +16,7 @@ import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
+import History from "./features/history/History";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <RoomPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/history",
+        element: (
+          <ProtectedRoute>
+            <History />
           </ProtectedRoute>
         ),
       },
