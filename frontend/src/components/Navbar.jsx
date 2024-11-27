@@ -48,7 +48,10 @@ const Navbar = () => {
                             <GiPerspectiveDiceSixFacesRandom /> Jeopardy
                         </Nav.Link>
                         <Nav.Link as={Link} to="/history" className="nav-link">
-                            History
+                            Game History
+                        </Nav.Link>
+                        <Nav.Link as={Link} to="/scores" className="nav-link">  {/* Corrected Scores Link */}
+                            Scores
                         </Nav.Link>
                         <NavDropdown
                             title={

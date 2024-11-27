@@ -1,17 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 const HomePage = () => {
+    const navigate = useNavigate();
+    const [roomName, setRoomName] = useState("");
+    const [roomCode, setRoomCode] = useState("");
+
+    const handleCreateRoom = () => {
+        if (roomName.trim()) {
+            navigate(`/room?name=${encodeURIComponent(roomName)}`);
+        }
+    };
+
+    const handleJoinRoom = () => {
+        if (roomCode.trim()) {
+            navigate(`/room?code=${encodeURIComponent(roomCode)}`);
+        }
+    };
+
     return (
         <div className="homepage-content">
-            <h1 className="homepage-title">Welcome to Trivia AI Adventure</h1>
-            <div className="homepage-buttons">
-                <a href="/room" className="btn btn-primary">
-                    Create Room
-                </a>
-                <a href="/join" className="btn btn-secondary">
-                    Join Room
-                </a>
+            <h1 className="homepage-title">Welcome to Trivia Ai Adventures</h1>
+            <p className="homepage-subtitle">Test your knowledge and challenge your friends!</p>
+            <div className="homepage-cards">
+                <div className="card">
+                    <h2 className="card-title">Create a Room</h2>
+                    <p className="card-subtitle">Start a new trivia game and invite your friends</p>
+                    <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Enter room name"
+                        value={roomName}
+                        onChange={(e) => setRoomName(e.target.value)}
+                    />
+                    <button className="btn" onClick={handleCreateRoom}>Create Room</button>
+                </div>
+                <div className="card">
+                    <h2 className="card-title">Join a Room</h2>
+                    <p className="card-subtitle">Enter a room code to join an existing game</p>
+                    <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Enter room code"
+                        value={roomCode}
+                        onChange={(e) => setRoomCode(e.target.value)}
+                    />
+                    <button className="btn" onClick={handleJoinRoom}>Join Room</button>
+                </div>
             </div>
         </div>
     );

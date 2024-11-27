@@ -38,20 +38,20 @@
 .form-control input {
   width: 100%;
   padding: 10px 15px;
-  border: 1px solid #ccc; /* Subtle border for white input */
+  border: none; /* Remove border */
   border-radius: 8px;
   font-size: 1rem;
   color: #000000; /* Dark text for readability on white background */
   background-color: #ffffff; /* White background for input fields */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none; /* Remove shadow */
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Focus effect for inputs */
 .form-control input:focus {
-  border-color: #6a11cb;
+  border-color: none; /* Keep border none on focus */
   background-color: #ffffff; /* Keep the background white on focus */
-  box-shadow: 0px 0px 8px rgba(106, 17, 203, 0.3);
+  box-shadow: none; /* Remove focus shadow */
   outline: none;
 }
 

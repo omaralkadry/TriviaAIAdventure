@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button, Card, Container, Col, Form, Row } from "react-bootstrap";
 import { useAuth } from "../../services/AuthContext";
-import { useNavigate } from "react-router-dom";
-import "./Form.css"; // Ensure you have styling for the form
+import { useNavigate, Link } from "react-router-dom";
+import "./Form.css";
 
 function LoginForm({ onLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -20,7 +21,7 @@ function LoginForm({ onLogin }) {
             body: JSON.stringify({ username: username, password: password }),
         };
 
-        fetch(`${import.meta.env.VITE_BASE_URL}/login`, options).then((response) => {
+        fetch("http://localhost:3000/login", options).then((response) => {
             if (response.ok) {
                 console.log("Login Successful");
                 response.json().then((data) => {
@@ -32,6 +33,7 @@ function LoginForm({ onLogin }) {
                 localStorage.removeItem("redirectPath");
             } else {
                 console.log("Login Unsuccessful");
+                setError("Invalid username or password");
             }
         });
     };
@@ -45,6 +47,7 @@ function LoginForm({ onLogin }) {
                 <Col md={10}>
                     <Card className="form-card">
                         <Card.Title className="form-title">Login</Card.Title>
+                        {error && <div className="alert alert-danger">{error}</div>}
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="form-control mb-3" controlId="formBasicUsername">
                                 <Form.Label>Username</Form.Label>
@@ -72,9 +75,9 @@ function LoginForm({ onLogin }) {
                             <div className="form-footer">
                                 <p>
                                     Don't have an account?{" "}
-                                    <a href="/register" className="form-link">
+                                    <Link to="/register" className="form-link">
                                         Register here
-                                    </a>
+                                    </Link>
                                 </p>
                             </div>
                         </Form>

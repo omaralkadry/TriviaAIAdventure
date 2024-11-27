@@ -8,8 +8,4 @@ export default defineConfig({
     namedExports: true, // Enables named exports for JSON files
     stringify: false,   // Prevents JSON stringification
   },
-  server: {
-    host: '0.0.0.0',
-    port: 5173, // Optional
-  }
 });

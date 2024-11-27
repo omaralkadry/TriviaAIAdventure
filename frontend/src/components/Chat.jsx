@@ -62,41 +62,41 @@ function Chat({ roomCode }) {
   };
 
   return (
-    <Container fluid className="py-5">
-      <Row className="d-flex">
-        <Col md={8} lg={6} xl={4}>
-          <Card style={{ borderRadius: "15px", width: '500px', height: '600px', display: 'flex', flexDirection: 'column' }}>
-            <Card.Body style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
-                {chat.map((msg, index) => (
-                  <Card.Text key={index}>
-                    <strong>{msg.username}: </strong>{msg.message}
-                  </Card.Text>
-                ))}
-              </div>
-              <Form onSubmit={handleSubmit}>
-                <InputGroup>
-                  <Form.Control
-                    type='text'
-                    placeholder="Type your message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    style={{ width: '100%' }}
-                  />
-                  <Button
-                    variant="outline-secondary"
-                    type="submit"
-                    style={{ height: '38px' }}
-                  >
-                    Send
-                  </Button>
-                </InputGroup>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      <Container fluid className="py-5">
+        <Row className="d-flex">
+          <Col md={8} lg={6} xl={4}>
+            <Card style={{ borderRadius: "15px", width: '500px', height: '600px', display: 'flex', flexDirection: 'column' }}>
+              <Card.Body style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
+                  {chat.map((msg, index) => (
+                      <Card.Text key={index}>
+                        <strong>{msg.username}: </strong>{msg.message}
+                      </Card.Text>
+                  ))}
+                </div>
+                <Form onSubmit={handleSubmit}>
+                  <InputGroup>
+                    <Form.Control
+                        type='text'
+                        placeholder="Type your message"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        style={{ width: '100%' }}
+                    />
+                    <Button
+                        variant="outline-secondary"
+                        type="submit"
+                        style={{ height: '38px' }}
+                    >
+                      Send
+                    </Button>
+                  </InputGroup>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
   );
 }
 
