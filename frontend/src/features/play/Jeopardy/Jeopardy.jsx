@@ -54,7 +54,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
 
   // Handles sending 'back to board' to server
   const handleBackToBoard = () => {
-    socket.emit('back to board');
+    if (questions.length === clickedQuestions.length) {
+      socket.emit('game over');
+    } else {
+      socket.emit('back to board');
+    }
   };
   
   // Handlers socket.on receiving
