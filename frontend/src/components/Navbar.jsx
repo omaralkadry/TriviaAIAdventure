@@ -35,6 +35,7 @@ const Navbar = () => {
                         <Nav.Link as={Link} to="/" className="nav-link">
                             <AiOutlineHome /> Home
                         </Nav.Link>
+                        {/*
                         <Nav.Link as={Link} to="/play" className="nav-link">
                             <AiOutlinePlayCircle /> Play Test
                         </Nav.Link>
@@ -47,12 +48,14 @@ const Navbar = () => {
                         <Nav.Link as={Link} to="/jeopardy" className="nav-link">
                             <GiPerspectiveDiceSixFacesRandom /> Jeopardy
                         </Nav.Link>
+                        <Nav.Link as={Link} to="/scores" className="nav-link">
+                            Scores
+                        </Nav.Link>
+                        */}
                         <Nav.Link as={Link} to="/history" className="nav-link">
                             Game History
                         </Nav.Link>
-                        <Nav.Link as={Link} to="/scores" className="nav-link">  {/* Corrected Scores Link */}
-                            Scores
-                        </Nav.Link>
+                        
                         <NavDropdown
                             title={
                                 <span className={`account-text ${dropdownOpen ? 'active' : ''}`}>
