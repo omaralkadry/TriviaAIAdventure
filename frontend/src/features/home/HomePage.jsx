@@ -10,21 +10,24 @@ const HomePage = () => {
     const [roomCode, setRoomCode] = useState("");
 
     const handleCreateRoom = () => {
-        if (roomName.trim()) {
-            navigate(`/room?name=${encodeURIComponent(roomName)}`);
+        if (getUsername) {
+            navigate(`/room`);
         }
+        // if (roomName.trim()) {
+        //     navigate(`/room?name=${encodeURIComponent(roomName)}`);
+        // }
     };
     
-    const handleJoinRoom = () => {
-        if (roomCode.trim()) {
-            navigate(`/room?code=${encodeURIComponent(roomCode)}`);
-        }
-    };
-    useEffect(() => {
-        if (getUsername) {
-            setRoomName(getUsername);
-        }
-      }, [roomName]);
+    // const handleJoinRoom = () => {
+    //     if (roomCode.trim()) {
+    //         navigate(`/room?code=${encodeURIComponent(roomCode)}`);
+    //     }
+    // };
+    // useEffect(() => {
+    //     if (getUsername) {
+    //         setRoomName(getUsername);
+    //     }
+    //   }, [roomName]);
 
     return (
         <div className="homepage-content">
@@ -47,7 +50,7 @@ const HomePage = () => {
                     <button
                         className="btn"
                         onClick={() => {
-                            //setRoomName(getUsername); // Replace with logic to get the desired room name
+                            //setRoomName(getUsername); 
                             handleCreateRoom();
                         }}
                         > Start

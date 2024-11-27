@@ -25,9 +25,9 @@ function RoomPage() {
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [roomStatus, setRoomStatus] = useState('waiting');
-  const navigate = useNavigate();
-  const location = useLocation();
+  // const [roomStatus, setRoomStatus] = useState('waiting');
+  // const navigate = useNavigate();
+  // const location = useLocation();
   const [answerResponse, setAnswerResponse] = useState(null);
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
@@ -43,18 +43,18 @@ function RoomPage() {
   const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const roomName = params.get('name');
-    const code = params.get('code');
+  // useEffect(() => {
+  //   const params = new URLSearchParams(location.search);
+  //   const roomName = params.get('name');
+  //   const code = params.get('code');
 
-    if (roomName && !roomCode) {
-      handleCreateRoom();
-    } else if (code && !roomCode) {
-      setJoinRoomCode(code);
-      handleJoinRoom();
-    }
-  }, [location]);
+  //   if (roomName && !roomCode) {
+  //     handleCreateRoom();
+  //   } else if (code && !roomCode) {
+  //     setJoinRoomCode(code);
+  //     handleJoinRoom();
+  //   }
+  // }, [location]);
 
   useEffect(() => {
     if (!socket) return;
@@ -87,7 +87,7 @@ function RoomPage() {
       setCurrentQuestionIndex(0);
       setSelectedAnswer('');
       setWaiting(true);
-      setRoomStatus('in-progress');
+      //setRoomStatus('in-progress');
     };
 
     const handleAnswerResult = (data) => {
@@ -170,6 +170,7 @@ function RoomPage() {
       console.error("Invalid game mode", mode);
     }
 
+    //TODO change total questions to 5
     socket.emit('start game', roomCode, topic_array, totalQuestions || 2, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
@@ -204,7 +205,7 @@ function RoomPage() {
     setGameOver(false);
     setGameStarted(false);
     setScores({});
-    setRoomStatus('waiting');
+    //setRoomStatus('waiting');
   }, []);
 
   const handleTopicChange = (index, value) => {
@@ -374,9 +375,11 @@ function RoomPage() {
                       </Button>
                     </div>
                     <p className="text-muted mt-2">Share this code with your friends</p>
+                    {/*
                     <div className={`room-status ${roomStatus}`}>
                       {roomStatus === 'waiting' ? 'Waiting for players...' : 'Game in progress'}
                     </div>
+                    */}
                   </div>
                 </Col>
               </Row>
