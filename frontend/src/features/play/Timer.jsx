@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressBar } from 'react-bootstrap';
 import './Timer.css';
+import { useSocket } from '../../services/SocketContext';
 
 const Timer = ({ duration, onCountdownFinish }) => {
   const [timeLeft, setTimeLeft] = useState(duration);
+  const socket = useSocket();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -18,8 +20,17 @@ const Timer = ({ duration, onCountdownFinish }) => {
       });
     }, 1000);
 
-    return () => clearInterval(timer);  // Cleanup on unmount
-  }, [onCountdownFinish]);
+    const endTimer = () => {
+      setTimeLeft(0);
+    };
+
+    socket.on('all players answered', endTimer);
+
+    return () => {
+      clearInterval(timer) // Cleanup on unmount
+      socket.off('all players answered');
+    };
+  }, [onCountdownFinish, socket]);
 
   useEffect(() => {
     setTimeLeft(duration);  // Reset the timer when the duration changes

@@ -362,6 +362,16 @@ socketIO.on('connection', (socket) => {
             //TODO this is done, just commented out so as to not overpopulate the database when testing
             roomsList[roomCode].gameInstance.allPlayersDone();
         }
+
+        // Increment players that answered current question
+        gameInstance.playersAnswered++;
+
+        if (gameInstance.playersAnswered === gameInstance.players.length) {
+            // Emit that all players are done answering
+            socketIO.to(roomCode).emit('all players answered');
+
+            resetPlayersAnswered(roomCode);
+        }
     });
 
     // Handle when buzzer is pressed 
@@ -390,15 +400,28 @@ socketIO.on('connection', (socket) => {
         socketIO.to(roomCode).emit('selected question', questionIndex);
     });
 
+    const resetPlayersAnswered = (roomCode) => {
+        const gameInstance = roomsList[roomCode].gameInstance;
+
+        // Reset the number of players that answered the current question
+        gameInstance.playersAnswered = 0;
+    };
+
     // Handle going back to board after a question
     socket.on('back to board', () => {
+        const roomCode = socket.roomCode;
+
         // Emits to everyone in room
-        socketIO.to(socket.roomCode).emit('back to board');
+        socketIO.to(roomCode).emit('back to board');
+
+        resetPlayersAnswered(roomCode);
     });
 
     // Handles going to next question for everyone synced
     socket.on('next question', () => {
-        socketIO.to(socket.roomCode).emit('next question');
+        const roomCode = socket.roomCode;
+        socketIO.to(roomCode).emit('next question');
+        resetPlayersAnswered(roomCode);
     });
 
     // Handles ending game for everyone synced

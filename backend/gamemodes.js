@@ -22,6 +22,7 @@ class GameMode {
         this.pointsperquestion = 10;
         this.gameID = '';
         this.finishedGame = {}
+        this.playersAnswered = 0;
     }
 
     addPlayer(player) {
