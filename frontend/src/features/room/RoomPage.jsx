@@ -39,7 +39,7 @@ function RoomPage() {
   // Game and room settings
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [mode, setMode] = useState(-1);
+  const [mode, setMode] = useState(0);
   const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
