@@ -42,7 +42,7 @@ const Home = () => {
 
       <div className="rooms-section">
         <div className="room-card create-room">
-          <h2>Create a Room</h2>
+          <h2>Start</h2>
           <p>Start a new trivia game and invite your friends</p>
           <div className="input-group">
             <input
@@ -57,11 +57,11 @@ const Home = () => {
               className="room-button"
               onClick={handleCreateRoom}
             >
-              CREATE ROOM
+              Start
             </button>
           </div>
         </div>
-
+        {/*
         <div className="room-card join-room">
           <h2>Join a Room</h2>
           <p>Enter a room code to join an existing game</p>
@@ -82,6 +82,7 @@ const Home = () => {
             </button>
           </div>
         </div>
+        */}
       </div>
     </div>
   );

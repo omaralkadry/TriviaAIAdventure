@@ -20,7 +20,6 @@
     font-weight: 700;
     margin-bottom: 1rem;
     background: linear-gradient(45deg, #8A4FFF, #FF4F9F);
-    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 30px rgba(138, 79, 255, 0.3);
     animation: titleGlow 3s infinite;
