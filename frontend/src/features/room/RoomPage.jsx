@@ -25,9 +25,9 @@ function RoomPage() {
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  // const [roomStatus, setRoomStatus] = useState('waiting');
-  // const navigate = useNavigate();
-  // const location = useLocation();
+  const [roomStatus, setRoomStatus] = useState('waiting');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [answerResponse, setAnswerResponse] = useState(null);
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
@@ -39,22 +39,22 @@ function RoomPage() {
   // Game and room settings
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [mode, setMode] = useState(0);
+  const [mode, setMode] = useState(-1);
   const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
 
-  // useEffect(() => {
-  //   const params = new URLSearchParams(location.search);
-  //   const roomName = params.get('name');
-  //   const code = params.get('code');
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roomName = params.get('name');
+    const code = params.get('code');
 
-  //   if (roomName && !roomCode) {
-  //     handleCreateRoom();
-  //   } else if (code && !roomCode) {
-  //     setJoinRoomCode(code);
-  //     handleJoinRoom();
-  //   }
-  // }, [location]);
+    if (roomName && !roomCode) {
+      handleCreateRoom();
+    } else if (code && !roomCode) {
+      setJoinRoomCode(code);
+      handleJoinRoom();
+    }
+  }, [location]);
 
   useEffect(() => {
     if (!socket) return;
@@ -74,7 +74,8 @@ function RoomPage() {
       setWaiting(false);
     };
 
-    const handleGameOver = () => {
+    const handleGameOver = (data) => {
+      alert(data.message);
       setGameOver(true);
       setGameStarted(false);
     };
@@ -86,7 +87,7 @@ function RoomPage() {
       setCurrentQuestionIndex(0);
       setSelectedAnswer('');
       setWaiting(true);
-      //setRoomStatus('in-progress');
+      setRoomStatus('in-progress');
     };
 
     const handleAnswerResult = (data) => {
@@ -114,13 +115,6 @@ function RoomPage() {
       setIsHost(status);
     };
 
-    const handleNextQuestion = ()  => {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer('');
-      setIsCountdownFinished(false);
-      setKey(Date.now());
-    };
-
     socket.on('update players', handleUpdatePlayers);
     socket.on('question', handleQuestion);
     socket.on('game over', handleGameOver);
@@ -130,7 +124,6 @@ function RoomPage() {
     socket.on('game settings', handleGameSettings);
     socket.on('next question selector', handleSelector);
     socket.on('host status', handleHostStatus);
-    socket.on('next question', handleNextQuestion);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -142,9 +135,8 @@ function RoomPage() {
       socket.off('game settings', handleGameSettings);
       socket.off('next question selector', handleSelector);
       socket.off('host status', handleHostStatus);
-      socket.off('next question', handleNextQuestion);
     };
-  }, [socket, currentQuestionIndex, Date]);
+  }, [socket]);
 
   const handleCreateRoom = useCallback(() => {
     if (!socket) return;
@@ -178,7 +170,6 @@ function RoomPage() {
       console.error("Invalid game mode", mode);
     }
 
-    //TODO change total questions to 5
     socket.emit('start game', roomCode, topic_array, totalQuestions || 2, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
@@ -196,20 +187,24 @@ function RoomPage() {
   }, []);
 
   const handleNextQuestion = useCallback(() => {
-    if (socket) {
-      if (currentQuestionIndex < questions.length - 1) {
-        socket.emit('next question');
-      } else {
-        socket.emit('game over');
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer('');
+      setIsCountdownFinished(false);
+      setKey(Date.now());
+    } else {
+      if (socket) {
+        socket.emit('game over', roomCode);
       }
+      setGameOver(true);
     }
-  }, [currentQuestionIndex, questions.length, socket]);
+  }, [currentQuestionIndex, questions.length, socket, roomCode]);
 
   const handleBackToLobby = useCallback(() => {
     setGameOver(false);
     setGameStarted(false);
     setScores({});
-    //setRoomStatus('waiting');
+    setRoomStatus('waiting');
   }, []);
 
   const handleTopicChange = (index, value) => {
@@ -301,54 +296,48 @@ function RoomPage() {
 
     return (
         <div className="stagger-children">
-          <Row className="justify-content-center mb-4">
-            <Col md={6}>
-              <div className="room-card hover-lift">
-                <div className="card-content scale-in">
-                  <h2 className="glow-pulse mb-4">Create a New Room</h2>
-                  <p className="text-center mb-4">Start a new trivia game and invite your friends</p>
-                  <Button
-                      onClick={handleCreateRoom}
-                      className="room-button hover-scale transition-all"
-                      disabled={!isAuthenticated()}
-                  >
-                    Create Room
-                  </Button>
-                  {!isAuthenticated() && (
-                      <p className="text-warning mt-3 fade-in">Please login to create a room</p>
-                  )}
-                </div>
+          <div className="room-options-container">
+            <div className="room-card hover-lift">
+              <div className="card-content scale-in">
+                <h2 className="glow-pulse mb-4">Create a New Room</h2>
+                <p className="text-center mb-4">Start a new trivia game and invite your friends</p>
+                <Button
+                    onClick={handleCreateRoom}
+                    className="room-button hover-scale transition-all"
+                    disabled={!isAuthenticated()}
+                >
+                  Create Room
+                </Button>
+                {!isAuthenticated() && (
+                    <p className="text-warning mt-3 fade-in">Please login to create a room</p>
+                )}
               </div>
-            </Col>
-          </Row>
+            </div>
 
-          <Row className="justify-content-center mb-4">
-            <Col md={6}>
-              <div className="room-card hover-lift">
-                <div className="card-content scale-in">
-                  <h2 className="glow-pulse mb-4">Join Existing Room</h2>
-                  <p className="text-center mb-4">Enter a room code to join an existing game</p>
-                  <Form.Control
-                      type="text"
-                      value={joinRoomCode}
-                      onChange={(e) => setJoinRoomCode(e.target.value)}
-                      placeholder="Enter Room Code"
-                      className="room-input hover-bright mb-3"
-                  />
-                  <Button
-                      onClick={handleJoinRoom}
-                      className="room-button hover-scale transition-all"
-                      disabled={!joinRoomCode || !isAuthenticated()}
-                  >
-                    Join Room
-                  </Button>
-                  {!isAuthenticated() && (
-                      <p className="text-warning mt-3 fade-in">Please login to join a room</p>
-                  )}
-                </div>
+            <div className="room-card hover-lift">
+              <div className="card-content scale-in">
+                <h2 className="glow-pulse mb-4">Join Existing Room</h2>
+                <p className="text-center mb-4">Enter a room code to join an existing game</p>
+                <Form.Control
+                    type="text"
+                    value={joinRoomCode}
+                    onChange={(e) => setJoinRoomCode(e.target.value)}
+                    placeholder="Enter Room Code"
+                    className="room-input hover-bright mb-3"
+                />
+                <Button
+                    onClick={handleJoinRoom}
+                    className="room-button hover-scale transition-all"
+                    disabled={!joinRoomCode || !isAuthenticated()}
+                >
+                  Join Room
+                </Button>
+                {!isAuthenticated() && (
+                    <p className="text-warning mt-3 fade-in">Please login to join a room</p>
+                )}
               </div>
-            </Col>
-          </Row>
+            </div>
+          </div>
 
           {joinStatus && (
               <Row className="justify-content-center mb-4 scale-in">
@@ -361,57 +350,47 @@ function RoomPage() {
           )}
 
           {roomCode && (
-              <Row className="justify-content-center mb-4 scale-in">
-                <Col md={12}>
+              <div className="room-info-container scale-in">
                   <div className="room-card text-center border-glow">
-                    <div className="room-code-container">
-                      <h3 className="room-code glow-pulse interactive-element">Room Code: {roomCode}</h3>
-                      <Button
-                          className="copy-button interactive-element"
-                          onClick={() => {
-                            navigator.clipboard.writeText(roomCode);
-                            const button = event.target;
-                            button.textContent = 'Copied!';
-                            setTimeout(() => button.textContent = 'Click to Copy', 1500);
-                          }}
-                      >
-                        Click to Copy
-                      </Button>
-                    </div>
-                    <p className="text-muted mt-2">Share this code with your friends</p>
-                    {/*
-                    <div className={`room-status ${roomStatus}`}>
-                      {roomStatus === 'waiting' ? 'Waiting for players...' : 'Game in progress'}
-                    </div>
-                    */}
+                      <div className="room-code-container">
+                          <h3 className="room-code glow-pulse interactive-element">Room Code: {roomCode}</h3>
+                          <Button
+                              className="copy-button interactive-element"
+                              onClick={() => {
+                                  navigator.clipboard.writeText(roomCode);
+                                  const button = event.target;
+                                  button.textContent = 'Copied!';
+                                  setTimeout(() => button.textContent = 'Click to Copy', 1500);
+                              }}
+                          >
+                              Click to Copy
+                          </Button>
+                      </div>
+                      <p className="text-muted mt-2">Share this code with your friends</p>
+                      <div className={`room-status ${roomStatus}`}>
+                          {roomStatus === 'waiting' ? 'Waiting for players...' : 'Game in progress'}
+                      </div>
                   </div>
-                </Col>
-              </Row>
-          )}
 
-
-          <Row className="justify-content-center mb-4">
-            <Col md={6}>
-              <div className="players-table slide-up">
-                <h3 className="text-center mb-3 glow-pulse">Players</h3>
-                <div className="table-container transition-all">
-                  <Table bordered hover variant="dark">
-                    <tbody>
-                    {players.map((playerId, idx) => (
-                        <tr key={idx} className={`hover-bright transition-all delay-${idx * 100} player-join`}>
-                          <td className="interactive-element">
-                            {playerId}
-                            <div className="player-status float-element"></div>
-                          </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                  </Table>
-                </div>
+                  <div className="room-card players-table slide-up">
+                      <h3 className="text-center mb-3 glow-pulse">Players</h3>
+                      <div className="table-container transition-all">
+                          <Table bordered hover variant="dark">
+                              <tbody>
+                              {players.map((playerId, idx) => (
+                                  <tr key={idx} className={`hover-bright transition-all delay-${idx * 100} player-join`}>
+                                      <td className="interactive-element">
+                                          {playerId}
+                                          <div className="player-status float-element"></div>
+                                      </td>
+                                  </tr>
+                              ))}
+                              </tbody>
+                          </Table>
+                      </div>
+                  </div>
               </div>
-            </Col>
-          </Row>
-
+          )}
           {roomCode && (
               <div className="game-settings">
                 <div className="room-card hover-lift">
@@ -595,7 +574,7 @@ function RoomPage() {
           </Col>
           {gameStarted && isAuthenticated() && roomCode && (
               <Col md={4} className="mt-5 slide-up">
-                <Sidebar roomCode={roomCode} className="scale-in" />
+                <Chat roomCode={roomCode} className="scale-in" />
               </Col>
           )}
         </Row>
