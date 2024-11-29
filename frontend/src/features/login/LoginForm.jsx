@@ -28,8 +28,9 @@ function LoginForm({ onLogin }) {
                     login(data);
                 });
 
-                const redirectPath = localStorage.getItem("redirectPath");
-                navigate(redirectPath || "/");
+                //const redirectPath = localStorage.getItem("redirectPath");
+                //console.log(redirectPath);
+                navigate("/");
                 localStorage.removeItem("redirectPath");
             } else {
                 console.log("Login Unsuccessful");
