@@ -1,4 +1,3 @@
-/* Enhanced gradient background with honeycomb overlay */
 .navbar {
     background: linear-gradient(120deg, rgba(138, 79, 255, 0.95), rgba(255, 79, 159, 0.95), rgba(255, 140, 79, 0.95));
     background-size: 300% 300%;
