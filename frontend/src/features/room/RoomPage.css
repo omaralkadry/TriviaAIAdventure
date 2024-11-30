@@ -41,7 +41,7 @@
     overflow: hidden;
     width: 100%;
     max-width: 450px;
-    min-height: 350px;
+    min-height: 250px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -90,7 +90,7 @@
 
 .room-card p {
     color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 /* Room Input Fields */
@@ -122,8 +122,8 @@
     justify-content: center;
     gap: 2rem;
     width: 100%;
-    padding: 2rem;
-    margin-top: 1rem;
+    padding: 1rem;
+    margin-top: -15vh;
 }
 
 @media (max-width: 768px) {
@@ -225,7 +225,7 @@
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(12px);
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 1rem;
     box-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
@@ -322,7 +322,7 @@
 .room-code {
     text-align: center;
     margin: 2rem auto;
-    padding: 1.5rem;
+    padding: 1rem;
     background: linear-gradient(135deg, rgba(132, 94, 247, 0.2), rgba(92, 124, 250, 0.2));
     border-radius: 20px;
     border: 2px solid rgba(132, 94, 247, 0.4);
@@ -444,9 +444,9 @@
     background: linear-gradient(45deg, rgba(40, 44, 52, 0.95), rgba(45, 42, 61, 0.95));
     background-size: 200% 200%;
     border-radius: 15px;
-    padding: 25px;
+    padding: 5px;
     margin: 2rem auto;
-    max-width: 800px;
+    max-width: 500px;
     box-shadow: 0 12px 36px rgba(31, 38, 135, 0.45);
     border: 2px solid rgba(132, 94, 247, 0.2);
     transform: translateZ(0);
@@ -457,6 +457,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    align-items: center;
 }
 
 .game-settings::before {
