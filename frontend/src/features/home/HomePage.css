@@ -1,7 +1,8 @@
 /* Main content styling for the homepage */
 .homepage-content {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 1rem 2rem;
+    margin-top: -25vh;
 }
 
 .homepage-title {

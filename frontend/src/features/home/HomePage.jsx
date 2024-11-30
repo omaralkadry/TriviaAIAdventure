@@ -31,7 +31,7 @@ const HomePage = () => {
 
     return (
         <div className="homepage-content">
-            <h1 className="homepage-title">Welcome to Trivia Ai Adventures</h1>
+            <h1 className="homepage-title">Welcome to Trivia Ai Adventure</h1>
             <p className="homepage-subtitle">Test your knowledge and challenge your friends!</p>
             <div className="homepage-cards">
                 <div className="card">
