@@ -25,12 +25,27 @@ const history = require('./routes/history.js');
 const app = express();
 const port = process.env.PORT || 3000;
 const server = createServer(app);
-const socketIO = new Server(server, { cors: { origin: '*' } });
+const socketIO = new Server(server, { 
+    cors: { 
+        origin: [
+            'https://triviaaiadventure.onrender.com',
+            'http://localhost:5173'
+        ],
+        methods: ["GET", "POST"],
+        credentials: true
+    } 
+});
 
 // Log CORS configuration
 console.log('CORS configuration:', { origin: '*' });
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ 
+    origin: [
+        'https://triviaaiadventure.onrender.com',
+        'http://localhost:5173'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 app.use("/register", register);
 app.use("/login", login);
