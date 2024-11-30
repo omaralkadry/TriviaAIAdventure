@@ -1,4 +1,4 @@
-/* Enhanced gradient background with smoother animation */
+/* Enhanced gradient background with honeycomb overlay */
 .navbar {
     background: linear-gradient(120deg, rgba(138, 79, 255, 0.95), rgba(255, 79, 159, 0.95), rgba(255, 140, 79, 0.95));
     background-size: 300% 300%;
@@ -10,7 +10,14 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+
+    /* Honeycomb overlay using SVG */
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 10 10"><defs><pattern id="honeycomb" x="0" y="0" width="10" height="17.32" patternUnits="userSpaceOnUse"><polygon points="5 0 10 2.89 10 8.66 5 11.55 0 8.66 0 2.89" fill="black"/></pattern></defs><rect width="100%" height="100%" fill="url(#honeycomb)"/></svg>');
+    mask-repeat: repeat;
+    -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 10 10"><defs><pattern id="honeycomb" x="0" y="0" width="10" height="17.32" patternUnits="userSpaceOnUse"><polygon points="5 0 10 2.89 10 8.66 5 11.55 0 8.66 0 2.89" fill="black"/></pattern></defs><rect width="100%" height="100%" fill="url(#honeycomb)"/></svg>');
+    mask-repeat: repeat;
+    mask-size: 15px;
+    -webkit-mask-size: 15px;
 }
 
 /* Responsive container */
