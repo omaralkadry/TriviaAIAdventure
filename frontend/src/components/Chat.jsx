@@ -1,7 +1,24 @@
-import React, { useState, useEffect, useContext } from 'react';
+// Chat.jsx
+import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
 import { useSocket } from '../services/SocketContext';
 import { useAuth } from '../services/AuthContext';
+import EmojiPicker from './EmojiPicker'; // Import the EmojiPicker component
+import './Chat.css'; // Import the CSS file
+
+const colorPalette = [
+  '#FF5733', '#33FF57', '#3357FF', '#FF33A6', '#FF8F33',
+  '#8F33FF', '#33FFC1', '#FFBD33', '#FF3333', '#33FF8F'
+];
+
+// Helper function to generate a high-contrast color
+const getColorForUser = (username, userColorMap) => {
+  if (!userColorMap[username]) {
+    const index = Object.keys(userColorMap).length % colorPalette.length;
+    userColorMap[username] = colorPalette[index];
+  }
+  return userColorMap[username];
+};
 
 function Chat({ roomCode }) {
   const socket = useSocket();
@@ -10,6 +27,7 @@ function Chat({ roomCode }) {
   const [message, setMessage] = useState('');
   const { getUsername } = useAuth();
   const username = getUsername();
+  const userColorMap = {}; // Object to store user color mappings
 
   useEffect(() => {
     console.log('Socket connection status:', socket ? 'Connected' : 'Disconnected');
@@ -61,32 +79,41 @@ function Chat({ roomCode }) {
     }
   };
 
+  // Handler for emoji selection
+  const handleEmojiSelect = (emoji) => {
+    setMessage((prevMessage) => prevMessage + emoji);
+  };
+
   return (
       <Container fluid className="py-5">
-        <Row className="d-flex">
+        <Row className="d-flex justify-content-center">
           <Col md={8} lg={6} xl={4}>
-            <Card style={{ borderRadius: "15px", width: '500px', height: '600px', display: 'flex', flexDirection: 'column' }}>
-              <Card.Body style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
-                  {chat.map((msg, index) => (
-                      <Card.Text key={index}>
-                        <strong>{msg.username}: </strong>{msg.message}
-                      </Card.Text>
-                  ))}
+            <Card className="chat-card">
+              <Card.Body className="chat-container">
+                <div className="chat-messages">
+                  {chat.map((msg, index) => {
+                    const userColor = getColorForUser(msg.username, userColorMap);
+                    return (
+                        <Card.Text key={index} className="chat-message" style={{ color: userColor }}>
+                          <strong>{msg.username}: </strong>{msg.message}
+                        </Card.Text>
+                    );
+                  })}
                 </div>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit} className="message-input-container">
                   <InputGroup>
+                    <EmojiPicker onEmojiSelect={handleEmojiSelect} />
                     <Form.Control
-                        type='text'
+                        type="text"
                         placeholder="Type your message"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        style={{ width: '100%' }}
+                        className="form-control"
                     />
                     <Button
                         variant="outline-secondary"
                         type="submit"
-                        style={{ height: '38px' }}
+                        className="btn"
                     >
                       Send
                     </Button>
