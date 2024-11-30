@@ -25,14 +25,14 @@ const Navbar = () => {
     };
 
     return (
-        <BootstrapNavbar
-            expand="lg" className="navbar">
-            <Container className="navbar-content">
-                <BootstrapNavbar.Brand as={Link} to="/" className="navbar-brand">
-                    <img src={logo} alt="Logo" className="logo" />
-                </BootstrapNavbar.Brand>
-                <BootstrapNavbar.Toggle aria-controls="navbar-nav" />
-                <BootstrapNavbar.Collapse id="navbar-nav">
+        <BootstrapNavbar expand="lg" className="navbar">
+            <Container fluid className="navbar-content">
+                <div className="navbar-left">
+                    <BootstrapNavbar.Brand as={Link} to="/" className="navbar-brand">
+                        <img src={logo} alt="Logo" className="logo" />
+                    </BootstrapNavbar.Brand>
+                    {/* <BootstrapNavbar.Toggle aria-controls="navbar-nav" />
+                    <BootstrapNavbar.Collapse id="navbar-nav"> */}
                     <Nav className="navbar-links">
                         <Nav.Link as={Link} to="/" className="nav-link">
                             <AiOutlineHome /> Home
@@ -54,58 +54,65 @@ const Navbar = () => {
                             Scores
                         </Nav.Link>
                         */}
+                        {/* TODO add this file
+                        <Nav.Link as={Link} to="/faq" className="nav-link">
+                            FAQ
+                        </Nav.Link>
+                        */}
                         <Nav.Link as={Link} to="/history" className="nav-link">
                             Game History
                         </Nav.Link>
-
-                        <NavDropdown
-                            title={
-                                <span className={`account-text ${dropdownOpen ? 'active' : ''}`}>
-                                    <AiOutlineUser className="nav-icon" />
-                                    {isAuthenticated() ? `Signed as ${username}` : 'Account'}
-                                </span>
-                            }
-                            id="account-dropdown"
-                            className={`account-dropdown ${dropdownOpen ? 'show' : ''}`}
-                            align="end"
-                            show={dropdownOpen}
-                            onToggle={handleDropdownToggle}
-                        >
-                            {isAuthenticated() ? (
-                                <NavDropdown.Item
-                                    onClick={() => {
-                                        logout();
-                                        setUsername(null);
-                                        setDropdownOpen(false);
-                                        navigate('/');
-                                    }}
-                                    className="dropdown-item"
-                                >
-                                    <AiOutlineLogin className="dropdown-icon" /> Logout
-                                </NavDropdown.Item>
-                            ) : (
-                                <>
-                                    <NavDropdown.Item
-                                        as={Link}
-                                        to="/login"
-                                        className="dropdown-item"
-                                        onClick={() => setDropdownOpen(false)}
-                                    >
-                                        <AiOutlineLogin className="dropdown-icon" /> Login
-                                    </NavDropdown.Item>
-                                    <NavDropdown.Item
-                                        as={Link}
-                                        to="/register"
-                                        className="dropdown-item"
-                                        onClick={() => setDropdownOpen(false)}
-                                    >
-                                        <AiOutlineUser className="dropdown-icon" /> Register
-                                    </NavDropdown.Item>
-                                </>
-                            )}
-                        </NavDropdown>
                     </Nav>
-                </BootstrapNavbar.Collapse>
+                </div>
+                <div className="navbar-right">       
+                    <NavDropdown
+                        title={
+                            <span className={`account-text ${dropdownOpen ? 'active' : ''}`}>
+                                <AiOutlineUser className="nav-icon" />
+                                {isAuthenticated() ? `Signed as ${username}` : 'Account'}
+                            </span>
+                        }
+                        id="account-dropdown"
+                        className={`account-dropdown ${dropdownOpen ? 'show' : ''}`}
+                        align="end"
+                        show={dropdownOpen}
+                        onToggle={handleDropdownToggle}
+                    >
+                        {isAuthenticated() ? (
+                            <NavDropdown.Item
+                                onClick={() => {
+                                    logout();
+                                    setUsername(null);
+                                    setDropdownOpen(false);
+                                    navigate('/');
+                                }}
+                                className="dropdown-item"
+                            >
+                                <AiOutlineLogin className="dropdown-icon" /> Logout
+                            </NavDropdown.Item>
+                        ) : (
+                            <>
+                                <NavDropdown.Item
+                                    as={Link}
+                                    to="/login"
+                                    className="dropdown-item"
+                                    onClick={() => setDropdownOpen(false)}
+                                >
+                                    <AiOutlineLogin className="dropdown-icon" /> Login
+                                </NavDropdown.Item>
+                                <NavDropdown.Item
+                                    as={Link}
+                                    to="/register"
+                                    className="dropdown-item"
+                                    onClick={() => setDropdownOpen(false)}
+                                >
+                                    <AiOutlineUser className="dropdown-icon" /> Register
+                                </NavDropdown.Item>
+                            </>
+                        )}
+                    </NavDropdown>
+                </div>  
+                    {/* </BootstrapNavbar.Collapse> */}
             </Container>
         </BootstrapNavbar>
     );
