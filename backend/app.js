@@ -37,7 +37,10 @@ const socketIO = new Server(server, {
 });
 
 // Log CORS configuration
-console.log('CORS configuration:', { origin: '*' });
+console.log('CORS configuration:', { origin: [
+    'https://triviaaiadventure.onrender.com',
+    'http://localhost:5173'
+] });
 
 app.use(cors({ 
     origin: [
@@ -273,8 +276,8 @@ socketIO.on('connection', (socket) => {
             socketIO.to(roomCode).emit('start game');
 
             //testing
-            console.log('Game mode: ' + mode);
-            console.log('Duration: ' + duration);
+            //console.log('Game mode: ' + mode);
+            // console.log('Duration: ' + duration);
 
             if (mode === 1) { // TriviaBoard
                 totalQuestions = 30;
@@ -289,8 +292,8 @@ socketIO.on('connection', (socket) => {
             }
 
             //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
-            console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
-            console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
+            // console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
+            // console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
         } else {
             console.log(`[${new Date().toISOString()}] Failed to start game in room ${roomCode}: Not enough players`);
@@ -309,7 +312,7 @@ socketIO.on('connection', (socket) => {
         const gameInstance = roomsList[roomCode].gameInstance;
         currentQuestionIndex = currentQuestionIndex || gameInstance.currentQuestion;
 
-        console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
+        // console.log(`[${new Date().toISOString()}] Received answer submission: Room ${roomCode}, User ${username}, Answer ${selectedAnswer}, Question ${currentQuestionIndex}`);
 
         let answer;
             if (selectedAnswer === 0) {
@@ -362,18 +365,17 @@ socketIO.on('connection', (socket) => {
 
         //can emit to all connected clients using socketIO.emit, check to see if this is correct
         socketIO.to(roomCode).emit('update scores', roomsList[roomCode].gameInstance.scores);
-        console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
-        console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
+        // console.log(`[${new Date().toISOString()}] Answer submitted in room ${roomCode} by ${username}, Answer: ${answer}, Question Index: ${currentQuestionIndex}`);
+        // console.log(`[${new Date().toISOString()}] Updated scores: ${JSON.stringify(roomsList[roomCode].gameInstance.scores)}`);
 
         //testing
-        console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
-        console.log("current question index: ", currentQuestionIndex + 1);
-        console.log("Checking Condition:", roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1));
+        // console.log("total question: ", roomsList[roomCode].gameInstance.totalQuestions);
+        // console.log("current question index: ", currentQuestionIndex + 1);
+        // console.log("Checking Condition:", roomsList[roomCode].gameInstance.totalQuestions === (currentQuestionIndex + 1));
 
         //endgame for all modes
         if (parseInt(roomsList[roomCode].gameInstance.totalQuestions, 10) === (currentQuestionIndex + 1)) {
             roomsList[roomCode].gameInstance.playerDone(username);
-            console.log("checking");
             //TODO this is done, just commented out so as to not overpopulate the database when testing
             roomsList[roomCode].gameInstance.allPlayersDone();
         }
@@ -393,7 +395,7 @@ socketIO.on('connection', (socket) => {
     socket.on('buzzer pressed', () => {
         const roomCode = socket.roomCode;
         const username = socket.username;
-        console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
+        // console.log(`[${new Date().toISOString()}] Buzzer in ${roomCode} from ${username}`);
 
         // socket.on submit answer 
         // check answer
@@ -534,9 +536,9 @@ socketIO.on('connection', (socket) => {
     // Socket.io server receives messages then sends it to clients in the specific room
     socket.on('message', (message) => {
         const { roomCode, username, message: messageContent } = message;
-        console.log(`[${new Date().toISOString()}] Received message in room ${roomCode}:`, JSON.stringify(message));
+        // console.log(`[${new Date().toISOString()}] Received message in room ${roomCode}:`, JSON.stringify(message));
         socketIO.to(roomCode).emit('message', { username, message: messageContent });
-        console.log(`[${new Date().toISOString()}] Broadcasted message to room ${roomCode}`);
+        // console.log(`[${new Date().toISOString()}] Broadcasted message to room ${roomCode}`);
     });
 });
 

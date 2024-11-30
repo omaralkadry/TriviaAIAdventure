@@ -10,7 +10,7 @@ function Scores() {
         if (!socket) return;
 
         const handleUpdateScores = (updatedScores) => {
-            console.log('Updated Scores:', updatedScores);
+            // console.log('Updated Scores:', updatedScores);
             setScores(updatedScores);
         };
 
