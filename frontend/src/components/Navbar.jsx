@@ -4,6 +4,7 @@ import { useAuth } from "../services/AuthContext";
 import { Navbar as BootstrapNavbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "./Navbar.css";
+import logo from './logo.png'; // Ensure this path is correct
 
 // Import icons from react-icons
 import { AiOutlineHome, AiOutlineTrophy, AiOutlineLogin, AiOutlineMessage, AiOutlinePlayCircle, AiOutlineUser } from 'react-icons/ai';
@@ -24,10 +25,11 @@ const Navbar = () => {
     };
 
     return (
-        <BootstrapNavbar expand="lg" className="navbar">
+        <BootstrapNavbar
+            expand="lg" className="navbar">
             <Container className="navbar-content">
                 <BootstrapNavbar.Brand as={Link} to="/" className="navbar-brand">
-                    Trivia AI
+                    <img src={logo} alt="Logo" className="logo" />
                 </BootstrapNavbar.Brand>
                 <BootstrapNavbar.Toggle aria-controls="navbar-nav" />
                 <BootstrapNavbar.Collapse id="navbar-nav">
@@ -55,7 +57,7 @@ const Navbar = () => {
                         <Nav.Link as={Link} to="/history" className="nav-link">
                             Game History
                         </Nav.Link>
-                        
+
                         <NavDropdown
                             title={
                                 <span className={`account-text ${dropdownOpen ? 'active' : ''}`}>
