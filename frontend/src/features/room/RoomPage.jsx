@@ -356,7 +356,7 @@ function RoomPage() {
           {joinStatus && (
               <Row className="justify-content-center mb-4 scale-in">
                 <Col md={12}>
-                  <Alert variant={joinStatus.includes('Success') ? 'success' : 'danger'}>
+                  <Alert variant={joinStatus.includes('Success') ? 'success' : 'light'}>
                     {joinStatus}
                   </Alert>
                 </Col>
