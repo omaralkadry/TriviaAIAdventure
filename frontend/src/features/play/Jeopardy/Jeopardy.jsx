@@ -60,20 +60,9 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
       socket.emit('back to board');
     }
   };
-
+  
   // Handlers socket.on receiving
   useEffect(() => {
-    // Socket reconnection handler
-    function handleReconnect() {
-      console.log('Socket reconnected, rejoining game...');
-      socket.emit('rejoin_game');
-    }
-
-    // Socket disconnect handler
-    function handleDisconnect() {
-      console.log('Socket disconnected, attempting to reconnect...');
-    }
-
     // On who gets choose question
     function onSelector(selectorUsername) {
       console.log(`Selector: ${selectorUsername}`);
@@ -95,15 +84,11 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
     }
 
     if (socket) {
-      socket.on('connect', handleReconnect);
-      socket.on('disconnect', handleDisconnect);
       socket.on('next question selector', onSelector);
       socket.on('selected question', onSelectedQuestion);
       socket.on('back to board', onBackToBoard);
 
       return () => {
-        socket.off('connect', handleReconnect);
-        socket.off('disconnect', handleDisconnect);
         socket.off('next question selector', onSelector);
         socket.off('selected question', onSelectedQuestion);
         socket.off('back to board', onBackToBoard);
@@ -111,76 +96,76 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
     } else {
       console.warn('Jeopardy Board: Socket is not initialized');
     }
-  }, [socket, username]);
+  }, [socket]);
 
   return (
-    <Container className="jeopardy-container p-4" fluid>
+    <Container className="p-4" fluid>
       {/* Display board if not currently in a question */}
       {!selectedQuestion && (
         <React.Fragment>
-          <Row xs={6} md={6} className="g-4">
-            {/* Topic headers row */}
-            {jeopardyTopics.map((topic, index) => (
-              <Col key={index} className="text-center">
-                <div className="jeopardy-topic">
-                  {topic}
-                </div>
-              </Col>
-            ))}
+          <Row xs={6} md={6} className="g-3">
 
-            {/* Topic questions with enhanced click feedback */}
-            {Array.from({ length: 5 }, (_, pointIndex) => (
-              <React.Fragment key={pointIndex}>
-                {Array.from({ length: 6 }, (_, categoryIndex) => {
+          {/* Topic headers row */}
+          {jeopardyTopics.map((topic, index) => (
+            <Col key={index} className="text-center">
+              <Card 
+                className="prevent-select" 
+                style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
+              >
+                <Card.Body className='prevent-select'>
+                  <Card.Title className="prevent-select text-center">{topic}</Card.Title>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+
+          {/* Topic questions with click handlers */}
+          {Array.from({ length: 5 }, (_, pointIndex) => (
+            <React.Fragment key={pointIndex}>
+                {Array.from({ length: 6 }, (_, categoryIndex) => { 
                   const selectedIndex = categoryIndex * 5 + pointIndex;
-                  const isClickable = (selected || username === selectorUsername) && !isClicked(selectedIndex);
                   return (
-                    <Col
-                      key={`${categoryIndex}-${pointIndex}`}
-                      onClick={() => isClickable && handleSelectedQuestion(selectedIndex)}
+                  <Col 
+                    key={`${categoryIndex}-${pointIndex}`} 
+                    className="clickable-card" 
+                    onClick={() => handleSelectedQuestion(selectedIndex)} 
+                  >
+                    <Card 
+                      className="prevent-select" 
+                      style={{ minWidth: '80px', minHeight: '100px', padding: '1rem' }}
                     >
-                      <div
-                        className={`jeopardy-card prevent-select ${isClicked(selectedIndex) ? 'clicked' : ''} ${isClickable ? 'clickable' : ''}`}
-                        style={{
-                          backgroundColor: isClicked(selectedIndex) ? 'var(--jeopardy-bg)' : 'var(--jeopardy-bg)',
-                          transform: isClicked(selectedIndex) ? 'scale(0.95)' : 'scale(1)',
-                          transition: 'all 0.3s ease',
-                          cursor: isClickable ? 'pointer' : 'default',
-                          opacity: isClicked(selectedIndex) ? 0.7 : 1,
-                          border: `2px solid var(--jeopardy-accent)`,
-                          color: 'var(--text-light)',
-                          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)'
-                        }}
-                      >
-                        <div className="jeopardy-card-content">
-                          {!isClicked(selectedIndex) && (
-                            <div className="jeopardy-points">
-                              ${jeopardyPoints[pointIndex]}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Col>
+                      <Card.Body className='prevent-select'>
+                        { !isClicked(selectedIndex) && (
+                          <Card.Title className="prevent-select text-center">
+                            {jeopardyPoints[pointIndex]}
+                          </Card.Title>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
                   );
                 })}
-              </React.Fragment>
-            ))}
+            </React.Fragment>
+          ))}
           </Row>
-
-          <div className="selector-text">
+          
+          <a>
             <strong>{selector}</strong> is choosing the question.
-          </div>
+          </a>
         </React.Fragment>
       )}
 
       {/* Display selected question */}
-      {selectedQuestion && (
-        <Question
-          selectedQuestion={selectedQuestion}
-          duration={duration}
-          handleNextQuestion={() => handleBackToBoard()}
-        />
-      )}
+      { selectedQuestion && (
+          <>
+            <Question 
+              selectedQuestion={selectedQuestion} 
+              duration={duration}
+              handleNextQuestion={() => handleBackToBoard()}
+            /> 
+          </>
+        )
+      }
     </Container>
   );
 };
