@@ -1,7 +1,8 @@
 /* Sidebar Container */
 .sidebar-container {
+  margin-top: 4vh;
   width: 300px;
-  height: 100vh;
+  height: 850px;
   background-color: #16213e;
   border-right: 2px solid #e94560;
   display: flex;
