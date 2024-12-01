@@ -42,15 +42,15 @@ class GameMode {
     }
 
     startGame() {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     generateQuestion() {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     checkAnswer(player, answer) {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     generateScores(player) {
@@ -440,44 +440,6 @@ class RandomTrivia extends GameMode {
         //console.log(this.scores);
         //may adjust here if you want to call generatequestion
     }
-
-    //TODO
-    /*
-    async checkAnswer(player, answers, qindex) {
-        try {
-            let prompt = `Question: "${question}"\n\nAnswers:\n`;
-        answers.forEach((answer, index) => {
-            prompt += `${playerNames[index]}: ${answer}\n`;
-        });
-        prompt += "\nEvaluate each answer and respond with a JSON array of boolean values (true for correct, false for incorrect) in the same order as the answers provided. Only return the JSON array, no additional text.";
-
-
-            const response = await client.chat.completions.create({
-                model: "gpt-4o-mini", //most cost effective as of rn
-                messages: [
-                    { role: "system", content: "You are an AI assistant that evaluates trivia answers." },
-                    { role: "user", content: prompt }
-                ],
-                max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
-                //response_format: "json_schema"
-            });
-            const result = response.choices[0].message.content;
-            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
-            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
-            const parsedAnswers = JSON.parse(cleanedResult);
-
-            for (let answerIndex = 0; answerIndex < answers.length; answerIndex++) {
-                if (answers[answerIndex] === true) {
-                    this.generateScores(player[answerIndex]);
-                }
-            }
-
-
-        } catch (error) {
-            console.error('Error checking question answers:', error);
-        }
-    }
-    */
 
     async generateQuestion() {
         try {

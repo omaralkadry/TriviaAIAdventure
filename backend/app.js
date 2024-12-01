@@ -291,7 +291,7 @@ socketIO.on('connection', (socket) => {
                 return;
             }
 
-            //TODO removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
+            //removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
             // console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             // console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
@@ -376,7 +376,7 @@ socketIO.on('connection', (socket) => {
         //endgame for all modes
         if (parseInt(roomsList[roomCode].gameInstance.totalQuestions, 10) === (currentQuestionIndex + 1)) {
             roomsList[roomCode].gameInstance.playerDone(username);
-            //TODO this is done, just commented out so as to not overpopulate the database when testing
+            //TODO this is done, can comment out so as to not overpopulate the database when testing
             roomsList[roomCode].gameInstance.allPlayersDone();
         }
 
