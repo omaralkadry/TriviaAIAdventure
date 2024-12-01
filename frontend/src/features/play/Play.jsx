@@ -26,7 +26,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
       <Container>
         <Container fluid className="justify-content-center mt-5">
           <Row className="justify-content-center">
-            <Col md={10} lg={8} xl={6} xxl={4}>
+            <Col md={10}>
               <Card className="question-card">
                 <Card.Body
                     className="text-center d-flex justify-content-center align-items-center question-body"
