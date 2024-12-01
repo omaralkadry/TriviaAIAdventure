@@ -7,6 +7,7 @@
     padding: 20px;
     color: white; /* Ensure text is visible */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-height: 150px;
 }
 
 .question-card:hover {
@@ -25,6 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 100px;
 }
 
 /* Answer Card */
