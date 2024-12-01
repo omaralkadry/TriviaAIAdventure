@@ -178,15 +178,17 @@ function RoomPage() {
     } else {
       console.error("Invalid game mode", mode);
     }
-
+    let numQuestions;
     if (totalQuestions < 5) {
-      totalQuestions = 5;
+      numQuestions = 5;
     } else if (totalQuestions > 30){
-      totalQuestions = 30;
+      numQuestions = 30;
+    } else {
+      numQuestions = totalQuestions;
     }
 
     //TODO Adjust default questions here
-    socket.emit('start game', roomCode, topic_array, totalQuestions || 10, duration, mode, (response) => {
+    socket.emit('start game', roomCode, topic_array, numQuestions || 10, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
