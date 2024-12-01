@@ -30,7 +30,7 @@ const FAQ = () => {
                     <Accordion.Header>Trivia Board Mode</Accordion.Header>
                     <Accordion.Body>
                         <h3>Overview</h3>
-                        <p>Our version of a Jeopardy game. Everyone gets to answer but the first person to buzz can win or lose more points than the rest.</p>
+                        <p>Our version of a Jeopardy game. Everyone gets to answer but the first person to buzz can win more points than the rest.</p>
                         
                         <h3>How to Play</h3>
                         <ul>
@@ -38,14 +38,14 @@ const FAQ = () => {
                             <li>Add your friends with the provided room code</li>
                             <li>Select from different categories</li>
                             <li>Questions have varying point values as shown on the board</li>
-                            <li>The host will choose the first question. Whoever answers first correctly will choose the next question</li>
+                            <li>The first person to pick is randomly chosen. Whoever answers first correctly for future questions will choose the next question</li>
                             <li>If you are confident in your answer make sure to buzz in and submit quickly. Refer to scoring below for why.</li>
-                            <li>If you buzzed in make sure to answer. Otherwise you will guarantee a wrong answer. Feel free to abstain from hard questions to avoid losing points by not buzzing in.</li>
+                            <li>Feel free to abstain from hard questions to avoid losing points by not choosing an answer.</li>
                         </ul>
                         
                         <h3>Scoring</h3>
                         <p>Points are calculated based on the point value of the selected board piece. In this mode wrong answers deduct points as well. 
-                        If you don't know the answer, don't buzz in. The first player to buzz in and answer will receive twice the amount of points or lose twice the amount.</p>
+                        If you don't know the answer, don't answer. The first player to buzz in and answer will receive twice the amount of points</p>
                     </Accordion.Body>
                 </Accordion.Item>
 

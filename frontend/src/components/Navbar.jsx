@@ -55,7 +55,7 @@ const Navbar = () => {
                         </Nav.Link>
                         */}
                         <Nav.Link as={Link} to="/faq" className="nav-link">
-                            FAQ
+                            How To Play
                         </Nav.Link>
                         
                         <Nav.Link as={Link} to="/history" className="nav-link">
