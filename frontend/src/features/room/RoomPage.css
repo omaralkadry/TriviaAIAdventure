@@ -336,7 +336,7 @@
 }
 
 .room-code::after {
-    content: 'Click to copy';
+    /*content: 'Click to copy';*/
     position: absolute;
     bottom: -30px;
     left: 50%;
