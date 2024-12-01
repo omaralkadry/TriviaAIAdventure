@@ -11,9 +11,8 @@ const History = () => {
 
 
     useEffect(() => {
-        console.log("Use Effect...");
         const fetchGameHistory = async () => {
-            console.log("Fetching game history...");
+            // console.log("Fetching game history...");
             if (isAuthenticated) {
                 const options = {
                     method: "POST",
