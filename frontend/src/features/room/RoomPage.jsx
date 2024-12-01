@@ -77,6 +77,7 @@ function RoomPage() {
     const handleGameOver = () => {
       setGameOver(true);
       setGameStarted(false);
+      setTopic('');
     };
 
     const handleStartGame = () => {
@@ -176,6 +177,12 @@ function RoomPage() {
       // Random Trivia
     } else {
       console.error("Invalid game mode", mode);
+    }
+
+    if (totalQuestions < 5) {
+      totalQuestions = 5;
+    } else if (totalQuestions > 30){
+      totalQuestions = 30;
     }
 
     //TODO Adjust default questions here
