@@ -1,3 +1,6 @@
+//NOTINUSE
+
+
 import React, { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row, Alert } from 'react-bootstrap';
 import { useSocket } from '../../services/SocketContext';
@@ -27,31 +30,37 @@ function JoinPage() {
   };
 
   return (
-      <Container className="join-page-container">
-        <Row className="justify-content-center">
-          <Col md={10}>
-            <Card className="join-page-card">
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="join-page-form-label">
-                    Enter Room Code
-                  </Form.Label>
-                  <Form.Control
-                      className="join-page-form-input"
-                      placeholder="Code"
-                      value={roomCode}
-                      onChange={(e) => setRoomCode(e.target.value)}
-                  />
-                </Form.Group>
-                {error && <Alert variant="danger">{error}</Alert>}
-                <Button className="join-page-btn" type="submit">
-                  Submit
-                </Button>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+    <Container className="join-page-container">
+      <Row className="justify-content-center">
+        <Col md={10}>
+          <Card className="join-page-card">
+            <h2 className="mb-4">Join Game Room</h2>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-4">
+                <Form.Label className="join-page-form-label">
+                  Enter Room Code
+                </Form.Label>
+                <Form.Control
+                  className="join-page-form-input"
+                  placeholder="Enter your room code here"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value)}
+                  autoFocus
+                />
+              </Form.Group>
+              {error && (
+                <Alert variant="danger" className="mb-3">
+                  {error}
+                </Alert>
+              )}
+              <Button className="join-page-btn" type="submit">
+                Join Room
+              </Button>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 

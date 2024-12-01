@@ -23,7 +23,7 @@ class Database {
         try {
             await this.client.connect();
             await this.client.db("admin").command({ ping: 1 });
-            console.log("Pinged your deployment. You successfully connected to MongoDB!");
+            // console.log("Pinged your deployment. You successfully connected to MongoDB!");
         } catch (error) {
             console.error("Connection failed:", error);
             throw error;
@@ -87,7 +87,6 @@ class Database {
         try {
             
             const games = await collection.find().toArray();
-            console.log("database.js: ");
             return games;
         } catch (error) {
             console.error(`Failed to retrieve games for user ${username}:`, error);
@@ -96,30 +95,5 @@ class Database {
     }
 
 }
-
-// Usage example
-/*
-const uri = process.env.Database_Url;
-const db = new Database(uri);
-
-// (async () => {
-//     try {
-//         await db.connect();
-//         // Perform database operations here
-
-//         // Example: Register a user
-//         await db.registerUser("player1", "securePassword");
-
-//         // Example: Authenticate a user
-//         const user = await db.authenticateUser("player1", "securePassword");
-//         console.log("Authenticated User:", user);
-
-    } catch (error) {
-        console.error("Error during database operations:", error);
-    } finally {
-        await db.close();
-    }
-})();
-//*/
 
 module.exports = Database;

@@ -89,7 +89,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
               </Row>
           )}
         </Container>
-        {/* TODO: Adjust timer variable */}
+        {/* TODO: Adjust Default timer variable here */}
         <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 15}/>
       </Container>
   );

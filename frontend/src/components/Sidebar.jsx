@@ -1,50 +1,51 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Nav, Tab, Collapse, Button } from 'react-bootstrap';
+import { Nav, Tab } from 'react-bootstrap';
 import Chat from './Chat';
 import Scores from './Scores';
+import RoomCodeTab from './RoomCodeTab';
+import './Sidebar.css';
 
 function Sidebar({ roomCode }) {
-  const [activeTab, setActiveTab] = useState('tab1');  // State to manage active tab
+    const [activeTab, setActiveTab] = useState('chat');
 
-  const handleTabSelect = (key) => {
-    setActiveTab(key);  // Update active tab when user clicks on a tab
-  };
+    const handleTabSelect = (key) => {
+        setActiveTab(key);
+    };
 
-  return (
-    <Container>
-      <Col className="p-0">
+    return (
+        <div className="sidebar-container">
+            <Nav
+                variant="pills"
+                className="sidebar-tabs"
+                activeKey={activeTab}
+                onSelect={handleTabSelect}
+            >
+                <Nav.Item>
+                    <Nav.Link eventKey="roomCode">Room Code</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="scores">Scores</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="chat">Chat</Nav.Link>
+                </Nav.Item>
+            </Nav>
 
-        {/* Tabs */}
-        <Nav 
-          variant="pills" 
-          className="flex-row"
-          defaultActiveKey="tab1" 
-          onSelect={handleTabSelect}
-        >
-          <Nav.Item>
-            <Nav.Link eventKey="tab1">Chat</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="tab2">Scores</Nav.Link>
-          </Nav.Item>
-        </Nav>
-
-
-        {/* Tab Content */}
-        <Tab.Container activeKey={activeTab}>
-          <Tab.Content>
-            <Tab.Pane eventKey="tab1">
-              <Chat roomCode={roomCode} />
-            </Tab.Pane>
-            <Tab.Pane eventKey="tab2">
-              <Scores />
-            </Tab.Pane>
-          </Tab.Content>
-        </Tab.Container>
-        
-      </Col>
-    </Container>
-  );
+            <Tab.Container activeKey={activeTab}>
+                <Tab.Content>
+                    <Tab.Pane eventKey="roomCode">
+                        <RoomCodeTab roomCode={roomCode} />
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="scores">
+                        <Scores />
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="chat">
+                        <Chat roomCode={roomCode} />
+                    </Tab.Pane>
+                </Tab.Content>
+            </Tab.Container>
+        </div>
+    );
 }
 
 export default Sidebar;

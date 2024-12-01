@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import Layout from "./components/Layout";
-import CustomNavbar from "./components/CustomNavbar";
 import HomePage from "./features/home/HomePage";
 import LoginForm from "./features/login/LoginForm";
 import RegistrationForm from "./features/login/RegistrationForm";
@@ -17,67 +17,77 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
 import History from "./features/history/History";
+import FAQ from "./features/faq/faq";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <HomePage />,
-  },
-  {
-    path: "/login",
-    element: <LoginForm />,
-  },
-  {
-    path: "/register",
-    element: <RegistrationForm />,
-  },
-  {
-    path: "/join",
-    element: (
-        <ProtectedRoute>
-          <JoinPage />
-        </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/play",
-    element: (
-        <ProtectedRoute>
-          <Play />
-        </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/room",
-    element: (
-        <ProtectedRoute>
-          <RoomPage />
-        </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/chat",
-    element: (
-        <ProtectedRoute>
-          <Chat />
-        </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/history",
-    element: (
-      <ProtectedRoute>
-        <History />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/leaderboard",
-    element: <Leaderboard />,
-  },
-  {
-    path: "/jeopardy",
-    element: <JeopardyBoard />,
+    element: <Layout><Outlet /></Layout>,
+    children: [
+      {
+        path: "/",
+        element: <HomePage />,
+      },
+      {
+        path: "/login",
+        element: <LoginForm />,
+      },
+      {
+        path: "/register",
+        element: <RegistrationForm />,
+      },
+      {
+        path: "/join",
+        element: (
+          <ProtectedRoute>
+            <JoinPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/play",
+        element: (
+          <ProtectedRoute>
+            <Play />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/room",
+        element: (
+          <ProtectedRoute>
+            <RoomPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/history",
+        element: (
+          <ProtectedRoute>
+            <History />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/chat",
+        element: (
+          <ProtectedRoute>
+            <Chat />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/leaderboard",
+        element: <Leaderboard />,
+      },
+      {
+        path: "/jeopardy",
+        element: <JeopardyBoard />,
+      },
+      {
+        path: "/faq",
+        element: <FAQ />,
+      },
+    ],
   },
 ]);
 
@@ -85,10 +95,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
       <AuthProvider>
         <SocketProvider>
-          <Layout>
-            <CustomNavbar />
-            <RouterProvider router={router} />
-          </Layout>
+          <RouterProvider router={router} />
         </SocketProvider>
       </AuthProvider>
     </React.StrictMode>

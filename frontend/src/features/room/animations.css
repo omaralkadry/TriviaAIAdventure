@@ -1,0 +1,30 @@
+.hover-scale:hover,
+.hover-lift:hover,
+.hover-bright:hover,
+.room-card:hover,
+.start-game-btn:hover,
+.copy-button:hover,
+.players-list:hover,
+.setting-item:hover,
+.setting-group:hover,
+.mode-select:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    border-color: inherit !important;
+    filter: none !important;
+}
+
+.stagger-children > *:hover::before,
+.room-card::after,
+.start-game-btn::before {
+    opacity: 0 !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+.transition-all,
+.transition-transform,
+.transition-opacity {
+    transition: none !important;
+}

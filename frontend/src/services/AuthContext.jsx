@@ -1,9 +1,15 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null);
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   // Save user data in session storage
   const login = (userData) => {
@@ -11,25 +17,13 @@ export const AuthProvider = ({ children }) => {
     // Then stores into sessionStorage
     sessionStorage.setItem('user', JSON.stringify(userData.username));
     setUser(userData.username);
-    console.log(getUsername());
+    console.log("After login:", getUsername()); // Add debug log
   };
 
   // Clear user data in session storage on logout
-  const logout = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (response.ok) {
-        sessionStorage.removeItem('user');
-        setUser(null);
-      } else {
-        console.error('Logout failed');
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
+  const logout = () => {
+    sessionStorage.removeItem('user');
+    setUser(null);
   };
 
   // Returns original javascript object by parsing

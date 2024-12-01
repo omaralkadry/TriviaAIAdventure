@@ -22,6 +22,7 @@ class GameMode {
         this.pointsperquestion = 10;
         this.gameID = '';
         this.finishedGame = {}
+        this.playersAnswered = 0;
     }
 
     addPlayer(player) {
@@ -41,15 +42,15 @@ class GameMode {
     }
 
     startGame() {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     generateQuestion() {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     checkAnswer(player, answer) {
-        throw new Error('TODO: implement in the subclass');
+        throw new Error('Implement in the subclass');
     }
 
     generateScores(player) {
@@ -61,7 +62,7 @@ class GameMode {
 
     async playerDone(username) {
         this.finishedGame[username] = true;
-        console.log(this.finishedGame);
+        // console.log(this.finishedGame);
     }
 
     async allPlayersDone() {
@@ -70,7 +71,7 @@ class GameMode {
                 return false
             }
         }
-        console.log("all player checks work")
+        // console.log("all player checks work")
         this.endGame();
         return true
     }
@@ -99,14 +100,6 @@ class GameMode {
         const uri = process.env.Database_Url;
         const db = new Database(uri);
 
-        //TODO test code for data retrieval from database
-        /*
-        try {
-            const games = await db.getAllGamesForUser(this.players[0]);
-            console.log(games);
-        } catch (error) {
-            console.error('Error retrieving games:', error);
-        } */
 
         await Promise.all(this.players.map(async (player) => {
             const score = this.scores[player];
@@ -145,7 +138,7 @@ class ClassicTrivia extends GameMode {
 
         // topic_array is not an array in this gamemode
         this.setTopic(topic_array);
-        console.log("Topic: " + this.topic);
+        // console.log("Topic: " + this.topic);
 
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
@@ -431,7 +424,7 @@ class RandomTrivia extends GameMode {
         this.setSettings(totalQuestions, duration, pointsperquestion)
         this.gameID = 'Random';
         this.setTopic(totalQuestions);
-        console.log("Topics: " + this.topics);
+        // console.log("Topics: " + this.topics);
         if (!Array.isArray(usernames) || usernames.length === 0) {
             throw new Error('Usernames must be a non-empty array.');
         }
@@ -447,44 +440,6 @@ class RandomTrivia extends GameMode {
         //console.log(this.scores);
         //may adjust here if you want to call generatequestion
     }
-
-    //TODO
-    /*
-    async checkAnswer(player, answers, qindex) {
-        try {
-            let prompt = `Question: "${question}"\n\nAnswers:\n`;
-        answers.forEach((answer, index) => {
-            prompt += `${playerNames[index]}: ${answer}\n`;
-        });
-        prompt += "\nEvaluate each answer and respond with a JSON array of boolean values (true for correct, false for incorrect) in the same order as the answers provided. Only return the JSON array, no additional text.";
-
-
-            const response = await client.chat.completions.create({
-                model: "gpt-4o-mini", //most cost effective as of rn
-                messages: [
-                    { role: "system", content: "You are an AI assistant that evaluates trivia answers." },
-                    { role: "user", content: prompt }
-                ],
-                max_tokens: 200 * this.totalQuestions,  //may not be neccessary or might adjust
-                //response_format: "json_schema"
-            });
-            const result = response.choices[0].message.content;
-            const cleanedone = result.replace(/.*?(\[.*?\])/s, '$1').trim();
-            const cleanedResult = cleanedone.replace(/```json|```/g, '').trim();
-            const parsedAnswers = JSON.parse(cleanedResult);
-
-            for (let answerIndex = 0; answerIndex < answers.length; answerIndex++) {
-                if (answers[answerIndex] === true) {
-                    this.generateScores(player[answerIndex]);
-                }
-            }
-
-
-        } catch (error) {
-            console.error('Error checking question answers:', error);
-        }
-    }
-    */
 
     async generateQuestion() {
         try {
@@ -560,9 +515,9 @@ class RandomTrivia extends GameMode {
     async checkAnswer(qindex) {
         try {
             //testing
-            console.log("index:", qindex)
-            console.log("exact Answer", this.answers[qindex])
-            console.log("exact question: ",this.question_array[qindex].question);
+            // console.log("index:", qindex)
+            // console.log("exact Answer", this.answers[qindex])
+            // console.log("exact question: ",this.question_array[qindex].question);
             const question = this.question_array[qindex].question;
             //const exampleAnswer = this.question_array[qindex].exampleAnswer;
             //let prompt = `Question: "${question}"\nExample Answer: "${exampleAnswer}"\n\nPlayer Answers:\n`;
@@ -604,7 +559,7 @@ class RandomTrivia extends GameMode {
                 }
                 
             });
-            console.log(this.scores);
+            // console.log(this.scores);
 
             //for testing only and may not use in code
             return parsedAnswers;

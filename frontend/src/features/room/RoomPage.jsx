@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Button, Container, Col, Row, Form, Table, Alert, Spinner } from 'react-bootstrap';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Play from '../play/Play';
 import './RoomPage.css';
+import './animations.css';
+import './roomInteractions.css';
 import { useAuth } from '../../services/AuthContext.jsx';
 import Chat from '../../components/Chat';
 import { useSocket } from '../../services/SocketContext';
@@ -22,6 +25,9 @@ function RoomPage() {
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [roomStatus, setRoomStatus] = useState('waiting');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [answerResponse, setAnswerResponse] = useState(null);
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
@@ -33,9 +39,22 @@ function RoomPage() {
   // Game and room settings
   const [topic, setTopic] = useState('');
   const [totalQuestions, setTotalQuestions] = useState('');
-  const [mode, setMode] = useState(-1);
-	const [duration, setDuration] = useState('');
+  const [mode, setMode] = useState(0);
+  const [duration, setDuration] = useState('');
   const [jeopardyTopics, setJeopardyTopics] = useState(Array(6).fill(''));
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roomName = params.get('name');
+    const code = params.get('code');
+
+    if (roomName && !roomCode) {
+      handleCreateRoom();
+    } else if (code && !roomCode) {
+      setJoinRoomCode(code);
+      handleJoinRoom();
+    }
+  }, [location]);
 
   useEffect(() => {
     if (!socket) return;
@@ -46,9 +65,8 @@ function RoomPage() {
     };
 
     const handleQuestion = (allQuestions) => {
-      console.log(allQuestions);
       setQuestions(allQuestions.questions);
-      setDuration(allQuestions.duration);  
+      setDuration(allQuestions.duration);
       setCurrentQuestionIndex(0);
       setSelectedAnswer('');
       setIsCountdownFinished(false);
@@ -56,8 +74,7 @@ function RoomPage() {
       setWaiting(false);
     };
 
-    const handleGameOver = (data) => {
-      alert(data.message);
+    const handleGameOver = () => {
       setGameOver(true);
       setGameStarted(false);
     };
@@ -68,8 +85,8 @@ function RoomPage() {
       setQuestions([]);
       setCurrentQuestionIndex(0);
       setSelectedAnswer('');
-      // Waiting state to display 'loading' message when true
       setWaiting(true);
+      setRoomStatus('in-progress');
     };
 
     const handleAnswerResult = (data) => {
@@ -78,7 +95,6 @@ function RoomPage() {
     };
 
     const handleUpdateScores = (updatedScores) => {
-      console.log('Updated Scores:', updatedScores);
       setScores(updatedScores);
     };
 
@@ -89,14 +105,20 @@ function RoomPage() {
       if (settings.jeopardyTopics !== undefined) setJeopardyTopics(settings.jeopardyTopics);
       if (settings.totalQuestions !== undefined) setTotalQuestions(settings.totalQuestions);
     };
-    
+
     const handleSelector = (selectorUsername) => {
-      console.log('Selector:', selectorUsername);
       setSelector(selectorUsername);
     };
 
     const handleHostStatus = (status) => {
       setIsHost(status);
+    };
+
+    const handleNextQuestion = ()  => {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer('');
+      setIsCountdownFinished(false);
+      setKey(Date.now());
     };
 
     socket.on('update players', handleUpdatePlayers);
@@ -108,6 +130,7 @@ function RoomPage() {
     socket.on('game settings', handleGameSettings);
     socket.on('next question selector', handleSelector);
     socket.on('host status', handleHostStatus);
+    socket.on('next question', handleNextQuestion);
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -119,8 +142,9 @@ function RoomPage() {
       socket.off('game settings', handleGameSettings);
       socket.off('next question selector', handleSelector);
       socket.off('host status', handleHostStatus);
+      socket.off('next question', handleNextQuestion);
     };
-  }, [socket]);
+  }, [socket, currentQuestionIndex, Date]);
 
   const handleCreateRoom = useCallback(() => {
     if (!socket) return;
@@ -145,26 +169,21 @@ function RoomPage() {
     if (!socket) return;
     let topic_array = [];
     if (mode === 0) {
-      //Classic Trivia
       topic_array.push(topic);
     } else if (mode === 1) {
-      //Trivia Board
       topic_array = jeopardyTopics;
     } else if (mode === 2) {
-      // Trivia Crack
-        //console.log("not adding any topics here")
+      // Random Trivia
     } else {
       console.error("Invalid game mode", mode);
     }
 
-    //TODO change total Questions
-    socket.emit('start game', roomCode, topic_array, totalQuestions || 2, duration , mode, (response) => {
+    //TODO Adjust default questions here
+    socket.emit('start game', roomCode, topic_array, totalQuestions || 10, duration, mode, (response) => {
       if (!response.success) {
         alert(response.message);
       }
     });
-
-    //left topic down here. cant replace since with topic_array since its not a global variable-omar
   }, [socket, roomCode, topic, totalQuestions, duration, mode, jeopardyTopics]);
 
   const handleAnswerSubmit = useCallback(() => {
@@ -177,358 +196,395 @@ function RoomPage() {
   }, []);
 
   const handleNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer('');
-      setIsCountdownFinished(false);
-      setKey(Date.now());
-    } else {
-      if (socket) {
-        socket.emit('game over', roomCode);
+    if (socket) {
+      if (currentQuestionIndex < questions.length - 1) {
+        socket.emit('next question');
+      } else {
+        socket.emit('game over');
       }
-      setGameOver(true);
     }
-  }, [currentQuestionIndex, questions.length, socket, roomCode]);
+  }, [currentQuestionIndex, questions.length, socket]);
 
   const handleBackToLobby = useCallback(() => {
     setGameOver(false);
     setGameStarted(false);
     setScores({});
+    setRoomStatus('waiting');
   }, []);
 
-  // Jeopardy game settings six topics
   const handleTopicChange = (index, value) => {
     setJeopardyTopics((prevTopics) => {
-      // Create a copy of the current topics
       const newTopics = [...prevTopics];
-
-      // Update the specific index with the new value
-      newTopics[index] = value; 
-      
+      newTopics[index] = value;
       return newTopics;
     });
   };
 
   const renderGameContent = () => {
     if (gameStarted && questions.length > 0 && !gameOver) {
-      // Classic Trivia
-      if (mode === 0) {
+      if (mode === 0 || mode === 2) {
         return (
-          <>
-            {answerResponse && (
-              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
-                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
-              </Alert>
-            )}
-            <Play
-              timePerQuestion= {duration}
-              currentQuestion={questions[currentQuestionIndex]}
-              selectedAnswer={selectedAnswer}
-              setSelectedAnswer={setSelectedAnswer}
-              isCountdownFinished={isCountdownFinished}
-              handleAnswerSubmit={handleAnswerSubmit}
-              handleCountdownFinish={handleCountdownFinish}
-              handleNextQuestion={handleNextQuestion}
-              key={key}
-            />
-          </>
+            <div className="fade-in stagger-children">
+              {answerResponse && (
+                  <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'} className="scale-in">
+                    {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
+                  </Alert>
+              )}
+              <div className="game-controls">
+                <Play
+                    timePerQuestion={duration}
+                    currentQuestion={questions[currentQuestionIndex]}
+                    selectedAnswer={selectedAnswer}
+                    setSelectedAnswer={setSelectedAnswer}
+                    isCountdownFinished={isCountdownFinished}
+                    handleAnswerSubmit={handleAnswerSubmit}
+                    handleCountdownFinish={handleCountdownFinish}
+                    handleNextQuestion={handleNextQuestion}
+                    freeResponse={mode === 2}
+                    key={key}
+                />
+              </div>
+            </div>
         );
-      } 
-      // Jeopardy
-      else if (mode === 1) {
+      } else if (mode === 1) {
         return (
-          <JeopardyBoard
-            selectorUsername={selector}
-            questions={questions}
-            topics={jeopardyTopics}
-            duration={duration}
-          />
+            <div className="fade-in stagger-children">
+              <div className="game-controls">
+                <JeopardyBoard
+                    selectorUsername={selector}
+                    questions={questions}
+                    topics={jeopardyTopics}
+                    duration={duration}
+                />
+              </div>
+            </div>
         );
       }
-      else if (mode === 2) {
-        console.log("random trivia mode start");
-        return (
-          <>
-            {answerResponse && (
-              <Alert variant={answerResponse === 'correct' ? 'success' : 'danger'}>
-                {answerResponse === 'correct' ? 'Correct Answer!' : 'Wrong Answer!'}
-              </Alert>
-            )}
-            <Play
-              timePerQuestion= {duration}
-              currentQuestion={questions[currentQuestionIndex]}
-              selectedAnswer={selectedAnswer}
-              setSelectedAnswer={setSelectedAnswer}
-              isCountdownFinished={isCountdownFinished}
-              handleAnswerSubmit={handleAnswerSubmit}
-              handleCountdownFinish={handleCountdownFinish}
-              handleNextQuestion={handleNextQuestion}
-              freeResponse={true}
-              key={key}
-            />
-          </>
-        );
-    }
-      
     }
 
     if (gameOver) {
       return (
-        <>
-          <h2>Game Over</h2>
-          <Table bordered>
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(scores).map(([player, score]) => (
-                <tr key={player}>
-                  <td>{player}</td>
-                  <td>{score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <Button onClick={handleBackToLobby}>Back to Lobby</Button>
-        </>
+          <div className="room-card slide-up game-over-container">
+            <span className="trophy-icon">🏆</span>
+            <h2 className="text-center mb-4 glow-pulse">Game Over!</h2>
+            <div className="scores-table fade-in delay-100">
+              {Object.entries(scores)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([player, score], index) => (
+                      <div key={player} className={`score-card ${index === 0 ? 'winner' : ''} hover-bright transition-all delay-${index * 100}`}>
+                        <div className="d-flex align-items-center">
+                          <span className="score-position">#{index + 1}</span>
+                          {player}
+                          {index === 0 && <span className="winner-label">Winner!</span>}
+                        </div>
+                        <span className="player-score">{score}</span>
+                      </div>
+                  ))}
+            </div>
+            <Button onClick={handleBackToLobby} className="room-button mt-4 interactive-element hover-scale">Back to Lobby</Button>
+          </div>
       );
     }
 
     if (waiting) {
       return (
-        <Container>
-          <Row className="justify-content-center mt-5">
-            <Col>
-              <h2>Loading game...</h2>
-              {/* Referenced https://react-bootstrap.netlify.app/docs/components/spinners */}
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading game...</span>
-              </Spinner>
-            </Col>
-          </Row>
-        </Container>
+          <div className="room-card fade-in text-center loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading Game</div>
+            <div className="loading-subtext">Preparing your trivia experience</div>
+            <div className="loading-progress">
+              <div className="loading-progress-bar"></div>
+            </div>
+          </div>
       );
     }
 
     return (
-      <>
-        <Row className="justify-content-center mb-3">
-          <Col md={6}>
-            <Button onClick={handleCreateRoom}>Create Room</Button>
-          </Col>
-        </Row>
-
-        <Row className="justify-content-center mb-3">
-          <Col md={6}>
-            <Form.Control
-              type="text"
-              value={joinRoomCode}
-              onChange={(e) => setJoinRoomCode(e.target.value)}
-              placeholder="Enter Room Code"
-            />
-          </Col>
-          <Col md={2}>
-            <Button onClick={handleJoinRoom}>Join Room</Button>
-          </Col>
-        </Row>
-
-        <Row className="justify-content-center mb-3">
-          <Col md={12}>
-            <div>{joinStatus}</div>
-          </Col>
-        </Row>
-
-        {roomCode && (
-          <Row className="justify-content-center mb-3">
-            <Col md={12}>
-              <h3>Room Code: {roomCode}</h3>
-            </Col>
-          </Row>
-        )}
-
-        <Row className="justify-content-center mb-3">
-          <Col md={6}>
-            <Table bordered>
-              <thead><tr><th>Players</th></tr></thead>
-              <tbody>
-                {players.map((playerId, idx) => (
-                  <tr key={idx}><td>{playerId}</td></tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-        
-        {/* 
-          This is game settings UI
-          Show only if room code present
-        */}
-        {roomCode && (
-          <>
-            {/* All game modes general settings */}
-            <Row className="justify-content-center mb-3">
-              <Col md={3}>
-                <Form.Select 
-                  value={mode} 
-                  onChange={(e) => {
-                    const newMode = parseInt(e.target.value, 10);
-                    socket.emit('update_game_mode', roomCode, newMode, (response) => {
-                      if (response.success) {
-                        setMode(newMode);
-                      }
-                    });
-                  }}
-                  disabled={!isHost}
+        <div className="stagger-children">
+          <div className="room-options-container">
+            <div className="room-card hover-lift">
+              <div className="card-content scale-in">
+                <h2 className="glow-pulse mb-4">Create a New Room</h2>
+                <p className="text-center mb-4">Start a new trivia game and invite your friends</p>
+                <Button
+                    onClick={handleCreateRoom}
+                    className="room-button hover-scale transition-all"
+                    disabled={!isAuthenticated()}
                 >
-                  <option value={-1} disabled>Select Game Mode</option>
-                  <option value={0}>Classic Trivia</option>
-                  <option value={1}>Trivia Board</option>
-                  <option value={2}>Random Trivia</option>
-                </Form.Select>
-              </Col>
-              <Col md={3}>
-                <Form.Control 
-                  type='number' 
-                  value={duration} 
-                  onChange={(e) => {
-                    const newDuration = parseInt(e.target.value, 10);
-                    socket.emit('update_duration', roomCode, newDuration, (response) => {
-                      if (response.success) {
-                        setDuration(newDuration);
-                      }
-                    });
-                  }}
-                  min={1}
-                  placeholder='Enter Question Time Limit (seconds)'
-                  disabled={!isHost}
+                  Create Room
+                </Button>
+                {!isAuthenticated() && (
+                    <p className="text-warning mt-3 fade-in">Please login to create a room</p>
+                )}
+              </div>
+            </div>
+
+            <div className="room-card hover-lift">
+              <div className="card-content scale-in">
+                <h2 className="glow-pulse mb-4">Join Existing Room</h2>
+                <p className="text-center mb-4">Enter a room code to join an existing game</p>
+                <Form.Control
+                    type="text"
+                    value={joinRoomCode}
+                    onChange={(e) => setJoinRoomCode(e.target.value)}
+                    placeholder="Enter Room Code"
+                    className="room-input hover-bright mb-3"
                 />
-              </Col>
-            </Row>
+                <Button
+                    onClick={handleJoinRoom}
+                    className="room-button hover-scale transition-all"
+                    disabled={!joinRoomCode || !isAuthenticated()}
+                >
+                  Join Room
+                </Button>
+                {!isAuthenticated() && (
+                    <p className="text-warning mt-3 fade-in">Please login to join a room</p>
+                )}
+              </div>
+            </div>
+          </div>
 
-            {/* Mode specific game settings */}
-            <Row className="justify-content-center mb-3">
+          {joinStatus && (
+              <Row className="justify-content-center mb-4 scale-in">
+                <Col md={12}>
+                  <Alert variant={joinStatus.includes('Success') ? 'success' : 'danger'}>
+                    {joinStatus}
+                  </Alert>
+                </Col>
+              </Row>
+          )}
 
-              {/* Classic trivia */}
-              { mode === 0 ?
-                <>
-                  <Col md={3}>
-                    <Form.Control
-                      type="text"
-                      value={topic}
-                      onChange={(e) => {
-                        const newTopic = e.target.value;
-                        socket.emit('update_topic', roomCode, newTopic, (response) => {
-                          if (response.success) {
-                            setTopic(newTopic);
-                          }
-                        });
-                      }}
-                      placeholder="Enter Trivia Topic" 
-                      disabled={!isHost}
-                    />
-                  </Col>
-                  <Col md={3}>
-                    <Form.Control
-                      type="text"
-                      value={totalQuestions}
-                      onChange={(e) => {
-                        const newTotal = e.target.value;
-                        socket.emit('update_total_questions', roomCode, newTotal, (response) => {
-                          if (response.success) {
-                            setTotalQuestions(newTotal);
-                          }
-                        });
-                      }}
-                      placeholder="Enter Number of Questions" 
-                      disabled={!isHost}
-                    />
-                  </Col>
-                </> 
-                : <></>
-              }
+          {roomCode && (
+              <div className="room-info-container scale-in">
+                  <div className="room-card text-center border-glow">
+                      <div className="room-code-container">
+                          <h3 className="room-code glow-pulse interactive-element">Room Code: {roomCode}</h3>
+                          <Button
+                              className="copy-button interactive-element"
+                              onClick={() => {
+                                  navigator.clipboard.writeText(roomCode);
+                                  const button = event.target;
+                                  button.textContent = 'Copied!';
+                                  setTimeout(() => button.textContent = 'Click to Copy', 1500);
+                              }}
+                          >
+                              Click to Copy
+                          </Button>
+                      </div>
+                      <p className="text-muted mt-2">Share this code with your friends</p>
+                      <div className={`room-status ${roomStatus}`}>
+                          {roomStatus === 'waiting' ? 'Waiting for players...' : 'Game in progress'}
+                      </div>
+                  </div>
 
-              {/* Jeopardy */}
-              { mode === 1 ?
-                <>
-                  {/* {Array.from({ length: 6 }, (input, index) => ( */}
-                  {jeopardyTopics.map((input, index) => (
-                    <Col key={index} md={2}>
-                      <Form.Group controlId={`input-${index}`}>
-                        <Form.Control
-                          type="text"
-                          value={input}
+                  <div className="room-card players-table slide-up">
+                      <h3 className="text-center mb-3 glow-pulse">Players</h3>
+                      <div className="table-container transition-all">
+                          <Table bordered hover variant="dark">
+                              <tbody>
+                              {players.map((playerId, idx) => (
+                                  <tr key={idx} className={`hover-bright transition-all delay-${idx * 100} player-join`}>
+                                      <td className="interactive-element">
+                                          {playerId}
+                                          <div className="player-status float-element"></div>
+                                      </td>
+                                  </tr>
+                              ))}
+                              </tbody>
+                          </Table>
+                      </div>
+                  </div>
+              </div>
+          )}
+          {roomCode && (
+              <div className="game-settings">
+                <div className="room-card hover-lift">
+                  <h2 className="text-center mb-4 glow-pulse">Game Settings</h2>
+                  <Form className="settings-grid">
+                    <div className="setting-card">
+                      <div className="setting-header">
+                        <span className="setting-icon">🎮</span>
+                        <Form.Label className="interactive-element">Game Mode</Form.Label>
+                      </div>
+                      <Form.Select
+                          value={mode}
                           onChange={(e) => {
-                            const newValue = e.target.value;
-                            socket.emit('update_jeopardy_topic', roomCode, index, newValue, (response) => {
+                            const newMode = parseInt(e.target.value, 10);
+                            socket.emit('update_game_mode', roomCode, newMode, (response) => {
                               if (response.success) {
-                                handleTopicChange(index, newValue);
+                                setMode(newMode);
                               }
                             });
                           }}
-                          placeholder={`Enter Topic ${index + 1}`}
                           disabled={!isHost}
+                          className="mode-selector hover-bright"
+                      >
+                        <option value={-1} disabled>Select Game Mode</option>
+                        <option value={0}>Classic Trivia</option>
+                        <option value={1}>Trivia Board</option>
+                        <option value={2}>Random Trivia</option>
+                      </Form.Select>
+                    </div>
+                    <div className="setting-card">
+                      <div className="setting-header">
+                        <span className="setting-icon">⏱️</span>
+                        <Form.Label className="interactive-element">Time Limit</Form.Label>
+                      </div>
+                      <div className="range-wrapper">
+                        <span className="range-value">{duration}s</span>
+                        <Form.Control
+                            type="range"
+                            value={duration}
+                            onChange={(e) => {
+                              const newDuration = parseInt(e.target.value, 10);
+                              socket.emit('update_duration', roomCode, newDuration, (response) => {
+                                if (response.success) {
+                                  setDuration(newDuration);
+                                }
+                              });
+                            }}
+                            min="10"
+                            max="60"
+                            disabled={!isHost}
+                            className="hover-bright interactive-element"
                         />
-                      </Form.Group>
-                    </Col>
-                  ))}
-                </> 
-                : <></>
-              }
+                      </div>
+                    </div>
+                    {mode === 0 && (
+                        <>
+                          <div className="setting-card">
+                            <div className="setting-header">
+                              <span className="setting-icon">📚</span>
+                              <Form.Label className="interactive-element">Topic</Form.Label>
+                            </div>
+                            <Form.Control
+                                type="text"
+                                value={topic}
+                                onChange={(e) => {
+                                  const newTopic = e.target.value;
+                                  socket.emit('update_topic', roomCode, newTopic, (response) => {
+                                    if (response.success) {
+                                      setTopic(newTopic);
+                                    }
+                                  });
+                                }}
+                                placeholder="Enter Trivia Topic"
+                                disabled={!isHost}
+                                className="hover-bright interactive-element"
+                            />
+                          </div>
+                          <div className="setting-card">
+                            <div className="setting-header">
+                              <span className="setting-icon">🔢</span>
+                              <Form.Label className="interactive-element">Number of Questions</Form.Label>
+                            </div>
+                            <Form.Control
+                                type="number"
+                                value={totalQuestions}
+                                onChange={(e) => {
+                                  const newTotal = e.target.value;
+                                  socket.emit('update_total_questions', roomCode, newTotal, (response) => {
+                                    if (response.success) {
+                                      setTotalQuestions(newTotal);
+                                    }
+                                  });
+                                }}
+                                placeholder="Enter Number of Questions"
+                                disabled={!isHost}
+                                min="5"
+                                max="20"
+                                className="hover-bright interactive-element"
+                            />
+                          </div>
+                        </>
+                    )}
+                    {mode === 1 && (
+                        <div className="setting-card jeopardy-topics">
+                          <div className="setting-header">
+                            <span className="setting-icon">🏆</span>
+                            <Form.Label className="interactive-element">Jeopardy Topics</Form.Label>
+                          </div>
+                          {jeopardyTopics.map((input, index) => (
+                              <Form.Control
+                                  key={index}
+                                  type="text"
+                                  value={input}
+                                  onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    socket.emit('update_jeopardy_topic', roomCode, index, newValue, (response) => {
+                                      if (response.success) {
+                                        handleTopicChange(index, newValue);
+                                      }
+                                    });
+                                  }}
+                                  placeholder={`Enter Topic ${index + 1}`}
+                                  disabled={!isHost}
+                                  className="hover-bright interactive-element mb-2"
+                              />
+                          ))}
+                        </div>
+                    )}
+                    {mode === 2 && (
+                        <div className="setting-card">
+                          <div className="setting-header">
+                            <span className="setting-icon">🔢</span>
+                            <Form.Label className="interactive-element">Number of Questions</Form.Label>
+                          </div>
+                          <Form.Control
+                              type="number"
+                              value={totalQuestions}
+                              onChange={(e) => {
+                                const newTotal = e.target.value;
+                                socket.emit('update_total_questions', roomCode, newTotal, (response) => {
+                                  if (response.success) {
+                                    setTotalQuestions(newTotal);
+                                  }
+                                });
+                              }}
+                              placeholder="Enter Number of Questions"
+                              disabled={!isHost}
+                              min="5"
+                              max="20"
+                              className="hover-bright interactive-element"
+                          />
+                        </div>
+                    )}
+                  </Form>
+                </div>
+              </div>
+          )}
 
-              {/* Random Trivia */}
-              { mode === 2 ?
-                <>
-                  <Col md={3}>
-                    <Form.Control
-                      type="text"
-                      value={totalQuestions}
-                      onChange={(e) => {
-                        const newTotal = e.target.value;
-                        socket.emit('update_total_questions', roomCode, newTotal, (response) => {
-                          if (response.success) {
-                            setTotalQuestions(newTotal);
-                          }
-                        });
-                      }}
-                      placeholder="Enter Number of Questions" 
-                      disabled={!isHost}
-                    />
-                  </Col>
-                </> 
-                : <></>
-              }
-
-            </Row>
-          </>
-        )}
-
-        {canStart && isHost && (
-          <Row className="justify-content-center mb-3">
-            <Col md={6}>
-              <Button onClick={handleStartGame}>Start Game</Button>
-            </Col>
-          </Row>
-        )}
-      </>
+          {canStart && isHost && (
+              <Row className="justify-content-center mb-4 scale-in delay-300">
+                <Col md={6}>
+                  <Button
+                      onClick={handleStartGame}
+                      className="start-game-button bounce border-glow hover-scale transition-all interactive-element"
+                      disabled={!players.length}
+                  >
+                    {players.length < 1 ? 'Waiting for Players...' : 'Start Game'}
+                  </Button>
+                </Col>
+              </Row>
+          )}
+        </div>
     );
   };
 
   return (
-    <Container fluid>
-      <Row>
-        <Col md={gameStarted && isAuthenticated() ? 8 : 12} className="mt-5 text-center">
-          {renderGameContent()}
-        </Col>
-        {gameStarted && isAuthenticated() && roomCode && (
-          <Col md={4} className="mt-5">
-            <Sidebar roomCode={roomCode} />
+      <Container fluid className="fade-in">
+        <Row>
+          <Col md={gameStarted && isAuthenticated() ? 8 : 12} className="mt-5 text-center">
+            {renderGameContent()}
           </Col>
-        )}
-      </Row>
-    </Container>
+          {gameStarted && isAuthenticated() && roomCode && (
+              <Col md={4} className="mt-5 slide-up">
+                <Sidebar roomCode={roomCode} className="scale-in" />
+              </Col>
+          )}
+        </Row>
+      </Container>
   );
 }
+
 export default RoomPage;
