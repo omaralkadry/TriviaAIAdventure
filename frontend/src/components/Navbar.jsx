@@ -54,11 +54,10 @@ const Navbar = () => {
                             Scores
                         </Nav.Link>
                         */}
-                        {/* TODO add this file
                         <Nav.Link as={Link} to="/faq" className="nav-link">
                             FAQ
                         </Nav.Link>
-                        */}
+                        
                         <Nav.Link as={Link} to="/history" className="nav-link">
                             Game History
                         </Nav.Link>

@@ -17,6 +17,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
 import History from "./features/history/History";
+import FAQ from "./features/faq/faq";
 
 const router = createBrowserRouter([
   {
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "/jeopardy",
         element: <JeopardyBoard />,
+      },
+      {
+        path: "/faq",
+        element: <FAQ />,
       },
     ],
   },
