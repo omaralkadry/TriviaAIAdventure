@@ -200,6 +200,7 @@ describe('RandomTrivia Game Mode', () => {
   
     test('should correctly check multiple answers', async () => {
         game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
+        // Referenced ChatGPT for a JSON string example
         const question = [{"question": "What is a 2D shape with four equal-length sides called?"}];
         game.question_array = question;
         game.storeAnswer('Player1', 'Square', 0);
