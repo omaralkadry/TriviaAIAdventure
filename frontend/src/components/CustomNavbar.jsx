@@ -1,28 +1,27 @@
-javascript
-import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
-import { useAuth } from '../services/AuthContext';
-import React from 'react';
+/* NOTINUSE */
+
+
+import React, { useState } from 'react';
+import { Navbar, Container, Nav, NavDropdown } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../services/AuthContext';
+import './NavbarStyles.css';
 
-function CustomNavbar() {
-  const { isAuthenticated, getUsername, logout } = useAuth();
+const CustomNavBar = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleLogout = async (e) => {
-    e.preventDefault(); // Prevent default navigation
-    try {
-      await logout();
-      // Navigation is handled in AuthContext after successful logout
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Optionally show error message to user
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+
   };
 
   return (
-    <Navbar expand="lg" className="bg-body-tertiary">
+    <Navbar expand="lg" className="navbar-custom">
       <Container>
-        <Navbar.Brand href="#home">Brand</Navbar.Brand>
+        <Navbar.Brand href="/">Trivia AI</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
@@ -31,42 +30,55 @@ function CustomNavbar() {
             <Nav.Link href="/chat">Chat</Nav.Link>
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
             <Nav.Link href="/jeopardy">Jeopardy</Nav.Link>
+            <Nav.Link href="/history">Game History</Nav.Link>
           </Nav>
-          <Nav>
-            {isAuthenticated() ? (
-              <>
-                <Navbar.Text className="me-2">
-                  Signed in as:
-                </Navbar.Text>
-                <NavDropdown
-                  title={getUsername()}
-                  id="user-dropdown"
-                  align="end"
+
+          <Navbar.Text>
+            {user ? (
+              <div className="navbar-dropdown">
+                <button
+                  className="account-button"
+                  onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <NavDropdown.Item onClick={handleLogout}>
-                    Logout
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </>
+                  Signed as {user.username}
+                </button>
+                {showDropdown && (
+                  <div className="navbar-dropdown-menu">
+                    <a href="/profile" className="navbar-dropdown-item">Profile</a>
+                    <a href="#" onClick={handleLogout} className="navbar-dropdown-item">Logout</a>
+                  </div>
+                )}
+              </div>
+
             ) : (
               <NavDropdown
                 title="Account"
                 id="account-dropdown"
-                align="end"
+
+                className="navbar-dropdown account-button"
               >
-                <NavDropdown.Item href="/login">
+                <NavDropdown.Item
+                  className="navbar-dropdown-item"
+                  href="/login"
+                >
                   Login
                 </NavDropdown.Item>
-                <NavDropdown.Item href="/register">
+                <NavDropdown.Item
+                  className="navbar-dropdown-item"
+                  href="/register"
+                >
+
                   Register
                 </NavDropdown.Item>
               </NavDropdown>
             )}
-          </Nav>
+
+          </Navbar.Text>
+
         </Navbar.Collapse>
       </Container>
     </Navbar>
   );
-}
+};
 
-export default CustomNavbar;
+export default CustomNavBar;

@@ -1,7 +1,11 @@
+//NOTINUSE
+
+
 import React, { useState } from 'react';
 import { Button, Card, Container, Col, Form, Row, Alert } from 'react-bootstrap';
 import { useSocket } from '../../services/SocketContext';
 import { useNavigate } from 'react-router-dom';
+import './JoinPage.css';
 
 function JoinPage() {
   const [roomCode, setRoomCode] = useState('');
@@ -26,22 +30,31 @@ function JoinPage() {
   };
 
   return (
-    <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+    <Container className="join-page-container">
       <Row className="justify-content-center">
         <Col md={10}>
-          <Card className='p-3'>
+          <Card className="join-page-card">
+            <h2 className="mb-4">Join Game Room</h2>
             <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label>Enter room code.</Form.Label>
+              <Form.Group className="mb-4">
+                <Form.Label className="join-page-form-label">
+                  Enter Room Code
+                </Form.Label>
                 <Form.Control
-                  placeholder="code"
+                  className="join-page-form-input"
+                  placeholder="Enter your room code here"
                   value={roomCode}
                   onChange={(e) => setRoomCode(e.target.value)}
+                  autoFocus
                 />
               </Form.Group>
-              {error && <Alert variant="danger">{error}</Alert>}
-              <Button variant="primary" type="submit">
-                Submit
+              {error && (
+                <Alert variant="danger" className="mb-3">
+                  {error}
+                </Alert>
+              )}
+              <Button className="join-page-btn" type="submit">
+                Join Room
               </Button>
             </Form>
           </Card>

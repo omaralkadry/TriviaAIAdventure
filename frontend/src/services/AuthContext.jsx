@@ -1,11 +1,19 @@
-import React, { createContext, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+
+  const [user, setUser] = useState(sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null);
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
 
   // Save user data in session storage
   const login = (userData) => {
@@ -13,39 +21,15 @@ export const AuthProvider = ({ children }) => {
     // Then stores into sessionStorage
     sessionStorage.setItem('user', JSON.stringify(userData.username));
     setUser(userData.username);
-    console.log(getUsername());
+    console.log("After login:", getUsername()); // Add debug log
   };
 
   // Clear user data in session storage on logout
-  const logout = async () => {
-    try {
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (response.ok) {
-        // Clear session storage
-        sessionStorage.removeItem('user');
-        setUser(null);
+  const logout = () => {
+    sessionStorage.removeItem('user');
+    setUser(null);
 
-        // Disconnect socket if needed
-        // TODO: Implement socket cleanup if needed
-
-        // Navigate to home page after successful logout
-        navigate('/');
-      } else {
-        const data = await response.json();
-        console.error('Logout failed:', data.message);
-        throw new Error(data.message || 'Logout failed');
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-      throw error; // Propagate error to component for handling
-    }
   };
 
   // Parse and return stored user data

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
 import { useAuth } from '../../services/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Card, Container, Col, Row } from 'react-bootstrap';
+import './Form.css';
 
 function RegistrationForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -17,94 +19,90 @@ function RegistrationForm() {
       return;
     }
 
-    // Handle registration logic here
     const options = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username: username, password: password })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     };
 
-    // Fetch API POST request for registration
-    fetch("http://localhost:3000/register", options)
-      .then(response => {
-        if (response.ok) {
-          console.log("Registration Successful");
-
-          // Saves response user data into AuthContext
-          response.json().then(data => {
-            login(data);
-          });
-
-          // Redirect to stored path or home
-          const redirectPath = localStorage.getItem('redirectPath');
-          navigate(redirectPath || '/');
-
-          // Clear stored path for next use
-          localStorage.removeItem('redirectPath');
-        } else {
-          console.log("Registration Unsuccessful");
-        }
-      })
+    fetch(`${import.meta.env.VITE_BASE_URL}/register`, options)
+        .then(response => {
+          if (response.ok) {
+            response.json().then(data => {
+              login(data);
+              const redirectPath = localStorage.getItem('redirectPath');
+              navigate(redirectPath || '/');
+              localStorage.removeItem('redirectPath');
+            });
+          } else {
+            response.text().then(errorMessage => {
+              console.log("Registration Unsuccessful:", errorMessage);
+              setError(errorMessage);
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Registration error:", err);
+          setError("Failed to connect to the server. Please try again.");
+        });
   };
 
   return (
-    <Container 
-      fluid 
-      className="d-flex justify-content-center align-items-center" 
-      style={{ height: '100vh' }}
-    >
+    <Container fluid className="d-flex justify-content-center align-items-center form-page-container">
       <Row className="justify-content-center">
         <Col md={10}>
-          <Card className='p-3'>
-            <Card.Title>Register</Card.Title>
-            <Form onSubmit={handleSubmit}> 
-              <Form.Group 
-                className="mb-3" 
-                controlId="formBasicUsername"
-              >
-                <Form.Label>Username</Form.Label>
-                <Form.Control 
-                  type="text" 
-                  placeholder="Username" 
-                  value={username} 
-                  onChange={(e) => setUsername(e.target.value)} 
-                  required
+          <Card className="form-card">
+            <Card.Title className="form-title">Register</Card.Title>
+            {error && <div className="alert alert-danger">{error}</div>}
+            <form className="form-container" onSubmit={handleSubmit}>
+              <div className="form-control">
+                <input
+                    type="text"
+                    id="username"
+                    placeholder=" "
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
                 />
-              </Form.Group>
-              <Form.Group 
-                className="mb-3"
-                controlId="formBasicPassword"
-              >
-                <Form.Label>Password</Form.Label>
-                <Form.Control 
-                  type="password" 
-                  placeholder="Password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                <label htmlFor="username">Username</label>
+              </div>
+              <div className="form-control">
+                <input
+                    type="password"
+                    id="password"
+                    placeholder=" "
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                 />
-                <Form.Control
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                <label htmlFor="password">Password</label>
+              </div>
+              <div className="form-control">
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder=" "
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
                 />
-              </Form.Group>
+                <label htmlFor="confirmPassword">Confirm Password</label>
+              </div>
               {password !== confirmPassword && confirmPassword !== "" && (
-                <Form.Text className="text-danger">
-                  Passwords do not match
-                </Form.Text>
+                  <p className="error-text">Passwords do not match</p>
               )}
-              <Button 
-                variant="primary" 
-                type="submit" 
-              >
-                Enter
-              </Button>
-            </Form>
+              <button type="submit" className="btn">
+                Register
+              </button>
+              <div className="form-footer">
+                <p>
+                  Already have an account?{" "}
+                  <Link to="/login" className="form-link">
+                    Login here
+                  </Link>
+                </p>
+              </div>
+            </form>
           </Card>
         </Col>
       </Row>

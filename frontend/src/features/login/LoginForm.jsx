@@ -1,113 +1,92 @@
-// Referenced https://www.geeksforgeeks.org/javascript-fetch-method/
-// Referenced https://www.w3schools.com/html/html_form_input_types.asp
-import { useState } from 'react';
-import { Button, Card, Container, Col, Form, Row } from 'react-bootstrap'
-import { useAuth } from '../../services/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Button, Card, Container, Col, Form, Row } from "react-bootstrap";
+import { useAuth } from "../../services/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
+import "./Form.css";
 
 function LoginForm({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  // const [loginSuccessful, setLoginSuccessful] = useState();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username: username, password: password }),
+        };
 
-    // Handle login logic here
-    // onLogin({ username, password });
+        fetch(`${import.meta.env.VITE_BASE_URL}/login`, options).then((response) => {
+            if (response.ok) {
+                console.log("Login Successful");
+                response.json().then((data) => {
+                    login(data);
+                });
 
-    // Referenced https://www.geeksforgeeks.org/javascript-fetch-method/
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({username: username, password: password})
+                //const redirectPath = localStorage.getItem("redirectPath");
+                //console.log(redirectPath);
+                navigate("/");
+                localStorage.removeItem("redirectPath");
+            } else {
+                console.log("Login Unsuccessful");
+                setError("Invalid username or password");
+            }
+        });
     };
 
-    // Status Code 200 (Status Ok) means login was successful
-    fetch("http://localhost:3000/login", options)
-      .then(response => {
-        if (response.ok) {
-          // Login was successful
-          // setLoginSuccessful(true);
-          console.log("Login Successful");
-
-          // Saves response user data into AuthContext
-          response.json().then(data => {
-            login(data);
-          });
-
-          // Redirect to stored path or home
-          const redirectPath = localStorage.getItem('redirectPath');
-          navigate(redirectPath || '/');
-
-          // Clear stored path for next use
-          localStorage.removeItem('redirectPath');
-        }
-        else {
-          // Login was not successful
-          // setLoginSuccessful(false);
-          console.log("Login Unsuccessful");
-        }
-      })
-  };
-
-  return (
-    <Container 
-      fluid 
-      className="d-flex justify-content-center align-items-center" 
-      style={{ height: '100vh' }}
-    >
-
-      <Row className="justify-content-center">
-        <Col md={10}>
-          <Card className='p-3'>
-            <Card.Title>Login</Card.Title>
-
-            <Form onSubmit={handleSubmit}> 
-              <Form.Group 
-                className="mb-3" 
-                controlId="formBasicUsername"
-              >
-                <Form.Label>Username</Form.Label>
-                <Form.Control 
-                  type="text" 
-                  placeholder="Username" 
-                  value={username} 
-                  onChange={(e) => setUsername(e.target.value)} 
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group 
-                className="mb-3"
-                controlId="formBasicPassword"
-              >
-                <Form.Label>Password</Form.Label>
-                <Form.Control 
-                  type="password" 
-                  placeholder="Password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              <Button 
-                variant="primary" 
-                type="submit" 
-              >
-                Enter
-
-              </Button>
-            </Form>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
-  );
+    return (
+        <Container
+            fluid
+            className="d-flex justify-content-center align-items-center form-page-container"
+        >
+            <Row className="justify-content-center">
+                <Col md={10}>
+                    <Card className="form-card">
+                        <Card.Title className="form-title">Login</Card.Title>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        <Form onSubmit={handleSubmit}>
+                            <Form.Group className="form-control mb-3" controlId="formBasicUsername">
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Form.Group className="form-control mb-3" controlId="formBasicPassword">
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Enter password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Button variant="primary" type="submit" className="btn">
+                                Enter
+                            </Button>
+                            <div className="form-footer">
+                                <p>
+                                    Don't have an account?{" "}
+                                    <Link to="/register" className="form-link">
+                                        Register here
+                                    </Link>
+                                </p>
+                            </div>
+                        </Form>
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
+    );
 }
 
 export default LoginForm;

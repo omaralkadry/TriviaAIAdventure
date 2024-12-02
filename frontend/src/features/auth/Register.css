@@ -1,0 +1,119 @@
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 2rem;
+}
+
+.register-form {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.register-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    font-size: 1rem;
+    color: #1a1a2e;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #845ef7;
+    box-shadow: 0 0 0 3px rgba(132, 94, 247, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Error Message Styling */
+.error-message {
+    background: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
+
+.register-button {
+    background: linear-gradient(45deg, #845ef7, #5c7cfa);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.register-button:hover {
+    background: linear-gradient(45deg, #7950f2, #4c6ef5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(132, 94, 247, 0.4);
+}
+
+.login-link {
+    color: #845ef7;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.login-link:hover {
+    color: #7950f2;
+    text-decoration: underline;
+}
+
+/* Additional Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

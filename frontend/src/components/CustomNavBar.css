@@ -1,0 +1,109 @@
+{/* NOTINUSE */}
+
+
+/* Navbar styling */
+.custom-navbar {
+    background: rgba(38, 25, 72, 0.9);
+    padding: 15px 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.custom-navbar.visible {
+    transform: translateY(0);
+}
+
+.custom-navbar.hidden {
+    transform: translateY(-100%);
+}
+
+/* Trivia AI text (Navbar Brand) */
+.navbar-brand {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-decoration: none;
+    text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.6);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.navbar-brand:hover {
+    color: #38f9d7;
+    text-shadow: 0px 6px 12px rgba(56, 249, 215, 0.8);
+}
+
+
+/* Signed in text */
+.signed-in-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #13e8e9;
+    padding: 5px 10px;
+    background: rgba(58, 32, 110, 0.8);
+    border-radius: 15px;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Navbar links */
+.navbar-link, .navbar-dropdown-item {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+.navbar-link:hover, .navbar-dropdown-item:hover {
+    color: #38f9d7;
+}
+
+/* Account dropdown button */
+.account-button {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: #ffffff !important;
+    border-radius: 25px;
+    padding: 5px 15px;
+    font-weight: 700;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.account-button:hover {
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
+    transform: scale(1.05);
+}
+
+.custom-navbar {
+    background: linear-gradient(45deg, #261948, #3a206e, #6a11cb);
+    background-size: 300% 300%;
+    animation: gradient-flow 6s ease infinite;
+    padding: 15px 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+@keyframes gradient-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}

@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #8A4FFF, #FF4F9F);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --text-dark: #000000;
+    --text-light: #ffffff;
+    --text-gray: #666666;
+    --button-bg: #007bff;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Container Layout */
+.random-trivia-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    max-width: 800px;
+    margin: 40px auto;
+    background-image: var(--primary-gradient);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    color: var(--text-light);
+}
+
+/* Question Styling */
+.question {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.6;
+    margin: 30px 0;
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+}
+
+/* Answer Input */
+.answer-input {
+    width: 100%;
+    max-width: 600px;
+    margin: 25px 0;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s ease;
+}
+
+.answer-input:focus {
+    border-color: var(--text-light);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+
+/* Submit Button */
+.submit-button {
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    background-color: var(--button-bg);
+    color: var(--text-light);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px 0;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Feedback Messages */
+.feedback-correct,
+.feedback-incorrect {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 20px 0;
+    padding: 15px 30px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.feedback-correct {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #2ecc71;
+}
+
+.feedback-incorrect {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #e74c3c;
+}
+
+/* Timer */
+.timer {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 25px 0;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Scoreboard */
+.scoreboard {
+    width: 100%;
+    max-width: 600px;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.scoreboard-heading {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.scoreboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.scoreboard-item {
+    font-size: 18px;
+    padding: 12px 20px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

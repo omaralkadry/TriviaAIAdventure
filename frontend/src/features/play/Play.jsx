@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Container, Row, Col, Card, ToggleButton } from 'react-bootstrap';
 import Timer from './Timer.jsx';
 
-const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, key}) => {
+const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAnswer, isCountdownFinished, handleAnswerSubmit, handleCountdownFinish, handleNextQuestion, freeResponse = false, key, buzzed = true}) => {
 
   useEffect(() => {
     if (isCountdownFinished) {
@@ -26,7 +26,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
       <Container>
         <Container fluid className="justify-content-center mt-5">
           <Row className="justify-content-center">
-            <Col md={10} lg={8} xl={6} xxl={4}>
+            <Col md={10}>
               <Card className="question-card">
                 <Card.Body
                     className="text-center d-flex justify-content-center align-items-center question-body"
@@ -39,7 +39,7 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
           </Row>
         </Container>
         <Container className="mt-5">
-          {Array.isArray(currentQuestion.answers) && (
+          { (buzzed || isCountdownFinished) && Array.isArray(currentQuestion.answers) && !freeResponse && (
               <Row xs={1} md={2} className="g-4 mb-3">
                 {currentQuestion.answers.map((answer, idx) => (
                     <Col key={idx}>
@@ -59,6 +59,21 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
                 ))}
               </Row>
           )}
+          {/* Render text input when freeResponse prop is true */}
+          {freeResponse && (
+                    <Row className="justify-content-center mb-3">
+                        <Col md={8}>
+                            <input 
+                                type="text" 
+                                className="input-field" 
+                                value={selectedAnswer || ''} // Bind input value to selectedAnswer
+                                onChange={(e) => setSelectedAnswer(e.target.value)} // Update selectedAnswer on change
+                                placeholder="Type your answer here"
+                                disabled={isCountdownFinished} // Disable if countdown finished
+                            />
+                        </Col>
+                    </Row>
+          )}
           {/* {!isCountdownFinished && (
               <Row className="justify-content-center mt-3">
                 <Col xs="auto">
@@ -74,8 +89,8 @@ const Play = ({ timePerQuestion, currentQuestion, selectedAnswer, setSelectedAns
               </Row>
           )}
         </Container>
-        {/* TODO: Adjust timer variable */}
-        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 5}/>
+        {/* TODO: Adjust Default timer variable here */}
+        <Timer key={key} onCountdownFinish={handleCountdownFinish} duration={timePerQuestion || 15}/>
       </Container>
   );
 };

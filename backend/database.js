@@ -22,12 +22,11 @@ class Database {
 
     async connect() {
         try {
-            if (!this.isConnected) {
-                await this.client.connect();
-                await this.client.db("admin").command({ ping: 1 });
-                console.log("Pinged your deployment. You successfully connected to MongoDB!");
-                this.isConnected = true;
-            }
+
+            await this.client.connect();
+            await this.client.db("admin").command({ ping: 1 });
+            // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
         } catch (error) {
             console.error("Connection failed:", error);
             this.isConnected = false;
@@ -86,16 +85,16 @@ class Database {
         }
     }
 
-    async saveGame(username, gameID, score, rank) {
-        if (!this.isConnected) {
-            await this.connect();
-        }
+
+    async saveGame(username, gameID, score, rank, qNum) {
+
         const collection = this.client.db("Users").collection(username);
         try {
             await collection.insertOne({
                 gameID: gameID,
                 score: score,
                 rank: rank,
+                questionAmount: qNum,
                 date: new Date()
             });
             //testing
@@ -106,31 +105,18 @@ class Database {
         }
     }
 
-}
-
-// Usage example
-/*
-const uri = process.env.Database_Url;
-const db = new Database(uri);
-
-// (async () => {
-//     try {
-//         await db.connect();
-//         // Perform database operations here
-
-//         // Example: Register a user
-//         await db.registerUser("player1", "securePassword");
-
-//         // Example: Authenticate a user
-//         const user = await db.authenticateUser("player1", "securePassword");
-//         console.log("Authenticated User:", user);
-
-    } catch (error) {
-        console.error("Error during database operations:", error);
-    } finally {
-        await db.close();
+    async getAllGamesForUser(username) {
+        const collection = this.client.db("Users").collection(username);
+        try {
+            
+            const games = await collection.find().toArray();
+            return games;
+        } catch (error) {
+            console.error(`Failed to retrieve games for user ${username}:`, error);
+            throw error; 
+        }
     }
-})();
-//*/
+
+}
 
 module.exports = Database;

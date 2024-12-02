@@ -1,11 +1,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import CustomNavbar from './components/CustomNavbar'
-import HomePage from './features/home/HomePage'
-import LoginForm from './features/login/LoginForm'
+
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import Layout from "./components/Layout";
+import HomePage from "./features/home/HomePage";
+import LoginForm from "./features/login/LoginForm";
 import RegistrationForm from "./features/login/RegistrationForm";
+import JoinPage from "./features/room/JoinPage";
+
 import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
@@ -14,22 +18,14 @@ import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
-import App from './App';
 
-const AppWrapper = () => {
-  return (
-    <AuthProvider>
-      <SocketProvider>
-        <App />
-      </SocketProvider>
-    </AuthProvider>
-  );
-};
+import History from "./features/history/History";
+import FAQ from "./features/faq/faq";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <AppWrapper />,
+    element: <Layout><Outlet /></Layout>,
+
     children: [
       {
         path: "/",
@@ -42,6 +38,15 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegistrationForm />,
+      },
+      {
+
+        path: "/join",
+        element: (
+          <ProtectedRoute>
+            <JoinPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/play",
@@ -60,6 +65,15 @@ const router = createBrowserRouter([
         ),
       },
       {
+
+        path: "/history",
+        element: (
+          <ProtectedRoute>
+            <History />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/chat",
         element: (
           <ProtectedRoute>
@@ -69,22 +83,30 @@ const router = createBrowserRouter([
       },
       {
         path: "/leaderboard",
-        element: (
-          <Leaderboard />
-        ),
+
+        element: <Leaderboard />,
       },
       {
         path: "/jeopardy",
-        element: (
-          <JeopardyBoard />
-        ),
+        element: <JeopardyBoard />,
+      },
+      {
+        path: "/faq",
+        element: <FAQ />,
+
       },
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+
+    <React.StrictMode>
+      <AuthProvider>
+        <SocketProvider>
+          <RouterProvider router={router} />
+        </SocketProvider>
+      </AuthProvider>
+    </React.StrictMode>
+
 );

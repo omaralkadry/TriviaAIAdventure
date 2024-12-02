@@ -35,6 +35,8 @@ describe('Create new user', () => {
     });
 
     afterAll(async () => {
+        collection = db.client.db("General").collection("Accounts");
+        
         // Deletes user from database if user was successfully created
         if (user) {
             await collection.deleteOne({ username });
