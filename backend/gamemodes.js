@@ -76,11 +76,7 @@ class GameMode {
         return true
     }
 
-    //function created with chatgpt
-    //not tested
     async endGame() {
-        //let winner = Object.keys(this.scores).reduce((a, b) => this.scores[a] > this.scores[b] ? a : b);
-        //console.log(`Game Over! Winner is ${winner} with ${this.scores[winner]} points!`);
         const ordered_scores = Object.entries(this.scores);
         ordered_scores.sort((a,b)=> b[1] - a[1])
         
@@ -128,7 +124,6 @@ class ClassicTrivia extends GameMode {
             this.topic = "General Knowledge";
         else
             this.topic = topic;
-        // this.topic = topic || "General Knowledge";
     }
 
     // from parent class
@@ -153,13 +148,10 @@ class ClassicTrivia extends GameMode {
 
         //testing
         //console.log(this.scores);
-        //may adjust here if you want to call generatequestion
     }
 
     checkAnswer(player, answer, qindex) {
         
-        // if (answer == this.question_array[this.currentQuestion].correctAnswer)
-        //    this.generateScores(player);
         if (answer == this.question_array[qindex].correctAnswer)
             this.generateScores(player);
 
@@ -523,9 +515,6 @@ class RandomTrivia extends GameMode {
             //let prompt = `Question: "${question}"\nExample Answer: "${exampleAnswer}"\n\nPlayer Answers:\n`;
             let prompt = `Question: "${question}"\nPlayer Answers:\n`;
             
-            /*    Object.entries(playerAnswers).forEach(([player, answer]) => {
-                prompt += `${player}: ${answer}\n`;
-                });*/
             this.answers[qindex].forEach(({username, answer}) => {
                 prompt += `- ${username}: ${answer}\n`;
             })

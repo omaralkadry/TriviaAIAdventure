@@ -7,14 +7,11 @@ import Layout from "./components/Layout";
 import HomePage from "./features/home/HomePage";
 import LoginForm from "./features/login/LoginForm";
 import RegistrationForm from "./features/login/RegistrationForm";
-import JoinPage from "./features/room/JoinPage";
 import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
-import Chat from "./components/Chat";
 import { SocketProvider } from "./services/SocketContext";
 import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
-import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
 import History from "./features/history/History";
 import FAQ from "./features/faq/faq";
@@ -34,14 +31,6 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegistrationForm />,
-      },
-      {
-        path: "/join",
-        element: (
-          <ProtectedRoute>
-            <JoinPage />
-          </ProtectedRoute>
-        ),
       },
       {
         path: "/play",
@@ -66,18 +55,6 @@ const router = createBrowserRouter([
             <History />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: "/chat",
-        element: (
-          <ProtectedRoute>
-            <Chat />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/leaderboard",
-        element: <Leaderboard />,
       },
       {
         path: "/jeopardy",
