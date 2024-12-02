@@ -11,11 +11,6 @@ describe('ClassicTrivia Game Mode', () => {
 
     beforeEach(() => {
         game = new ClassicTrivia(4); // 4 players
-        // game.addPlayer('Player1');
-        // game.addPlayer('Player2');
-        // game.addPlayer('Player3');
-        // game.addPlayer('Player4');
-        //game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question. this is now done in start game
         game.startGame(10, 2, ['Player1', 'Player2', 'Player3', 'Player4'], 'Science', 30);
     });
 
@@ -27,7 +22,6 @@ describe('ClassicTrivia Game Mode', () => {
     });
 
     test('should correctly set topic for trivia game', () => {
-        //game.setTopic('Science'); done in beforeEach now
         expect(game.topic).toBe('Science');
     });
 
@@ -82,10 +76,6 @@ describe('ClassicTrivia Question Retrieval', () => {
 
     beforeAll(async () => {
         game = new ClassicTrivia(2); // 2 players
-        // game.addPlayer('Player1');
-        // game.addPlayer('Player2');
-        // game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question
-        // game.setTopic('Science');
         game.startGame(10, 5, ['Player1', 'Player2'], 'Science', 30);
         await game.generateQuestion(); // Generate questions before running the tests
     });
@@ -210,25 +200,19 @@ describe('RandomTrivia Game Mode', () => {
   
     test('should correctly check multiple answers', async () => {
         game.startGame(10, 3, ['Player1', 'Player2', 'Player3'], [], 30);
-        await game.generateQuestion();
-        const playerAnswers = {
-          'Player1': 'Correct answer',
-          'Player2': 'Partially correct answer',
-          'Player3': 'Incorrect answer'
-        };
-        // const results = await game.checkAnswer(playerAnswers, 0);
-        // console.log(results)
-        game.storeAnswer('Player1', 'Correct answer', 0);
-        game.storeAnswer('Player2', 'Partially correct answer', 0);
+        const question = [{"question": "What is a 2D shape with four equal-length sides called?"}];
+        game.question_array = question;
+        game.storeAnswer('Player1', 'Square', 0);
+        game.storeAnswer('Player2', 'Squar', 0);
         // checkAnswer is called in storeAnswer when the number of answers equals the number of players
-        const results = await game.storeAnswer('Player3', 'Incorrect answer', 0);
-        // These checks may not always work
+        const results = await game.storeAnswer('Player3', 'Line', 0);
         expect(results).toHaveProperty('Player1');
         expect(results).toHaveProperty('Player2');
         expect(results).toHaveProperty('Player3');
         expect(typeof results.Player1).toBe('boolean');
-        console.log(game.scores);
+        // console.log(game.scores);
         expect(game.scores['Player1']).toBe(10);
+        // Currently, a correct answer that is spelled wrong (partially correct) isn't marked as correct
         //expect(game.scores['Player2']).toBe(10);
         expect(game.scores['Player3']).toBe(0);
       }, 30000);
@@ -241,5 +225,5 @@ describe('RandomTrivia Game Mode', () => {
       await game.incrementQuestion();
       expect(game.currentQuestion).toBe(1);
       expect(game.getCurrentTopic()).toBe(game.topics[1]);
-    });
+    }, 30000);
 });
