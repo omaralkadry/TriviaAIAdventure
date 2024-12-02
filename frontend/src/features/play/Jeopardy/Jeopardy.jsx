@@ -181,6 +181,7 @@ const JeopardyBoard = ({ selectorUsername, questions, topics, duration }) => {
           handleNextQuestion={() => handleBackToBoard()}
         />
       )}
+
     </Container>
   );
 };

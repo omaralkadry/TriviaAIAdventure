@@ -13,10 +13,13 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const { join } = require('node:path');
+
 const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
+
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
 const history = require('./routes/history.js');
@@ -25,6 +28,7 @@ const history = require('./routes/history.js');
 const app = express();
 const port = process.env.PORT || 3000;
 const server = createServer(app);
+
 const socketIO = new Server(server, { 
     cors: { 
         origin: [
@@ -47,18 +51,52 @@ app.use(cors({
         'https://triviaaiadventure.onrender.com',
         'http://localhost:5173'
     ],
+
     credentials: true
 }));
 app.use(express.json());
+
+// Session configuration
+app.use(session({
+    secret: 'trivia-game-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // set to true in production with HTTPS
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    },
+    name: 'connect.sid'
+}));
+
 app.use("/register", register);
 app.use("/login", login);
 app.use("/history", history);
 
 // Add a new route for logout
-app.post("/logout", (req, res) => {
-    // Here you would typically destroy the session
-    // For now, we'll just send a success response
-    res.json({ success: true, message: "Logged out successfully" });
+app.post("/api/logout", (req, res) => {
+    if (req.session) {
+        console.log('Session found, destroying...');
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Error destroying session:', err);
+                res.status(500).json({ success: false, message: "Failed to logout" });
+            } else {
+                res.clearCookie('connect.sid', {
+                    path: '/',
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'lax'
+                });
+                console.log('Session destroyed successfully');
+                res.json({ success: true, message: "Logged out successfully" });
+            }
+        });
+    } else {
+        console.log('No session found');
+        res.json({ success: true, message: "Already logged out" });
+    }
 });
 
 // Add a new route for fetching questions
@@ -76,28 +114,35 @@ let roomsList = {};
 
 const gameModes = [
     ClassicTrivia, // Index 0
+
     TriviaBoard,   // Index 1
     RandomTrivia //thirdmode here
+
 ];
 
 // Function to start trivia game in a room
-const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames, totalQuestions) => {
+const startTriviaGame = async (roomCode, mode, duration, topic, usernames, totalQuestions) => {
     //unused
     let currentQuestionIndex = 0;
+
     
+
     const GameClass = gameModes[mode];
     if (!GameClass) {
-        console.error(`Game mode at index ${mode} not found.`);
+        console.error(`[${new Date().toISOString()}] Game mode at index ${mode} not found.`);
         return;
     }
-    const gameInstance = new GameClass();
 
-    gameInstance.startGame(10, totalQuestions, usernames, topic_array, duration);
-    const error = await gameInstance.generateQuestion();
+    try {
+        const gameInstance = new GameClass();
+        await gameInstance.startGame(10, totalQuestions, usernames, topic, duration);
+        await gameInstance.generateQuestion();
+        const questions = await gameInstance.getQuestionArray();
 
-    if (error === "content_filter") {
-        return "content_filter";
-    }
+        if (!questions || !Array.isArray(questions)) {
+            throw new Error('Invalid questions array returned from game instance');
+        }
+
 
     const questions = await gameInstance.getQuestionArray();
     let transformedQuestions;
@@ -108,23 +153,21 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
         }));
     } else {
         transformedQuestions = questions.map(q => ({
+
             question: q.question,
             answers: Object.values(q.choices),
             answer: Object.keys(q.choices).indexOf(q.correctAnswer)
         }));
+
     }
-    
 
-      //testing
-      //console.log(transformedQuestions);
-    
-    const questionDuration = await gameInstance.time();
-    //console.log(questionDuration);
-    const sendQuestion = async () => {
 
-        // console.log(transformedQuestions[0]); //testing
-        roomsList[roomCode].currentQuestion = transformedQuestions; // Saving the questions
+        const questionDuration = await gameInstance.time();
+
+        // Store game state in room
+        roomsList[roomCode].currentQuestion = transformedQuestions;
         roomsList[roomCode].duration = questionDuration;
+
         roomsList[roomCode].gameInstance = gameInstance; 
         socketIO.to(roomCode).emit('question', { questions: transformedQuestions, duration: questionDuration });
     };
@@ -146,6 +189,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
     }
 
     socketIO.to(roomCode).emit('update scores', gameInstance.scores);
+
 }
     /*
     // Send each question after 30 seconds, reset the timer and send new question
@@ -237,7 +281,23 @@ socketIO.on('connection', (socket) => {
             }
         }
     });
-    // Would do this instead of startTriviaGame directly
+
+    // Handle starting the game
+    socket.on('start game', (roomCode, topic, totalQuestions, duration, mode, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+
+        // Verify that the requesting user is the host
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can start the game' });
+            return;
+        }
+
+        if (roomsList[roomCode].users.length >= 2) {
+            socketIO.to(roomCode).emit('start game');
+            // Would do this instead of startTriviaGame directly
             // if (gamemode == "classic") {
             //     const triviaGamemode = new ClassicTrivia();
             //     startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
@@ -245,9 +305,10 @@ socketIO.on('connection', (socket) => {
             // }
             // else if (gamemode == "trivia board") {
             //     // const triviaGamemode = new TriviaBoard();
-            //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
+            //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users);
             //     // roomsList[roomCode] = { gamemode: triviaGamemode };
             // }
+
 
     const errorCheck = (roomCode, username, message, callback) => {
         if (!roomsList[roomCode]) {
@@ -275,9 +336,11 @@ socketIO.on('connection', (socket) => {
         if (roomsList[roomCode].users.length >= 2) {
             socketIO.to(roomCode).emit('start game');
 
+
             //testing
             //console.log('Game mode: ' + mode);
             // console.log('Duration: ' + duration);
+
 
             if (mode === 1) { // TriviaBoard
                 totalQuestions = 30;
@@ -294,6 +357,7 @@ socketIO.on('connection', (socket) => {
             //removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
             // console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             // console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
+
             callback({ success: true });
         } else {
             console.log(`[${new Date().toISOString()}] Failed to start game in room ${roomCode}: Not enough players`);
@@ -530,6 +594,86 @@ socketIO.on('connection', (socket) => {
             }
         }
         console.log(`[${new Date().toISOString()}] Current rooms after disconnect: ${Object.keys(roomsList)}`);
+    });
+
+    // Handle game mode updates
+    socket.on('update_game_mode', (roomCode, mode, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can change game mode' });
+            return;
+        }
+        roomsList[roomCode].settings.mode = mode;
+        socketIO.to(roomCode).emit('game settings', { mode });
+        callback({ success: true });
+    });
+
+    // Handle duration updates
+    socket.on('update_duration', (roomCode, duration, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can change question duration' });
+            return;
+        }
+        roomsList[roomCode].settings.duration = duration;
+        socketIO.to(roomCode).emit('game settings', { duration });
+        callback({ success: true });
+    });
+
+    // Handle topic updates
+    socket.on('update_topic', (roomCode, topic, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can change topic' });
+            return;
+        }
+        roomsList[roomCode].settings.topic = topic;
+        socketIO.to(roomCode).emit('game settings', { topic });
+        callback({ success: true });
+    });
+
+    // Handle total questions updates
+    socket.on('update_total_questions', (roomCode, totalQuestions, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can change total questions' });
+            return;
+        }
+        roomsList[roomCode].settings.totalQuestions = totalQuestions;
+        socketIO.to(roomCode).emit('game settings', { totalQuestions });
+        callback({ success: true });
+    });
+
+    // Handle Jeopardy topic updates
+    socket.on('update_jeopardy_topic', (roomCode, index, topic, callback) => {
+        if (!roomsList[roomCode]) {
+            callback({ success: false, message: 'Room not found' });
+            return;
+        }
+        if (socket.username !== roomsList[roomCode].host) {
+            callback({ success: false, message: 'Only the host can change Jeopardy topics' });
+            return;
+        }
+        if (!roomsList[roomCode].settings.jeopardyTopics) {
+            roomsList[roomCode].settings.jeopardyTopics = Array(6).fill('');
+        }
+        roomsList[roomCode].settings.jeopardyTopics[index] = topic;
+        socketIO.to(roomCode).emit('game settings', {
+            jeopardyTopics: roomsList[roomCode].settings.jeopardyTopics
+        });
+        callback({ success: true });
     });
 
     // Handle messages

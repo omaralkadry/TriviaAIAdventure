@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../services/AuthContext";
 import "./HomePage.css";
 
+
 const HomePage = () => {
     const navigate = useNavigate();
     const { getUsername } = useAuth();
@@ -74,5 +75,6 @@ const HomePage = () => {
         </div>
     );
 };
+
 
 export default HomePage;

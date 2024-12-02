@@ -15,6 +15,7 @@ const CustomNavBar = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+
   };
 
   return (
@@ -31,6 +32,7 @@ const CustomNavBar = () => {
             <Nav.Link href="/jeopardy">Jeopardy</Nav.Link>
             <Nav.Link href="/history">Game History</Nav.Link>
           </Nav>
+
           <Navbar.Text>
             {user ? (
               <div className="navbar-dropdown">
@@ -47,10 +49,12 @@ const CustomNavBar = () => {
                   </div>
                 )}
               </div>
+
             ) : (
               <NavDropdown
                 title="Account"
                 id="account-dropdown"
+
                 className="navbar-dropdown account-button"
               >
                 <NavDropdown.Item
@@ -63,11 +67,14 @@ const CustomNavBar = () => {
                   className="navbar-dropdown-item"
                   href="/register"
                 >
+
                   Register
                 </NavDropdown.Item>
               </NavDropdown>
             )}
+
           </Navbar.Text>
+
         </Navbar.Collapse>
       </Container>
     </Navbar>

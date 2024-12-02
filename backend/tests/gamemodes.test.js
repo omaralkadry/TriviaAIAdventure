@@ -1,12 +1,14 @@
 // Referenced https://jestjs.io/
 const { Db } = require('mongodb');
 const { ClassicTrivia } = require('../gamemodes');
+
 const { TriviaBoard } = require('../gamemodes');
 const { RandomTrivia } = require('../gamemodes');
+
 require('dotenv').config();
 
 
-describe('ClassicTrivia Game Mode', () => {
+describe.only('ClassicTrivia Game Mode', () => {
     let game;
 
     beforeEach(() => {
@@ -16,7 +18,9 @@ describe('ClassicTrivia Game Mode', () => {
         // game.addPlayer('Player3');
         // game.addPlayer('Player4');
         //game.setSettings(5, 30, 10); // 5 questions, 30 seconds per question. this is now done in start game
+
         game.startGame(10, 2, ['Player1', 'Player2', 'Player3', 'Player4'], 'Science', 30);
+
     });
 
     test('should initialize with correct settings', () => {
@@ -116,6 +120,7 @@ describe('ClassicTrivia Question Retrieval', () => {
 
         expect(game.currentQuestion).toBe(initialIndex + 1);
     }, 60000);
+
 });
 
 

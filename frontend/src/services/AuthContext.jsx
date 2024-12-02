@@ -1,8 +1,11 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
+
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null);
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -11,9 +14,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+
   // Save user data in session storage
   const login = (userData) => {
-    // Converts userData javascript object to JSON string
+    // Converts user data to JSON string format
     // Then stores into sessionStorage
     sessionStorage.setItem('user', JSON.stringify(userData.username));
     setUser(userData.username);
@@ -21,12 +25,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Clear user data in session storage on logout
+
   const logout = () => {
     sessionStorage.removeItem('user');
     setUser(null);
+
   };
 
-  // Returns original javascript object by parsing
+  // Parse and return stored user data
   /*
   const getUser = () => {
     const storedUser = sessionStorage.getItem('user');

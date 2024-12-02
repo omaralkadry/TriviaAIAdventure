@@ -11,6 +11,7 @@ import { useSocket } from '../../services/SocketContext';
 import JeopardyBoard from '../play/Jeopardy/Jeopardy.jsx';
 import Sidebar from '../../components/Sidebar.jsx';
 
+javascript
 function RoomPage() {
   const socket = useSocket();
   const { isAuthenticated, getUsername } = useAuth();
@@ -31,6 +32,7 @@ function RoomPage() {
   const [answerResponse, setAnswerResponse] = useState(null);
   const [key, setKey] = useState(Date.now());
   const [scores, setScores] = useState({});
+  const [isHost, setIsHost] = useState(false);
   const username = getUsername();
   const [selector, setSelector] = useState('');
   const [waiting, setWaiting] = useState(false);
@@ -103,6 +105,7 @@ function RoomPage() {
       if (settings.mode !== undefined) setMode(settings.mode);
       if (settings.duration !== undefined) setDuration(settings.duration);
       if (settings.topic !== undefined) setTopic(settings.topic);
+
       if (settings.jeopardyTopics !== undefined) setJeopardyTopics(settings.jeopardyTopics);
       if (settings.totalQuestions !== undefined) setTotalQuestions(settings.totalQuestions);
     };
@@ -128,10 +131,12 @@ function RoomPage() {
     socket.on('start game', handleStartGame);
     socket.on('answer result', handleAnswerResult);
     socket.on('update scores', handleUpdateScores);
+
     socket.on('game settings', handleGameSettings);
     socket.on('next question selector', handleSelector);
     socket.on('host status', handleHostStatus);
     socket.on('next question', handleNextQuestion);
+
 
     return () => {
       socket.off('update players', handleUpdatePlayers);
@@ -140,10 +145,12 @@ function RoomPage() {
       socket.off('start game', handleStartGame);
       socket.off('answer result', handleAnswerResult);
       socket.off('update scores', handleUpdateScores);
+
       socket.off('game settings', handleGameSettings);
       socket.off('next question selector', handleSelector);
       socket.off('host status', handleHostStatus);
       socket.off('next question', handleNextQuestion);
+
     };
   }, [socket, currentQuestionIndex, Date]);
 
@@ -152,6 +159,7 @@ function RoomPage() {
     socket.emit('create room', username, (response) => {
       if (response.success) {
         setRoomCode(response.roomCode);
+        setIsHost(true); // Set host status when creating room
       }
     });
   }, [socket, username]);
@@ -162,12 +170,14 @@ function RoomPage() {
       setJoinStatus(response.message);
       if (response.success) {
         setRoomCode(joinRoomCode);
+        setIsHost(false); // Joining players are not hosts
       }
     });
   }, [socket, joinRoomCode, username]);
 
   const handleStartGame = useCallback(() => {
     if (!socket) return;
+
     let topic_array = [];
     if (mode === 0) {
       topic_array.push(topic);
@@ -189,11 +199,14 @@ function RoomPage() {
 
     //TODO Adjust default questions here
     socket.emit('start game', roomCode, topic_array, numQuestions || 10, duration, mode, (response) => {
+
       if (!response.success) {
         alert(response.message);
       }
     });
+
   }, [socket, roomCode, topic, totalQuestions, duration, mode, jeopardyTopics]);
+
 
   const handleAnswerSubmit = useCallback(() => {
     if (!socket) return;
@@ -577,6 +590,7 @@ function RoomPage() {
               </Row>
           )}
         </div>
+
     );
   };
 

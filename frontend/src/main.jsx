@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
+
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -8,6 +9,7 @@ import HomePage from "./features/home/HomePage";
 import LoginForm from "./features/login/LoginForm";
 import RegistrationForm from "./features/login/RegistrationForm";
 import JoinPage from "./features/room/JoinPage";
+
 import Play from "./features/play/Play";
 import RoomPage from "./features/room/RoomPage";
 import Chat from "./components/Chat";
@@ -16,12 +18,14 @@ import { AuthProvider } from "./services/AuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import Leaderboard from "./features/leaderboard/Leaderboard";
 import JeopardyBoard from "./features/play/Jeopardy/Jeopardy";
+
 import History from "./features/history/History";
 import FAQ from "./features/faq/faq";
 
 const router = createBrowserRouter([
   {
     element: <Layout><Outlet /></Layout>,
+
     children: [
       {
         path: "/",
@@ -36,6 +40,7 @@ const router = createBrowserRouter([
         element: <RegistrationForm />,
       },
       {
+
         path: "/join",
         element: (
           <ProtectedRoute>
@@ -60,6 +65,7 @@ const router = createBrowserRouter([
         ),
       },
       {
+
         path: "/history",
         element: (
           <ProtectedRoute>
@@ -77,6 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/leaderboard",
+
         element: <Leaderboard />,
       },
       {
@@ -86,12 +93,14 @@ const router = createBrowserRouter([
       {
         path: "/faq",
         element: <FAQ />,
+
       },
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
+
     <React.StrictMode>
       <AuthProvider>
         <SocketProvider>
@@ -99,4 +108,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </SocketProvider>
       </AuthProvider>
     </React.StrictMode>
+
 );
