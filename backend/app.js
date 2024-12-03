@@ -7,15 +7,11 @@
 
 console.log('Starting backend application...');
 
-//not used rn
 require('dotenv').config();
-
-
 const express = require('express');
 const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
-const { join } = require('node:path');
 const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
@@ -375,9 +371,8 @@ socketIO.on('connection', (socket) => {
         // socket.on submit answer 
         // check answer
         
-        /* Removed first pressed buzzing
-        socketIO.to(roomCode).emit('first pressed', username);
-        */
+        // Removed first pressed buzzing
+        // socketIO.to(roomCode).emit('first pressed', username);
     });
 
     // Handle when a person selects a Trivia Board question
