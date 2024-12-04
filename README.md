@@ -14,7 +14,7 @@ AI-powered multiplayer trivia game using the Open AI GPT-4 engine
 - **Database:** MongoDB
 - **AI Integration:** OpenAI GPT-4 API
 - **Real-Time Communication:** Socket.io
-- **Deployment:** AWS
+- **Deployment:** Render
 
 ## Getting Started
 ### Prerequisites
