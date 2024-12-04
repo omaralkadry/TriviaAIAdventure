@@ -7,15 +7,11 @@
 
 console.log('Starting backend application...');
 
-//not used rn
 require('dotenv').config();
-
-
 const express = require('express');
 const cors = require('cors');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
-const { join } = require('node:path');
 const { ClassicTrivia, TriviaBoard, RandomTrivia } = require('./gamemodes');
 const register = require('./routes/register.js');
 const login = require('./routes/login.js');
@@ -147,19 +143,7 @@ const startTriviaGame = async (roomCode, mode, duration, topic_array, usernames,
 
     socketIO.to(roomCode).emit('update scores', gameInstance.scores);
 }
-    /*
-    // Send each question after 30 seconds, reset the timer and send new question
-    const questionInterval = setInterval(() => {
-        if (currentQuestionIndex < 5) {  // Set a limit of 5 questions
-            sendQuestion();
-            currentQuestionIndex++;
-        } else {
-            clearInterval(questionInterval);  // End game after all questions are sent
-            socketIO.to(roomCode).emit('game over', { message: "The game has ended!" });
-        }
-    }, 1000);  // 10 seconds between questions
-};
- */
+    
 // Handling connection and game events
 socketIO.on('connection', (socket) => {
     console.log(`[${new Date().toISOString()}] A user connected: ${socket.id}`);
@@ -237,17 +221,6 @@ socketIO.on('connection', (socket) => {
             }
         }
     });
-    // Would do this instead of startTriviaGame directly
-            // if (gamemode == "classic") {
-            //     const triviaGamemode = new ClassicTrivia();
-            //     startTriviaGame(roomCode, topic, roomsList[roomCode].users, totalQuestions);
-            //     roomsList[roomCode] = { gamemode: triviaGamemode };
-            // }
-            // else if (gamemode == "trivia board") {
-            //     // const triviaGamemode = new TriviaBoard();
-            //     // startTriviaBoardGame(roomCode, topics, roomsList[roomCode].users); 
-            //     // roomsList[roomCode] = { gamemode: triviaGamemode };
-            // }
 
     const errorCheck = (roomCode, username, message, callback) => {
         if (!roomsList[roomCode]) {
@@ -291,7 +264,6 @@ socketIO.on('connection', (socket) => {
                 return;
             }
 
-            //removed topic in console log. needs adjustment. old code after: roomCode}, Topic: ${topic},
             // console.log(`[${new Date().toISOString()}] Game started in room ${roomCode}, Total Questions: ${totalQuestions}`);
             // console.log(`[${new Date().toISOString()}] Players in game: ${roomsList[roomCode].users}`);
             callback({ success: true });
@@ -302,7 +274,6 @@ socketIO.on('connection', (socket) => {
         }
     });
 
-    //socket.emit('submit answer', username, selectedAnswer, currentQuestionIndex);
     //Handle answer submission
     socket.on('submit answer', async (roomCode, username, selectedAnswer, currentQuestionIndex, callback) => {
         // Fallback to socket properties if the values are null or undefined
@@ -400,9 +371,8 @@ socketIO.on('connection', (socket) => {
         // socket.on submit answer 
         // check answer
         
-        /* Removed first pressed buzzing
-        socketIO.to(roomCode).emit('first pressed', username);
-        */
+        // Removed first pressed buzzing
+        // socketIO.to(roomCode).emit('first pressed', username);
     });
 
     // Handle when a person selects a Trivia Board question

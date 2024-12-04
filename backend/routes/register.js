@@ -12,7 +12,7 @@ const router = express.Router();
 // Registers a user
 router.post("/", async (req, res) => {
     //TODO disable or enable registration here
-    // return res.status(403).send("Registration is currently disabled.");
+    return res.status(403).send("Registration is currently disabled.");
     try {
         const username = req.body.username;
         const password = req.body.password;

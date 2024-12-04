@@ -2,7 +2,6 @@
 .homepage-content {
     text-align: center;
     padding: 1rem 2rem;
-    margin-top: -25vh;
 }
 
 .homepage-title {
@@ -23,7 +22,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    max-width: 1000px;
+    max-width: 450px;
     margin: 0 auto;
 }
 
